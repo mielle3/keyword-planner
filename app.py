@@ -66,7 +66,7 @@ EVERGREEN_CHECK_PATH = DATA / "evergreen_check.json"
 import writer as _writer  # AI 글쓰기 (작가 지침·블로그 기억·초안 보관·docx)
 WRITER = _writer.Store(DATA)
 KST = timezone(timedelta(hours=9))
-APP_VERSION = "2026.11.21-47"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
+APP_VERSION = "2026.11.21-48"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 DEFAULT_CONFIG = {
@@ -1995,7 +1995,108 @@ def analyze_keyword(keyword, ctx=None):
     finalize(items, today, cfg)
     items.sort(key=lambda c: (norm(c["keyword"]) != norm(keyword), -c["score"]))
     return {"keyword": keyword, "items": items, "sources": sources, "context": ctx or None,
+            "concepts": concept_groups(keyword, items), "records": keyword_records(keyword, cfg),
             "generated_at": datetime.now(KST).isoformat(timespec="seconds")}
+
+
+# ---------- 검색한 키워드로 '어떤 글을 쓸지' 콘셉트 묶음 + 내 기록 ----------
+FACETS = [  # (콘셉트 이름, 연관 검색어 패턴, 독자 상황, 제목 꼬리, 시리즈 순서)
+    ("기준·조건", r"기준|조건|대상|자격|과실|비율|등급|요건|범위|기한|기간", "자기 상황이 어디에 해당하는지 먼저 알고 싶은 독자", "기준 정리", 1),
+    ("절차·방법", r"방법|절차|순서|신청|처리|신고|접수|하는법|발급|조회|대처|요령", "지금 바로 무엇부터 해야 할지 찾는 독자", "처리 순서 총정리", 2),
+    ("비용·금액", r"비용|가격|요금|금액|합의금|보상금|위자료|얼마|수수료|할인|환급|지원금|계산", "받을 돈·낼 돈을 미리 가늠하려는 독자", "금액 기준과 계산법", 3),
+    ("보험·법률", r"보험|합의|형사|민사|소송|변호사|벌금|벌점|면허|처벌|과태료|특례", "보험·법적 처리에서 손해 보지 않으려는 독자", "보험·법적 처리 핵심", 4),
+    ("병원·치료", r"병원|치료|한의원|한방|입원|통원|진단|후유증|물리치료|검사", "치료와 비용 처리를 함께 알아보는 독자", "치료·진료비 처리 정리", 5),
+    ("서류·준비물", r"서류|준비물|증명|확인서|양식|사진|블랙박스|증거", "빠뜨리는 서류 없이 준비하려는 독자", "필요 서류 체크리스트", 6),
+    ("비교·선택", r"비교|추천|차이|vs|순위|어디|종류|장단점", "여러 선택지 중 무엇이 나은지 고르려는 독자", "선택지 비교", 7),
+    ("일정·발표", r"일정|날짜|언제|마감|발표|기한|시간", "날짜를 놓치지 않으려는 독자", "일정 한눈에 보기", 8),
+    ("후기·사례", r"후기|사례|경험|실제|썰", "실제 사례로 감을 잡으려는 독자", "사례로 보는 정리", 9),
+]
+
+
+def concept_groups(keyword, items):
+    """연관 검색어를 독자 상황별로 묶어 '글 콘셉트'로. 묶음마다 검색 수치 합과 대표 검색어."""
+    out = []
+    main = norm(keyword)
+    prio = ["비용·금액", "보험·법률", "병원·치료", "서류·준비물", "일정·발표", "비교·선택", "후기·사례", "기준·조건", "절차·방법"]
+    owner = {}  # 검색어 하나는 묶음 하나에만 (더 구체적인 묶음 우선)
+    for c in items:
+        for name in prio:
+            pat = next(f[1] for f in FACETS if f[0] == name)
+            if norm(c["keyword"]) != main and re.search(pat, c["keyword"]):
+                owner[c["keyword"]] = name
+                break
+    for name, pat, reader, tail, order in FACETS:
+        hit = [c for c in items if owner.get(c["keyword"]) == name]
+        if not hit:
+            continue
+        hit.sort(key=lambda c: -(c.get("metrics", {}).get("volume") or 0) - c["score"])
+        vol = sum((c.get("metrics", {}).get("volume") or 0) for c in hit)
+        top = hit[:5]
+        words = [c["keyword"] for c in top]
+        out.append({"name": name, "reader": reader, "order": order, "volume": vol, "count": len(hit),
+                    "keywords": [{"keyword": c["keyword"], "volume": c.get("metrics", {}).get("volume"), "score": c["score"], "id": c["id"]} for c in top],
+                    "title": f"{keyword} {tail}: " + "·".join(w.replace(keyword, "").strip() or w for w in words[:3]),
+                    "angle": f"{reader}를 위해 '{', '.join(words[:3])}'를 한 글에서 해결하는 {name} 중심 글",
+                    "lead_id": top[0]["id"]})
+    out.sort(key=lambda g: (-(g["volume"] or 0), -g["count"]))
+    if len(out) < 4:  # 연관 검색어가 적을 때도 빈손으로 끝나지 않게: 독자 상황별 기본 콘셉트 (검색 확인 전)
+        have = {g["name"] for g in out}
+        lead = next((c["id"] for c in items if norm(c["keyword"]) == main), items[0]["id"] if items else "")
+        for name, pat, reader, tail, order in sorted(FACETS, key=lambda f: f[4]):
+            if name in have or name in ("후기·사례", "일정·발표"):
+                continue
+            out.append({"name": name, "reader": reader, "order": order, "volume": 0, "count": 0, "keywords": [],
+                        "title": f"{keyword} {tail}", "angle": f"{reader}를 위한 {name} 중심 글", "lead_id": lead, "guess": True})
+            if len(out) >= 6:
+                break
+    return out[:6]
+
+
+def keyword_records(keyword, cfg):
+    """내 기록 검토: 내 블로그에 이미 올린 글 · 지난 초안 · 유입(인기) 검색어 중 이 키워드와 관련된 것."""
+    k = norm(keyword)
+    words = [norm(w) for w in keyword.split() if len(w) >= 2] or [k]
+    try:
+        posts = [p for p in my_blog_posts(cfg) if any(w in norm(p["title"]) for w in words)][:8]
+    except Exception:
+        posts = []
+    drafts = [{"id": d["id"], "title": d.get("title") or d.get("keyword"), "date": (d.get("created_at") or "")[:10]}
+              for d in WRITER.index() if any(w in norm(d.get("keyword", "") + (d.get("title") or "")) for w in words)][:8]
+    mine = [m for m in cfg.get("my_keywords", []) if any(w in norm(m) for w in words)][:8]
+    return {"posts": posts, "drafts": drafts, "my_keywords": mine}
+
+
+# ---------- AI 글 아이디어 (검색 수치 + 콘셉트 묶음 + 내 기록 + 최근 뉴스를 검토) ----------
+IDEAS = {}  # keyword → {"running", "ideas", "error", "started"}
+
+
+def start_ideas(keyword, items):
+    k = norm(keyword)
+    cur = IDEAS.get(k)
+    if cur and cur.get("running"):
+        return
+    IDEAS[k] = {"running": True, "ideas": [], "error": "", "started": time.time()}
+    cfg = cfg_with_posts()
+
+    def work():
+        try:
+            news = []
+            try:
+                for sec, arr in news_cached(False).items():
+                    news += [n.get("title", "") for n in arr if any(w in n.get("title", "") for w in keyword.split())]
+            except Exception:
+                pass
+            data = {"keyword": keyword, "items": items[:30], "concepts": concept_groups(keyword, items),
+                    "records": keyword_records(keyword, cfg), "news": news[:8],
+                    "my_posts": [p["title"] for p in (cfg.get("_my_posts") or [])[:30]]}
+            ideas = _writer.make_ideas(WRITER, cfg, data, datetime.now(KST).date())
+            IDEAS[k].update(running=False, ideas=ideas)
+        except _writer.WriterError as e:
+            IDEAS[k].update(running=False, error=str(e))
+        except Exception as e:
+            traceback.print_exc()
+            IDEAS[k].update(running=False, error=f"아이디어를 만들지 못했어요: {e}")
+    threading.Thread(target=work, daemon=True).start()
 
 
 # ------------------------------------------------------------------ 선제 글감: 사람들이 몰리기 전에 먼저 쓸 글
@@ -2774,6 +2875,11 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(200, d)
         if path == "/api/saved":
             return self._send(200, load_saved())
+        if path == "/api/ideas":
+            k = norm(urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query).get("keyword", [""])[0])
+            st = IDEAS.get(k) or {}
+            return self._send(200, {"running": bool(st.get("running")), "ideas": st.get("ideas", []), "error": st.get("error", ""),
+                                    "seconds": round(time.time() - st["started"]) if st.get("started") else 0})
         if path == "/api/update/check":
             return self._send(200, {**check_update(force=True), "current": APP_VERSION})
         if path == "/api/draft/status":
@@ -2976,6 +3082,16 @@ class Handler(BaseHTTPRequestHandler):
             except Exception as e:
                 traceback.print_exc()
                 return self._send(500, {"error": f"분석하지 못했어요: {e}"})
+        if path == "/api/ideas":
+            kw = str(body.get("keyword", "")).strip()[:40]
+            if not kw:
+                return self._send(400, {"error": "키워드가 없어요"})
+            cfg = load_config()
+            if not ai_ready(cfg):
+                return self._send(400, {"error": "AI가 연결되지 않았어요. 설정 → AI 글쓰기에서 Antigravity(또는 Claude Max)를 연결해 주세요."})
+            items = body.get("items") if isinstance(body.get("items"), list) else []
+            start_ideas(kw, items)
+            return self._send(200, {"ok": True})
         if path == "/api/saved":
             saved = load_saved()
             act = body.get("action")

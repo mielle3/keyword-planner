@@ -1364,3 +1364,27 @@ dialog .mine-body, dialog .topic-picker { overflow-y: auto; min-height: 0; flex:
 .top-search:focus-within { box-shadow: 3px 3px 0 var(--ink); }
 @media (max-width: 1100px) { .top-search { flex-basis: 140px; } }
 @media (max-width: 760px) { .top-search { order: 3; flex: 1 1 100%; margin: 6px 0 0; } }
+
+/* v48: 글 콘셉트 · AI 아이디어 · 내 기록 */
+.cc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.cc-card { border: 2px solid var(--ink); background: var(--sheet); padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; box-shadow: 3px 3px 0 var(--ink); }
+.cc-card header { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.cc-card header b { font: 900 15px/1.2 var(--sans); }
+.cc-card header small { color: var(--muted); font-size: 12px; }
+.cc-title { margin: 0; font-weight: 700; font-size: 14px; }
+.cc-reader { margin: 0; color: var(--muted); font-size: 12.5px; }
+.cc-kws { display: flex; flex-wrap: wrap; gap: 4px; margin: 2px 0 4px; }
+.cc-card .btn { align-self: flex-start; margin-top: auto; }
+.idea-list { display: grid; gap: 10px; margin-bottom: 10px; }
+.idea-card { display: flex; gap: 12px; border: 1.5px solid var(--rule); background: var(--sheet); padding: 12px 14px; }
+.idea-no { flex: none; width: 28px; height: 28px; border-radius: 50%; background: #FFD400; border: 2px solid var(--ink); display: grid; place-items: center; font: 900 13px/1 var(--sans); }
+.idea-body h3 { margin: 2px 0 4px; font-size: 15.5px; }
+.idea-body p { margin: 3px 0; font-size: 13.5px; }
+.idea-body ul { margin: 4px 0 6px 18px; padding: 0; font-size: 13px; }
+.idea-ev { color: #8a6d00; font-size: 12.5px !important; }
+.rec-box p { margin: 6px 0; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-size: 13px; }
+.rec-box a.wchip { text-decoration: none; color: inherit; }
+.tabs button { white-space: nowrap; }
+.top-search { flex: 0 1 170px; min-width: 110px; }
+@media (max-width: 1500px) { .tabs .tab-group { display: none; } .top-search { flex-basis: 150px; } }
+@media (max-width: 1300px) { .top-search input::placeholder { font-size: 12px; } }

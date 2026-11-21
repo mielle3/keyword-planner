@@ -722,6 +722,9 @@ function renderAnalyze() {
       ${figuresHTML(main)}
       <span class="lead-cta">기획안 펼치기 →</span>
     </div>
+    ${recordsHTML(ANALYZE.records)}
+    ${conceptsHTML(ANALYZE.concepts || [])}
+    <div class="block" id="ideasBlock">${ideasHTML(IDEAS_STATE[ANALYZE.keyword])}</div>
     <div class="block"><div class="block-head"><h2>함께 찾는 키워드 순위</h2><span class="muted">${ANALYZE.items.length - 1}개 · 행을 누르면 기획안</span></div>
     <div class="table-wrap"><table class="rank" id="analyzeTable">${tableHTML(ANALYZE.items.slice(1))}</table></div></div>`;
 }
@@ -1457,3 +1460,81 @@ async function checkUpdate(manual) {
 setTimeout(() => checkUpdate(false), 4000);
 if ($("#updateCheck")) $("#updateCheck").onclick = () => checkUpdate(true);
 setInterval(() => checkUpdate(false), 6 * 3600 * 1000);
+
+
+/* ---------- 검색한 키워드 → 글 콘셉트 · 내 기록 · AI 아이디어 ---------- */
+const IDEAS_STATE = {};
+function recordsHTML(r) {
+  if (!r || (!r.posts?.length && !r.drafts?.length && !r.my_keywords?.length)) return "";
+  return `<div class="block rec-box"><div class="block-head"><h2>내 기록</h2><span class="muted">이 키워드와 관련해 이미 한 것 · 겹치지 않게 다음 글을 고르세요</span></div>
+    ${r.posts?.length ? `<p><b>내 블로그 글</b> ${r.posts.map(p => `<a href="${esc(p.link)}" target="_blank" rel="noopener" class="wchip">${esc(p.title)}</a>`).join("")}</p>` : ""}
+    ${r.drafts?.length ? `<p><b>지난 초안</b> ${r.drafts.map(d => `<button class="wchip" data-opendraft="${esc(d.id)}">${esc(d.title)} <small>${esc(d.date)}</small></button>`).join("")}</p>` : ""}
+    ${r.my_keywords?.length ? `<p><b>유입·인기 검색어</b> ${r.my_keywords.map(k => `<span class="wchip">${esc(k)}</span>`).join("")}</p>` : ""}</div>`;
+}
+function conceptsHTML(gs) {
+  if (!gs.length) return "";
+  return `<div class="block"><div class="block-head"><h2>글 콘셉트</h2><span class="muted">함께 찾는 검색어를 독자 상황별로 묶었어요 · 묶음 하나가 글 한 편</span></div>
+    <div class="cc-grid">${gs.map((g, i) => `<article class="cc-card"><header><b>${esc(g.name)}</b><small>${g.guess ? "기본 콘셉트 · 연관 검색어 확인 전" : `검색어 ${g.count}개${g.volume ? ` · 월 ${g.volume.toLocaleString()}회` : ""}`}</small></header>
+      <p class="cc-title">${esc(g.title)}</p><p class="cc-reader">${esc(g.reader)}</p>
+      <div class="cc-kws">${g.keywords.map(k => `<button class="wchip" data-open="${esc(k.id)}">${esc(k.keyword)}${k.volume ? ` <small>${k.volume.toLocaleString()}</small>` : ""}</button>`).join("")}</div>
+      <button class="btn dark sm" data-concept="${i}">이 콘셉트로 초안 쓰기 ✍</button></article>`).join("")}</div></div>`;
+}
+function ideasHTML(st) {
+  const head = `<div class="block-head"><h2>AI 글 아이디어</h2><span class="muted">검색 수치·내 블로그 글·지난 초안·유입 검색어·최근 뉴스를 검토해서 제안 · 30초~2분</span></div>`;
+  if (!st) return head + `<button class="btn primary" id="ideasGo">기록 검토해서 아이디어 받기</button>`;
+  if (st.running) return head + `<div class="card loading"><div class="spinner"></div><div><b>기록을 검토하고 아이디어를 만드는 중</b><div class="muted" style="font-size:13px">${st.seconds || 0}초 · 다른 화면을 봐도 계속 만들어요</div></div></div>`;
+  if (st.error) return head + `<p class="muted">${esc(st.error)}</p><button class="btn" id="ideasGo">다시 시도</button>`;
+  return head + `<div class="idea-list">${st.ideas.map((x, i) => `<article class="idea-card"><div class="idea-no">${x.series || i + 1}</div><div class="idea-body">
+      <h3>${esc(x.title)}</h3><p>${esc(x.concept)}</p>
+      <p class="muted"><b>독자</b> ${esc(x.reader)}${x.keyword ? ` · <b>검색어</b> ${esc(x.keyword)}` : ""}</p>
+      ${x.must_include?.length ? `<ul>${x.must_include.map(m => `<li>${esc(m)}</li>`).join("")}</ul>` : ""}
+      <p class="idea-ev">근거: ${esc(x.evidence)}${x.link_to ? ` · 이어지는 내 글: ${esc(x.link_to)}` : ""}</p>
+      <button class="btn dark sm" data-idea="${i}">이 아이디어로 초안 쓰기 ✍</button></div></article>`).join("")}</div>
+    <button class="btn" id="ideasGo">다른 아이디어 받기</button>`;
+}
+function itemFor(kw) {
+  const its = ANALYZE?.items || [];
+  return its.find(c => norm2(c.keyword) === norm2(kw)) || its[0];
+}
+function norm2(s) { return (s || "").replace(/\s+/g, "").toLowerCase(); }
+function withPlan(base, plan) {
+  const it = JSON.parse(JSON.stringify(base));
+  it.concept_plan = plan;
+  it.brief = it.brief || {}; it.brief.titles = [plan.title, ...((it.brief.titles) || [])].filter(Boolean).slice(0, 3);
+  return it;
+}
+async function pollIdeas(kw) {
+  for (let i = 0; i < 100; i++) {
+    let st;
+    try { st = await api("/api/ideas?keyword=" + encodeURIComponent(kw)); } catch { break; }
+    IDEAS_STATE[kw] = st;
+    if (ANALYZE && ANALYZE.keyword === kw && $("#ideasBlock")) $("#ideasBlock").innerHTML = ideasHTML(st);
+    if (!st.running) { if (st.ideas?.length) toast(`‘${kw}’ 글 아이디어 ${st.ideas.length}개를 만들었어요`); return; }
+    await new Promise(r => setTimeout(r, 3000));
+  }
+}
+document.addEventListener("click", async e => {
+  if (e.target.closest("#ideasGo")) {
+    const kw = ANALYZE.keyword;
+    const items = ANALYZE.items.slice(0, 30).map(c => ({ keyword: c.keyword, score: c.score, metrics: { volume: c.metrics?.volume ?? null, blog_total: c.metrics?.blog_total ?? null }, id: c.id }));
+    try { await api("/api/ideas", { keyword: kw, items }); IDEAS_STATE[kw] = { running: true, seconds: 0 }; $("#ideasBlock").innerHTML = ideasHTML(IDEAS_STATE[kw]); pollIdeas(kw); }
+    catch (err) { toast(err.message); }
+    return;
+  }
+  const c = e.target.closest("[data-concept]");
+  if (c) {
+    const g = ANALYZE.concepts[+c.dataset.concept];
+    const base = (ANALYZE.items || []).find(x => x.id === g.lead_id) || ANALYZE.items[0];
+    return writeDraft(withPlan(base, { title: g.title, concept: g.angle, reader: g.reader, keywords: g.keywords.map(k => k.keyword) }), c);
+  }
+  const d = e.target.closest("[data-idea]");
+  if (d) {
+    const x = IDEAS_STATE[ANALYZE.keyword].ideas[+d.dataset.idea];
+    const base = itemFor(x.keyword);
+    const it = withPlan(base, x);
+    if (norm2(base.keyword) !== norm2(x.keyword)) it.keyword = x.keyword;
+    return writeDraft(it, d);
+  }
+  const od = e.target.closest("[data-opendraft]");
+  if (od) { showTab("drafts"); await loadDrafts(od.dataset.opendraft); }
+});

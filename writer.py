@@ -248,6 +248,18 @@ def draft_request(item, cfg, today):
             out.append(f"- {label}: {v}")
     if b.get("titles"):
         out.append(f"- 참고 제목(더 좋게 고쳐도 됨): {' / '.join(b['titles'][:3])}")
+    cp = item.get("concept_plan")
+    if isinstance(cp, dict):  # 검색 화면의 콘셉트·AI 아이디어에서 고른 글
+        out += ["", "## 이번 글의 콘셉트 (사용자가 고른 기획 · 이 방향으로 씀)"]
+        for k, label in (("title", "제목 방향"), ("concept", "콘셉트"), ("reader", "대상 독자"), ("evidence", "근거")):
+            if cp.get(k):
+                out.append(f"- {label}: {cp[k]}")
+        if cp.get("must_include"):
+            out.append("- 꼭 다룰 내용: " + " / ".join(cp["must_include"]))
+        if cp.get("keywords"):
+            out.append("- 함께 다룰 연관 검색어: " + ", ".join(cp["keywords"]))
+        if cp.get("link_to"):
+            out.append(f"- '함께 읽으면 좋은 글'에 넣을 내 기존 글: {cp['link_to']}")
     if item.get("event_line"):
         out.append(f"- 행사 날짜 확인 결과: {item['event_line']}")
     if src.get("note"):
@@ -457,7 +469,7 @@ def find_agy(custom=""):
     return None
 
 
-def call_agy(system, user, web=True, exe="", work_dir=None, model=""):
+def call_agy(system, user, web=True, exe="", work_dir=None, model="", note=None):
     """PC의 Antigravity CLI(구글 계정 로그인 = 구독 한도)로 초안 작성. 헤드리스(-p) + JSON 출력.
     PC 테스트 결과: 파이프로 넣은 입력은 읽지 않으므로 요청 전체를 -p 인자로 넘김(너무 길면 파일로)."""
     import os, subprocess, tempfile
@@ -468,7 +480,7 @@ def call_agy(system, user, web=True, exe="", work_dir=None, model=""):
     work.mkdir(parents=True, exist_ok=True)  # 빈 폴더에서 실행: 다른 프로젝트 파일이 섞이지 않게
     full = (system + "\n\n---\n\n# 이번 요청\n\n" + user +
             ("\n\n(웹 검색은 수치·날짜·제도처럼 틀리면 안 되는 핵심 사실 확인에만 2~3번 이내로 쓰고, 바로 작성하세요.)" if web else "") +
-            "\n\n파일을 만들거나 고치지 말고, 완성한 초안 전체를 답변으로만 출력하세요.")
+            "\n\n" + (note or "파일을 만들거나 고치지 말고, 완성한 초안 전체를 답변으로만 출력하세요."))
     if len(full) < 24000:  # 윈도우 명령줄 한도(약 32,000자) 안
         prompt = full
     else:
@@ -509,7 +521,7 @@ def call_agy(system, user, web=True, exe="", work_dir=None, model=""):
     text = (data.get("response") or "").strip()
     status = str(data.get("status", "")).upper()
     low = (out + " " + err).lower()
-    if status != "SUCCESS" or len(text) < 200:
+    if status != "SUCCESS" or len(text) < (200 if not note else 20):
         if "auth" in low or "login" in low or "sign in" in low or "credential" in low:
             raise WriterError("Antigravity CLI에 로그인되어 있지 않아요. 명령 창에서 agy 를 한 번 실행해 구독 계정으로 로그인해 주세요.")
         if "quota" in low or "limit" in low or "429" in low or "exhausted" in low:
@@ -875,6 +887,79 @@ def make_draft(store, cfg, item, saved, today, progress=None):
     rec = save_draft(store, cfg, item, saved, text, provider, model, bool(web), sources, round(time.time() - t0))
     store.set_meta(rec["id"], fixed=fixed, auto=bool(cfg.get("_auto")), first_seconds=t_first)
     return {**rec, "check": chk, "fixed": fixed, "auto": bool(cfg.get("_auto")), "first_seconds": t_first}
+
+
+IDEAS_SYSTEM = """# 역할
+당신은 네이버 블로그 콘텐츠 기획자입니다. 키워드 플래너가 모은 기록(검색 수치, 연관 검색어 묶음, 사용자의 기존 글·초안·인기 검색어, 최근 뉴스)을 검토해,
+이 블로그가 이어서 쓰기 좋은 **글 아이디어 8~10개**를 제안합니다.
+
+# 원칙
+- 데이터에 근거합니다. 아이디어마다 근거(어떤 연관 검색어·수치·기존 글·뉴스 때문인지)를 한 줄로 적습니다. 없는 수치를 지어내지 않습니다.
+- 서로 겹치지 않게: 독자 상황(기준 확인·처리 순서·비용·보험/법률·치료·서류·비교·사례·일정)이 다른 아이디어로 고르게 나눕니다.
+- 사용자가 이미 쓴 글과 같은 주제는 피하고, 그 글과 이어지는 다음 글(심화·후속·반대 상황)을 제안합니다. 이어지는 기존 글이 있으면 link_to에 그 제목을 그대로 적습니다(목록에 없는 제목은 쓰지 않음).
+- 제목은 건조한 서술형·명사형. 의문형("~나요?", "몇 점?")을 쓰지 않고, 메인 검색어를 앞쪽에 둡니다.
+- 시리즈 순서(series)는 독자가 읽을 순서: 기준·개념 → 절차 → 비용 → 보험·법률 → 사례·심화.
+- 사고·질병·법률 같은 주제는 단정 대신 기준과 확인 방법 중심으로 기획합니다.
+
+# 출력
+JSON 배열만 출력합니다. 앞뒤 설명, 마크다운 코드 표시 없이.
+[{"title": "추천 제목", "keyword": "이 글의 메인 검색어(연관 검색어 중 하나)", "concept": "글의 콘셉트 한 문장", "reader": "대상 독자와 상황",
+  "must_include": ["꼭 다룰 내용 3~5개"], "evidence": "근거 한 줄", "series": 1, "link_to": "이어지는 내 기존 글 제목 또는 빈 문자열"}]
+"""
+
+
+def make_ideas(store, cfg, data, today):
+    """검색한 키워드에 대해 기록을 검토한 글 아이디어 8~10개 (JSON)."""
+    provider = cfg.get("ai_provider", "antigravity")
+    lines = [f"오늘 날짜: {today.isoformat()} (한국 시간)", "", f"## 검색한 키워드: {data['keyword']}", "", "## 연관 검색어와 수치 (점수 높은 순)"]
+    for c in data.get("items", [])[:30]:
+        m = c.get("metrics") or {}
+        bits = [f"점수 {round(c.get('score', 0))}"]
+        if m.get("volume") is not None:
+            bits.append(f"월 검색 {m['volume']:,}")
+        if m.get("blog_total") is not None:
+            bits.append(f"블로그 글 {m['blog_total']:,}")
+        lines.append(f"- {c.get('keyword')} ({' · '.join(bits)})")
+    if data.get("concepts"):
+        lines += ["", "## 독자 상황별 묶음 (프로그램이 연관 검색어를 묶은 것)"]
+        lines += [f"- {g['name']}: {', '.join(k['keyword'] for k in g['keywords'])} (월 검색 합 {g['volume']:,})" for g in data["concepts"]]
+    r = data.get("records") or {}
+    lines += ["", "## 사용자 기록"]
+    lines.append("- 이 키워드와 관련해 이미 올린 글: " + (" / ".join(p["title"] for p in r.get("posts", [])) or "없음"))
+    lines.append("- 이미 쓴 초안: " + (" / ".join(d["title"] for d in r.get("drafts", [])) or "없음"))
+    lines.append("- 블로그 유입·인기 검색어(사용자가 입력): " + (", ".join(cfg.get("my_keywords", [])[:15]) or "없음"))
+    if data.get("my_posts"):
+        lines.append("- 최근 올린 글 전체 제목: " + " / ".join(data["my_posts"][:30]))
+    if data.get("news"):
+        lines += ["", "## 최근 관련 뉴스 제목"] + [f"- {n}" for n in data["news"][:8]]
+    user = "\n".join(lines)
+    note = "파일을 만들거나 고치지 말고, JSON 배열만 답변으로 출력하세요."
+    if provider == "antigravity":
+        text, _s, _m = call_agy(IDEAS_SYSTEM, user, False, cfg.get("agy_path", ""), store.data, cfg.get("agy_model", ""), note=note)
+    elif provider == "claude_code":
+        text, _s, _m = call_claude_code(IDEAS_SYSTEM, user + "\n\n" + note, False, cfg.get("claude_code_path", ""), store.data,
+                                        cfg.get("claude_code_model", "opus"))
+    elif provider == "gemini_cli":
+        text, _s, _m = call_gemini_cli(IDEAS_SYSTEM, user + "\n\n" + note, False, cfg.get("gemini_cli_path", ""), store.data, cfg.get("gemini_model", ""))
+    else:
+        raise WriterError("AI 아이디어는 Antigravity 또는 Claude Max 연결이 필요해요.")
+    s, e = text.find("["), text.rfind("]")
+    try:
+        arr = json.loads(text[s:e + 1]) if s >= 0 and e > s else []
+    except Exception:
+        arr = []
+    ideas = []
+    for x in arr if isinstance(arr, list) else []:
+        if isinstance(x, dict) and x.get("title"):
+            ideas.append({"title": str(x.get("title"))[:120], "keyword": str(x.get("keyword") or data["keyword"])[:60],
+                          "concept": str(x.get("concept", ""))[:300], "reader": str(x.get("reader", ""))[:200],
+                          "must_include": [str(i)[:120] for i in (x.get("must_include") or [])][:6],
+                          "evidence": str(x.get("evidence", ""))[:240], "series": x.get("series") if isinstance(x.get("series"), int) else None,
+                          "link_to": str(x.get("link_to", ""))[:120]})
+    if not ideas:
+        raise WriterError("AI 답변에서 아이디어를 읽지 못했어요. 다시 시도해 주세요.")
+    ideas.sort(key=lambda i: i["series"] or 99)
+    return ideas
 
 
 # ------------------------------------------------------------------ docx (표준 라이브러리로 직접 만듦)
