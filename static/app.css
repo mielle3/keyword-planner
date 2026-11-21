@@ -1389,3 +1389,7 @@ dialog .mine-body, dialog .topic-picker { overflow-y: auto; min-height: 0; flex:
 @media (max-width: 1500px) { .tabs .tab-group { display: none; } .top-search { flex-basis: 150px; } }
 @media (max-width: 1300px) { .top-search input::placeholder { font-size: 12px; } }
 .dv-body h3 { font-size: 19px; }
+/* v50: 주의 박스 = 제목만 굵게, 항목은 보통 굵기 + 항목 사이 빈 줄 */
+.dv-quote.warn p { font-weight: 400; color: #1F4E8C; }
+.dv-quote.warn p:first-child { font-weight: 700; color: var(--ink); }
+.dv-quote p:empty { height: 10px; margin: 0; }

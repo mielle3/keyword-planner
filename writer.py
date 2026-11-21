@@ -23,7 +23,8 @@ OLD_DEFAULT_GUIDES = {"f6bb50a3a4463a3fabab14ccb79c75b5bb4e123b0e34f863719e64c00
                       "50ddd38bb2615fdda855534a003fe9f226bfb05e6d06d7f5b8072cdb3b332a68",
                       "737470eff321f4bf999e3a33d06e476814f40e558765752e63f81d31bd119726",
                       "88607b921186d719388360cffe4419d31c3bb103b8bee917379ceb3327609ba2",
-                      "06be32f92cc49185be6986defbb3c89068ccb5d52784bb760f04da28378d186e"}  # v48까지 보낸 지침(편집 형식 포함)
+                      "06be32f92cc49185be6986defbb3c89068ccb5d52784bb760f04da28378d186e",
+                      "443b239c1ec7f02ac813c6942b978b3a54f0654bef854fe277fce3b057a33317"}  # v49까지 보낸 지침
 
 
 class WriterError(Exception):
