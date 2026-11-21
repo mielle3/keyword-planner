@@ -1457,11 +1457,11 @@ async function checkUpdate(manual) {
       await api("/api/update/apply", {});
       el.innerHTML = `<b>새 버전으로 다시 시작하는 중…</b><span>잠시 뒤 화면이 저절로 새로고침돼요. 키·초안·지침·설정은 그대로예요.</span>`;
       const old = (STATE && STATE.version) || "";
-      for (let i = 0; i < 60; i++) {
+      for (let i = 0; i < 25; i++) {  // 최대 약 50초
         await new Promise(r => setTimeout(r, 2000));
         try { const v = await (await fetch("/api/version", { cache: "no-store" })).json(); if (v.version && v.version !== old) { location.reload(); return; } } catch {}
       }
-      el.innerHTML = `<b>다시 시작이 늦어지고 있어요.</b><span>새로 열린 검은 창을 확인하거나 START_windows.bat을 다시 실행해 주세요.</span>`;
+      el.innerHTML = `<b>새 버전 파일은 받았어요.</b><span>다시 시작만 안 된 상태예요. 검은 창을 모두 닫고 START_windows.bat을 실행하면 새 버전으로 열려요.</span>`;
     } catch (err) { toast(err.message); b.disabled = false; b.textContent = "지금 업데이트"; }
   };
 }
@@ -1577,16 +1577,35 @@ if ($("#saveTools")) $("#saveTools").onclick = async () => {
 };
 
 
-/* ---------- 내 글 다듬기: 기존 블로그 글 → 작가 지침 형식 수정본 ---------- */
-$("#rewriteBtn").onclick = () => { $("#rwInfo").textContent = ""; openDialog($("#rewriteDialog")); setTimeout(() => $("#rwSource").focus(), 50); };
-$("#rwSource").oninput = e => { $("#rwInfo").textContent = e.target.value.trim() ? `${e.target.value.trim().length.toLocaleString()}자` : ""; };
-$("#rwGo").onclick = async () => {
+/* ---------- '새 글' 창: 키워드 + 내 생각 → 초안 (또는 이미 쓴 글 고치기) ---------- */
+let W_MODE = "new";
+function openWrite(mode) {
+  W_MODE = mode;
+  $("#wNewBox").hidden = mode !== "new"; $("#wFixBox").hidden = mode === "new";
+  $("#wTitle").textContent = mode === "new" ? "새 글" : "이미 쓴 글 고치기";
+  $("#wSub").textContent = mode === "new" ? "키워드와 내 생각만 적으면 나머지는 프로그램이 알아서 합니다." : "올린 글을 붙여 넣으면 작가 지침 형식으로 고쳐서 초안에 보관합니다.";
+  $("#wSwitch").textContent = mode === "new" ? "이미 쓴 글 고치기 →" : "← 새 글 쓰기";
+  $("#wGo").textContent = mode === "new" ? "AI 초안 쓰기 ✍" : "고치기 시작";
+  openDialog($("#writeDialog")); setTimeout(() => (mode === "new" ? $("#wKeyword") : $("#rwSource")).focus(), 50);
+}
+$("#writeNew").onclick = () => openWrite("new");
+$("#rewriteBtn").onclick = () => openWrite("fix");
+$("#wSwitch").onclick = () => openWrite(W_MODE === "new" ? "fix" : "new");
+$("#wGo").onclick = async () => {
+  if (W_MODE === "new") {
+    const kw = $("#wKeyword").value.trim(), note = $("#wConcept").value.trim();
+    if (!kw) { toast("키워드를 적어 주세요"); $("#wKeyword").focus(); return; }
+    $("#writeDialog").close();
+    await writeDraft({ id: "new-" + Date.now(), keyword: kw.slice(0, 40), topic: "내 기획", brief: {}, metrics: {}, src: {}, user_note: note, enrich: true });
+    $("#wKeyword").value = ""; $("#wConcept").value = "";
+    return;
+  }
   const src = $("#rwSource").value.trim();
-  if (src.length < 300) { toast("원문을 300자 이상 붙여 넣어 주세요"); return; }
+  if (src.length < 300) { toast("고칠 글을 300자 이상 붙여 넣어 주세요"); return; }
   const lines = src.split("\n").map(s => s.trim()).filter(s => s && !/^\[?(프로파일|URL 복사|통계|본문 기타 기능)/.test(s) && !/^https?:\/\//.test(s));
   const title = (lines.find(s => s.length >= 8 && !/^\[/.test(s)) || "기존 글").slice(0, 80);
-  const it = { id: "rw-" + Date.now(), keyword: title, topic: "내 글 다듬기", brief: { titles: [title] }, metrics: {}, src: {},
-               rewrite_source: src.slice(0, 20000), user_note: $("#rwNote").value.trim() };
-  $("#rewriteDialog").close();
-  await writeDraft(it);
+  $("#writeDialog").close();
+  await writeDraft({ id: "rw-" + Date.now(), keyword: title, topic: "내 글 다듬기", brief: { titles: [title] }, metrics: {}, src: {},
+                     rewrite_source: src.slice(0, 20000), user_note: $("#rwNote").value.trim() });
+  $("#rwSource").value = ""; $("#rwNote").value = "";
 };

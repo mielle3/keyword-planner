@@ -66,7 +66,7 @@ EVERGREEN_CHECK_PATH = DATA / "evergreen_check.json"
 import writer as _writer  # AI 글쓰기 (작가 지침·블로그 기억·초안 보관·docx)
 WRITER = _writer.Store(DATA)
 KST = timezone(timedelta(hours=9))
-APP_VERSION = "2026.11.21-55"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
+APP_VERSION = "2026.11.21-56"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 DEFAULT_CONFIG = {
@@ -3313,6 +3313,14 @@ def draft_worker():
 
                 def say(msg, job=job):
                     job["stage"] = msg
+                if job["item"].get("enrich"):  # '새 글' 창: 키워드만 받았으면 검색 데이터(연관 검색어·수치·도구 연결)를 먼저 모음
+                    say("검색 데이터 모으는 중")
+                    try:
+                        main = analyze_keyword(job["item"]["keyword"])["items"][0]
+                        keep = {k: job["item"][k] for k in ("user_note", "concept_plan") if job["item"].get(k)}
+                        job["item"] = {**main, **keep}
+                    except Exception:
+                        traceback.print_exc()
                 rec = _writer.make_draft(WRITER, cfg, job["item"], load_saved(), datetime.now(KST).date(), progress=say)
                 ev.update(ok=True, id=rec["id"], title=rec.get("title", ""), check=f"{rec['check']['passed']}/{rec['check']['total']}")
                 print(f"[{datetime.now(KST):%H:%M}] 초안 완성{' (자동)' if job['auto'] else ''}: {job['keyword']} · 양식 {ev['check']}")
@@ -3385,7 +3393,11 @@ def check_update(force=False):
     if not force and time.time() - _update["checked"] < 3600:
         return dict(_update)
     try:
-        raw = http_get(f"https://raw.githubusercontent.com/{UPDATE_REPO}/main/version.json?t={int(time.time())}", timeout=10)
+        try:  # GitHub API: 캐시 없이 바로 최신 (실패하면 raw 주소로)
+            raw = http_get(f"https://api.github.com/repos/{UPDATE_REPO}/contents/version.json?ref=main",
+                           headers={"Accept": "application/vnd.github.raw+json"}, timeout=10)
+        except Exception:
+            raw = http_get(f"https://raw.githubusercontent.com/{UPDATE_REPO}/main/version.json?t={int(time.time())}", timeout=10)
         info = json.loads(raw.decode("utf-8") if isinstance(raw, bytes) else raw)
         latest = str(info.get("version", ""))
         _update.update(checked=time.time(), latest=latest, notes=str(info.get("notes", ""))[:300], error="",
@@ -3428,15 +3440,29 @@ def apply_update():
                 shutil.copytree(here / "static", bak / "static", dirs_exist_ok=True)
             shutil.copytree(src / "static", here / "static", dirs_exist_ok=True)
         shutil.rmtree(tmp, ignore_errors=True)
-        flags = 0x00000010 if os.name == "nt" else 0  # 새 검은 창에서 실행
-        subprocess.Popen([sys.executable, str(here / "app.py"), "--no-browser"], cwd=str(here), creationflags=flags,
-                         start_new_session=(os.name != "nt"))
+        upd_log(f"교체 완료 {APP_VERSION} → {_update.get('latest')}")
+        bat = here / "START_windows.bat"
+        if os.name == "nt" and bat.exists():
+            # 손으로 실행할 때와 같은 방식: 실행 파일이 예전 창(포트)을 정리하고 새 버전을 새 검은 창으로 띄움
+            subprocess.Popen(["cmd", "/c", "start", "", str(bat), "--no-browser"], cwd=str(here), creationflags=0x08000000)
+        else:
+            subprocess.Popen([sys.executable, str(here / "app.py"), "--no-browser"], cwd=str(here),
+                             creationflags=0x00000010 if os.name == "nt" else 0, start_new_session=(os.name != "nt"))
         return True, f"업데이트를 받았어요. 새 버전으로 다시 시작합니다. (예전 파일 백업: {bak})"
     except Exception as e:
         traceback.print_exc()
+        upd_log(f"실패: {e!r}")
         return False, f"업데이트하지 못했어요: {e}"
     finally:
         _update["applying"] = False
+
+
+def upd_log(msg):
+    try:
+        with open(DATA / "update.log", "a", encoding="utf-8") as f:
+            f.write(f"{datetime.now(KST):%Y-%m-%d %H:%M:%S} {msg}\n")
+    except Exception:
+        pass
 
 
 def update_loop():

@@ -22,6 +22,7 @@
       <button role="tab" data-tab="news">뉴스</button>
       <span class="tab-sep" aria-hidden="true"></span>
       <span class="tab-group" aria-hidden="true">쓰기</span>
+      <button type="button" class="tab-new" id="writeNew">✍ 새 글</button>
       <button role="tab" data-tab="drafts">초안 <span class="count" id="draftCount"></span></button>
       <button role="tab" data-tab="saved">저장함 <span class="count" id="savedCount"></span></button>
       <span class="tab-sep" aria-hidden="true"></span>
@@ -221,7 +222,7 @@
         <h1>초안</h1>
         <p class="muted">AI가 작가 지침대로 쓴 네이버 블로그 초안이 모두 여기에 보관됩니다. 고쳐서 저장하고, 본문만 복사해 스마트에디터에 붙여 넣거나 docx로 내려받으세요.</p>
       </div>
-      <div class="row-start" style="gap:10px;align-items:center"><button class="btn primary" type="button" id="rewriteBtn">내 글 다듬기 ✍</button>
+      <div class="row-start" style="gap:10px;align-items:center"><button class="btn primary" type="button" id="rewriteBtn">이미 쓴 글 고치기</button>
       <div class="seg" id="draftFilter" role="radiogroup" aria-label="상태"></div></div>
     </div>
     <div class="drafts-layout">
@@ -466,25 +467,28 @@
   </form>
 </dialog>
 
-<!-- 내 글 다듬기 -->
-<dialog id="rewriteDialog" aria-labelledby="rewriteTitle">
+<!-- 새 글 (내 생각으로) · 이미 쓴 글 고치기 -->
+<dialog id="writeDialog" aria-labelledby="wTitle">
   <form method="dialog">
     <div class="dlg-head">
-      <div>
-        <h2 id="rewriteTitle">내 글 다듬기</h2>
-        <p class="muted">이미 올린 블로그 글을 붙여 넣으면 작가 지침 형식으로 고쳐서 초안 탭에 보관합니다. 원문의 숫자·사실은 그대로 쓰고, 홍보는 맨 뒤 한 섹션으로 줄입니다.</p>
-      </div>
+      <div><h2 id="wTitle">새 글</h2><p class="muted" id="wSub">키워드와 내 생각만 적으면 나머지는 프로그램이 알아서 합니다.</p></div>
       <button class="x-fixed" value="cancel" aria-label="닫기 (ESC)" title="닫기 (ESC)">✕</button>
     </div>
-    <div class="mine-body">
-      <label class="inline-label">원문 (블로그 글 본문을 전부 복사해 붙여 넣기)</label>
-      <textarea id="rwSource" rows="12" placeholder="제목부터 본문 끝까지 Ctrl+A → Ctrl+C로 복사해 붙여 넣으세요"></textarea>
-      <label class="inline-label" style="margin-top:8px">고칠 방향 (선택)</label>
-      <textarea id="rwNote" rows="2" placeholder="예) 홍보 느낌 줄이기, 환불 기준 추가, 제목은 숫자 위주로"></textarea>
+    <div class="mine-body" id="wNewBox">
+      <label class="inline-label">키워드</label>
+      <input id="wKeyword" placeholder="예) 학원비 환불" autocomplete="off">
+      <label class="inline-label" style="margin-top:10px">내 생각</label>
+      <textarea id="wConcept" rows="7" placeholder="어떤 글을 쓰고 싶은지 자유롭게 적으세요.&#10;예) 배우셈 운영자 입장에서 학원법 환불 기준을 표로 정리하고 실제 계산 예시를 넣기. 사이트 소개는 맨 뒤에만."></textarea>
+    </div>
+    <div class="mine-body" id="wFixBox" hidden>
+      <label class="inline-label">고칠 글 (블로그 글을 통째로 복사해 붙여 넣기)</label>
+      <textarea id="rwSource" rows="11" placeholder="Ctrl+A → Ctrl+C로 복사해 붙여 넣으세요"></textarea>
+      <label class="inline-label" style="margin-top:8px">고칠 방향 (비워도 됨)</label>
+      <textarea id="rwNote" rows="2" placeholder="예) 홍보 느낌 줄이기"></textarea>
     </div>
     <div class="dlg-foot">
-      <span class="muted" id="rwInfo"></span>
-      <button class="btn primary" type="button" id="rwGo">다듬기 시작</button>
+      <button class="link-btn" type="button" id="wSwitch">이미 쓴 글 고치기 →</button>
+      <button class="btn primary" type="button" id="wGo">AI 초안 쓰기 ✍</button>
     </div>
   </form>
 </dialog>

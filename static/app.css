@@ -1403,3 +1403,15 @@ dialog .mine-body, dialog .topic-picker { overflow-y: auto; min-height: 0; flex:
 .d-note textarea { width: 100%; margin-top: 8px; font: 14px/1.5 var(--sans); padding: 8px; border: 1.5px solid var(--rule); resize: vertical; box-sizing: border-box; }
 .d-note select { margin-left: 6px; }
 #siteTools { width: 100%; font: 13px/1.5 ui-monospace, Consolas, monospace; padding: 8px; box-sizing: border-box; border: 1.5px solid var(--rule); }
+
+/* v56: 메뉴의 '새 글' 버튼 · 새 글 창 */
+.tab-new { border: 2px solid var(--ink); background: #FFD400; font: 800 13px/1 var(--sans); padding: 8px 12px; margin: 0 6px 0 2px; cursor: pointer; white-space: nowrap; box-shadow: 2px 2px 0 var(--ink); align-self: center; }
+.tab-new:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--ink); }
+#writeDialog { width: min(640px, calc(100vw - 32px)); }
+#writeDialog input, #writeDialog textarea { width: 100%; box-sizing: border-box; font: 15px/1.5 var(--sans); padding: 10px; border: 2px solid var(--ink); }
+#writeDialog .dlg-foot { display: flex; justify-content: space-between; align-items: center; }
+.tabs .tab-new { height: auto; min-height: 0; border: 2px solid var(--ink) !important; background: #FFD400 !important; color: var(--ink); padding: 7px 12px !important; margin: 0 8px 0 4px; box-shadow: 2px 2px 0 var(--ink); }
+.tabs .tab-new::after { display: none !important; }
+#writeDialog .mine-body { padding: 4px 32px 8px; }
+#writeDialog .dlg-foot { padding: 12px 32px 20px; }
+#writeDialog .inline-label { display: block; font-weight: 800; margin: 8px 0 6px; }
