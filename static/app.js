@@ -563,13 +563,11 @@ function renderDrawer(it) {
     <h2 id="dKeyword">${esc(it.keyword)}${siteBadge(it)}</h2>
     <p class="d-deck">${esc(b.one_line)}</p>
     <div class="d-write"><button class="btn primary" id="dDraftTop">AI 초안 쓰기 ✍</button><span class="muted">작가 지침대로 네이버 블로그 초안을 써서 초안 탭에 보관해요</span></div>
-    <details class="d-note" ${noteGet(it.keyword) || it.tool ? "open" : ""}>
-      <summary>내 생각 반영 <small>${noteGet(it.keyword) ? "메모 있음" : "선택"}${it.tool ? ` · ${esc(it.tool.name)} 연결` : ""}</small></summary>
-      <textarea id="dNote" rows="3" placeholder="예) 1주택자 공시가 3억 기준 예시를 넣고, 떠나셈 재산세 계산기로 직접 계산해 보게 안내하고 싶다. 7월·9월 납부 시기를 강조.">${esc(noteGet(it.keyword))}</textarea>
-      <label class="inline-label">연결할 내 사이트 도구
-        <select id="dTool">${toolOptions(it)}</select></label>
-      <p class="muted" style="font-size:12px;margin:4px 0 0">메모와 도구는 AI 초안을 쓸 때 가장 먼저 반영돼요. 붙여넣기 요청문에도 들어가요. 도구 목록은 설정 → 내 홈페이지 연계에서 등록해요.</p>
-    </details>
+    <div class="d-note">
+      <b>내 생각 반영</b> <small class="muted">적으면 초안에 가장 먼저 반영돼요 (비워 둬도 됨)</small>
+      <textarea id="dNote" rows="3" placeholder="예) 떠나셈 재산세 계산기(https://주소)로 직접 계산해 보게 안내. 1주택자 공시가 3억 예시, 7월·9월 납부 강조.">${esc(noteGet(it.keyword))}</textarea>
+      ${(STATE?.site_tools || []).length ? `<label class="inline-label">연결할 도구 <select id="dTool">${toolOptions(it)}</select></label>` : ""}
+    </div>
     ${figuresHTML(it)}
 
   </header>
