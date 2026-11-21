@@ -22,7 +22,8 @@ APP_DIR = Path(__file__).parent
 OLD_DEFAULT_GUIDES = {"f6bb50a3a4463a3fabab14ccb79c75b5bb4e123b0e34f863719e64c001a9dc42",
                       "50ddd38bb2615fdda855534a003fe9f226bfb05e6d06d7f5b8072cdb3b332a68",
                       "737470eff321f4bf999e3a33d06e476814f40e558765752e63f81d31bd119726",
-                      "88607b921186d719388360cffe4419d31c3bb103b8bee917379ceb3327609ba2"}  # v44까지의 기본 지침
+                      "88607b921186d719388360cffe4419d31c3bb103b8bee917379ceb3327609ba2",
+                      "06be32f92cc49185be6986defbb3c89068ccb5d52784bb760f04da28378d186e"}  # v48까지 보낸 지침(편집 형식 포함)
 
 
 class WriterError(Exception):
@@ -1037,7 +1038,7 @@ def build_docx(text, title=""):
         elif re.fullmatch(r"[-=]{3,}", s):
             body.append(_p("", spacing_after=120))
         elif s.startswith("## "):
-            body.append(_p(_runs(s[3:], base_bold=True, size=30), spacing_after=160))
+            body.append(_p(_runs(s[3:], base_bold=True, size=38, color="2B6CB0"), spacing_after=160))  # 소제목 19pt
         elif s.startswith("# "):
             body.append(_p(_runs(s[2:], base_bold=True, size=34), spacing_after=200))
         elif s.startswith("[📸") or s.startswith("[본문 시작]") or s.startswith("[블로그 포스팅"):

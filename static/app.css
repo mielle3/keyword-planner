@@ -1388,3 +1388,4 @@ dialog .mine-body, dialog .topic-picker { overflow-y: auto; min-height: 0; flex:
 .top-search { flex: 0 1 170px; min-width: 110px; }
 @media (max-width: 1500px) { .tabs .tab-group { display: none; } .top-search { flex-basis: 150px; } }
 @media (max-width: 1300px) { .top-search input::placeholder { font-size: 12px; } }
+.dv-body h3 { font-size: 19px; }
