@@ -415,6 +415,10 @@
         <label>주소<input id="siteUrl" placeholder="https://" autocomplete="off" spellcheck="false"></label>
         <div class="field-label">사이트에서 할 수 있는 것</div>
         <div class="chips" id="siteOffers"></div>
+        <div class="field-label">내 사이트 도구 목록 <span class="muted" id="toolsCount"></span></div>
+        <p class="muted" style="font-size:12.5px;margin:2px 0 6px">한 줄에 도구 하나: <b>이름 | 주소 | 연결할 검색어(쉼표로) | 한 줄 설명</b>. 검색어가 들어간 글감에는 이 도구가 자동으로 붙고, 초안에 '이용 방법' 섹션과 정확한 링크가 들어가요.</p>
+        <textarea id="siteTools" rows="4" spellcheck="false" placeholder="재산세 계산기 | https://내사이트주소/tools/property-tax | 재산세, 재산세 계산, 재산세 납부 | 공시가격과 주택 수를 넣으면 재산세를 계산"></textarea>
+        <div class="row-end" style="margin:6px 0 10px"><button class="btn" type="button" id="saveTools">도구 목록 저장</button></div>
         <label class="switch"><input type="checkbox" id="siteBoost"><span>연계되는 키워드를 순위에서 우대 (+6점)</span></label>
         <div class="row-end"><button class="btn dark" id="saveSite">연계 설정 저장</button></div>
       </article>

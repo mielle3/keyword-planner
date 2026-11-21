@@ -66,14 +66,14 @@ EVERGREEN_CHECK_PATH = DATA / "evergreen_check.json"
 import writer as _writer  # AI 글쓰기 (작가 지침·블로그 기억·초안 보관·docx)
 WRITER = _writer.Store(DATA)
 KST = timezone(timedelta(hours=9))
-APP_VERSION = "2026.11.21-52"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
+APP_VERSION = "2026.11.21-53"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 DEFAULT_CONFIG = {
     "naver_client_id": "", "naver_client_secret": "",
     "searchad_api_key": "", "searchad_secret": "", "searchad_customer_id": "", "kakao_rest_key": "",
     "topics": [], "include_issues": True, "my_keywords": [],
-    "site": {"name": "", "url": "", "offers": []}, "site_boost": True,
+    "site": {"name": "", "url": "", "offers": []}, "site_boost": True, "site_tools": [],
     "watchlist": ["악동뮤지션", "아이유", "임영웅", "성시경", "데이식스"],
     "scale": "보통", "use_signal_bz": True, "port": 8765,
     "anthropic_api_key": "", "gemini_api_key": "", "ai_provider": "antigravity", "agy_path": "", "agy_model": "", "ai_web_check": True, "gemini_model": "", "claude_code_path": "", "gemini_cli_path": "",
@@ -1555,6 +1555,18 @@ def site_fit(kw, cfg):
     return None
 
 
+def tool_fit(kw, cfg):
+    """내 사이트 도구(예: 떠나셈 재산세 계산기) 중 이 키워드와 연결되는 것. 가장 길게 맞는 검색어 우선."""
+    k = norm(kw)
+    best, blen = None, 0
+    for t in cfg.get("site_tools") or []:
+        for w in t.get("keywords") or []:
+            n = norm(w)
+            if n and n in k and len(n) > blen:
+                best, blen = t, len(n)
+    return dict(best) if best else None
+
+
 def site_plan(it, offer, cfg):
     site = cfg["site"]
     name, url, kw = site["name"], site.get("url", ""), it["keyword"]
@@ -1645,7 +1657,12 @@ def finalize(items, today, cfg=None):
     except Exception:
         traceback.print_exc()
     for c in items:
-        offer = site_fit(c["keyword"], cfg)
+        tool = tool_fit(c["keyword"], cfg)
+        c["tool"] = tool
+        if tool and cfg.get("site_boost", True):
+            c["score"] = round(min(100.0, c["score"] + 6), 1)
+            c["score_notes"].append(f"내 사이트 도구({tool['name']})와 연결되는 키워드라 +6점 (설정에서 끌 수 있음)")
+        offer = None if tool else site_fit(c["keyword"], cfg)
         c["site_fit"] = offer
         if offer and cfg.get("site_boost", True):
             c["score"] = round(min(100.0, c["score"] + 6), 1)
@@ -2822,7 +2839,7 @@ def app_state():
                                                                     "kakao": bool(cfg.get("kakao_rest_key"))},
             "level": stage, "usage": usage_today(), "limits": DAILY_LIMITS,
             "masked": {k: mask(cfg.get(k, "")) for k in SECRET_KEYS},
-            "watchlist": cfg.get("watchlist", []), "site": cfg.get("site", {}), "site_boost": cfg.get("site_boost", True),
+            "watchlist": cfg.get("watchlist", []), "site": cfg.get("site", {}), "site_tools": cfg.get("site_tools", []), "site_boost": cfg.get("site_boost", True),
             "offer_options": list(OFFER_TRIGGERS)}
 
 
@@ -2959,6 +2976,14 @@ class Handler(BaseHTTPRequestHandler):
                 st = body["site"]
                 cfg["site"] = {"name": str(st.get("name", "")).strip()[:30], "url": str(st.get("url", "")).strip()[:200],
                                "offers": [o for o in st.get("offers", []) if o in OFFER_TRIGGERS]}
+            if isinstance(body.get("site_tools"), list):
+                tools = []
+                for t in body["site_tools"][:50]:
+                    if isinstance(t, dict) and str(t.get("name", "")).strip():
+                        tools.append({"name": str(t["name"]).strip()[:40], "url": str(t.get("url", "")).strip()[:300],
+                                      "keywords": [str(w).strip()[:30] for w in (t.get("keywords") or []) if str(w).strip()][:12],
+                                      "desc": str(t.get("desc", "")).strip()[:200]})
+                cfg["site_tools"] = tools
             if "site_boost" in body:
                 cfg["site_boost"] = bool(body["site_boost"])
             if "blog_id" in body:

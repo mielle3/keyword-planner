@@ -1395,3 +1395,11 @@ dialog .mine-body, dialog .topic-picker { overflow-y: auto; min-height: 0; flex:
 .dv-quote p:empty { height: 10px; margin: 0; }
 /* 참고한 공식 자료: 블로그 13 크기에 맞춤 */
 .dv-sec + .dv-li, .dv-sec ~ .dv-li { font-size: 13px; }
+
+/* v53: 기획안 '내 생각 반영' · 도구 목록 */
+.d-note { margin: 10px 0 4px; border: 2px solid var(--ink); background: #FFFBE6; padding: 8px 12px; }
+.d-note summary { cursor: pointer; font-weight: 800; }
+.d-note summary small { font-weight: 600; color: var(--muted); margin-left: 6px; }
+.d-note textarea { width: 100%; margin-top: 8px; font: 14px/1.5 var(--sans); padding: 8px; border: 1.5px solid var(--rule); resize: vertical; box-sizing: border-box; }
+.d-note select { margin-left: 6px; }
+#siteTools { width: 100%; font: 13px/1.5 ui-monospace, Consolas, monospace; padding: 8px; box-sizing: border-box; border: 1.5px solid var(--rule); }

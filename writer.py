@@ -26,7 +26,8 @@ OLD_DEFAULT_GUIDES = {"f6bb50a3a4463a3fabab14ccb79c75b5bb4e123b0e34f863719e64c00
                       "06be32f92cc49185be6986defbb3c89068ccb5d52784bb760f04da28378d186e",
                       "443b239c1ec7f02ac813c6942b978b3a54f0654bef854fe277fce3b057a33317",
                       "3620ce3f06472fa115d2494c3d9ee284c176116396b03402e827c5ebe8c93bef",
-                      "513517507612fc0309677eccd64036dbc7dbb17f14e64b2663d86f668aa070e5"}  # v51까지 보낸 지침
+                      "513517507612fc0309677eccd64036dbc7dbb17f14e64b2663d86f668aa070e5",
+                      "6cbed19bef719ab124271087459f4e15bf287411589078fde34b825ba25f3289"}  # v52까지 보낸 지침
 
 
 class WriterError(Exception):
@@ -252,6 +253,21 @@ def draft_request(item, cfg, today):
             out.append(f"- {label}: {v}")
     if b.get("titles"):
         out.append(f"- 참고 제목(더 좋게 고쳐도 됨): {' / '.join(b['titles'][:3])}")
+    note = (item.get("user_note") or "").strip()
+    if note:  # 기획안의 '내 생각 반영' 칸
+        out += ["", "## 사용자 메모 (최우선 반영)",
+                "사용자가 이 글에 꼭 반영하고 싶은 생각입니다. 구성·각도·예시·강조점은 이 메모를 가장 먼저 따르고, 사실 확인·출처 원칙은 그대로 지킵니다.",
+                note[:2000]]
+    tool = item.get("tool")
+    if isinstance(tool, dict) and tool.get("name"):
+        site = (cfg.get("site") or {}).get("name") or "내 사이트"
+        out += ["", "## 내 사이트 도구 연결 (반드시 반영)",
+                f"- 도구: {site} {tool['name']}" + (f" – {tool['url']}" if tool.get("url") else ""),
+                f"- 도구 설명(사용자 제공, 이 범위 안에서만 소개): {tool.get('desc') or '설명 없음 · 이름에서 알 수 있는 기능만 소개'}",
+                f"- 번호 소제목 중 하나를 '{site} {tool['name']} 이용 방법'으로 두고(보통 계산·확인 방법 설명 바로 뒤), ① 입력할 것 → ② 결과 보는 법 → ③ 결과 활용을 번호 단계로 씁니다.",
+                "- 링크는 그 섹션에 1번, 면책 문구 바로 앞에 1번만 넣습니다. 링크 앞뒤로 직접 정리한 정보를 충분히 쓰고, 광고 문구처럼 쓰지 않습니다.",
+                "- 도구 화면·버튼·결과 숫자를 지어내지 않습니다. 예시 계산이 필요하면 공식 기준으로 직접 계산한 '가상 예시'로 밝힙니다.",
+                "- 카드뉴스 중 한 장은 이 도구 이용 3단계 카드로 만듭니다(실제 화면처럼 그리지 않고 단계 도식으로)."]
     cp = item.get("concept_plan")
     if isinstance(cp, dict):  # 검색 화면의 콘셉트·AI 아이디어에서 고른 글
         out += ["", "## 이번 글의 콘셉트 (사용자가 고른 기획 · 이 방향으로 씀)"]

@@ -563,6 +563,13 @@ function renderDrawer(it) {
     <h2 id="dKeyword">${esc(it.keyword)}${siteBadge(it)}</h2>
     <p class="d-deck">${esc(b.one_line)}</p>
     <div class="d-write"><button class="btn primary" id="dDraftTop">AI 초안 쓰기 ✍</button><span class="muted">작가 지침대로 네이버 블로그 초안을 써서 초안 탭에 보관해요</span></div>
+    <details class="d-note" ${noteGet(it.keyword) || it.tool ? "open" : ""}>
+      <summary>내 생각 반영 <small>${noteGet(it.keyword) ? "메모 있음" : "선택"}${it.tool ? ` · ${esc(it.tool.name)} 연결` : ""}</small></summary>
+      <textarea id="dNote" rows="3" placeholder="예) 1주택자 공시가 3억 기준 예시를 넣고, 떠나셈 재산세 계산기로 직접 계산해 보게 안내하고 싶다. 7월·9월 납부 시기를 강조.">${esc(noteGet(it.keyword))}</textarea>
+      <label class="inline-label">연결할 내 사이트 도구
+        <select id="dTool">${toolOptions(it)}</select></label>
+      <p class="muted" style="font-size:12px;margin:4px 0 0">메모와 도구는 AI 초안을 쓸 때 가장 먼저 반영돼요. 붙여넣기 요청문에도 들어가요. 도구 목록은 설정 → 내 홈페이지 연계에서 등록해요.</p>
+    </details>
     ${figuresHTML(it)}
 
   </header>
@@ -608,8 +615,9 @@ function renderDrawer(it) {
   </div>`;
 
   $("#dSave").onclick = async () => { await toggleSave(it); openDrawer(it); };
-  $("#dDraft").onclick = () => writeDraft(it, $("#dDraft"));
-  $("#dDraftTop").onclick = () => writeDraft(it, $("#dDraftTop"));
+  $("#dDraft").onclick = () => writeDraft(withMine(it), $("#dDraft"));
+  $("#dDraftTop").onclick = () => writeDraft(withMine(it), $("#dDraftTop"));
+  $("#dNote").oninput = e => noteSet(it.keyword, e.target.value);
   $("#dDislike").onclick = async () => { STATE = await api("/api/prefs", { dislike: it.keyword }); toast(`‘${it.keyword}’ 같은 글감은 다음 분석부터 내릴게요`); hideDrawer(); };
   const tc = $("#titleCheck"); tc.oninput = () => checkTitle(tc.value, it.keyword); checkTitle(tc.value, it.keyword);
   $("#drawer").classList.add("open"); $("#drawer").setAttribute("aria-hidden", "false"); $("#scrim").hidden = false;
@@ -919,6 +927,7 @@ function renderSite() {
   $("#siteOffers").innerHTML = STATE.offer_options.map(o => `<button type="button" class="chip" aria-pressed="${(st.offers || []).includes(o)}" data-offer="${esc(o)}">${esc(o)}</button>`).join("");
   $$("#siteOffers .chip").forEach(c => c.onclick = () => c.setAttribute("aria-pressed", String(c.getAttribute("aria-pressed") !== "true")));
   $("#siteBoost").checked = STATE.site_boost;
+  if (typeof renderTools === "function") renderTools();
   const el = $("#state-site"); const on = !!(st.name && st.offers?.length);
   el.className = "keystate" + (on ? " ok" : ""); el.textContent = on ? "연계 중" : "미설정";
 }
@@ -1539,3 +1548,32 @@ document.addEventListener("click", async e => {
   const od = e.target.closest("[data-opendraft]");
   if (od) { showTab("drafts"); await loadDrafts(od.dataset.opendraft); }
 });
+
+
+/* ---------- 기획안의 '내 생각 반영' (메모 + 내 사이트 도구) ---------- */
+function noteGet(kw) { try { return localStorage.getItem("note:" + kw) || ""; } catch { return ""; } }
+function noteSet(kw, v) { try { v.trim() ? localStorage.setItem("note:" + kw, v) : localStorage.removeItem("note:" + kw); } catch {} }
+function toolOptions(it) {
+  const tools = STATE?.site_tools || [];
+  const auto = it.tool ? tools.findIndex(t => t.name === it.tool.name) : -1;
+  return `<option value="-1" ${auto < 0 ? "selected" : ""}>연결 안 함</option>` +
+    tools.map((t, i) => `<option value="${i}" ${i === auto ? "selected" : ""}>${esc(t.name)}${i === auto ? " (자동 연결)" : ""}</option>`).join("");
+}
+function withMine(it) {
+  const x = JSON.parse(JSON.stringify(it));
+  const note = ($("#dNote")?.value || "").trim();
+  if (note) { x.user_note = note; noteSet(it.keyword, note); }
+  const sel = $("#dTool"); const tools = STATE?.site_tools || [];
+  if (sel) x.tool = +sel.value >= 0 ? tools[+sel.value] : null;
+  return x;
+}
+/* 설정: 내 사이트 도구 목록 (한 줄에 하나: 이름 | 주소 | 검색어1, 검색어2 | 설명) */
+function toolsText() { return (STATE?.site_tools || []).map(t => [t.name, t.url, (t.keywords || []).join(", "), t.desc].join(" | ")).join("\n"); }
+function renderTools() { if ($("#siteTools") && document.activeElement !== $("#siteTools")) $("#siteTools").value = toolsText(); if ($("#toolsCount")) $("#toolsCount").textContent = (STATE?.site_tools || []).length ? `${STATE.site_tools.length}개 등록` : ""; }
+if ($("#saveTools")) $("#saveTools").onclick = async () => {
+  const tools = $("#siteTools").value.split("\n").map(l => l.split("|").map(s => s.trim())).filter(p => p[0])
+    .map(([name, url = "", kws = "", desc = ""]) => ({ name, url, keywords: kws.split(/[,，]/).map(s => s.trim()).filter(Boolean), desc }));
+  if (tools.some(t => !t.keywords.length)) { toast("도구마다 연결할 검색어를 하나 이상 적어 주세요 (세 번째 칸)"); return; }
+  STATE = await api("/api/prefs", { site_tools: tools }); renderTools();
+  toast(tools.length ? `도구 ${tools.length}개를 저장했어요 · 다음 분석·검색부터 자동 연결돼요` : "도구 목록을 비웠어요");
+};
