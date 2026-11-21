@@ -1356,3 +1356,11 @@ dialog .mine-body, dialog .topic-picker { overflow-y: auto; min-height: 0; flex:
   max-width: calc(100vw - 32px); background: #FFF8CC; border: 2px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); padding: 10px 40px 10px 16px; font-size: 13.5px; }
 .update-bar span { color: var(--muted); }
 .update-bar .wd-x { top: 8px; right: 10px; }
+
+/* v47: 맨 위 검색창 */
+.top-search { display: flex; align-items: center; flex: 0 1 190px; min-width: 120px; margin-left: 8px; border: 2px solid var(--ink); background: #fff; height: 34px; }
+.top-search input { flex: 1; min-width: 0; border: 0; outline: 0; padding: 0 8px; font: 600 13px/1 var(--sans); background: transparent; }
+.top-search button { border: 0; background: #FFD400; height: 100%; padding: 0 9px; cursor: pointer; font-size: 13px; border-left: 2px solid var(--ink); }
+.top-search:focus-within { box-shadow: 3px 3px 0 var(--ink); }
+@media (max-width: 1100px) { .top-search { flex-basis: 140px; } }
+@media (max-width: 760px) { .top-search { order: 3; flex: 1 1 100%; margin: 6px 0 0; } }

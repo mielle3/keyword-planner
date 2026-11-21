@@ -54,6 +54,7 @@ function navPush(patch) {
   history.pushState(next, "", "#" + next.tab);
 }
 function showTab(name, push = true) {
+  if (name === "drafts" && typeof markDockSeen === "function") setTimeout(() => { markDockSeen(); renderDock(); }, 0);
   if (push && document.body.dataset.tab && document.body.dataset.tab !== name) navPush({ tab: name });
   document.body.dataset.tab = name;
   $$(".tabs [data-tab]").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === name)));
@@ -688,6 +689,13 @@ function renderRecent() {
   $("#analyzeRecent").innerHTML = r.length ? `<span class="muted" style="font-size:13px;align-self:center">최근</span>` + r.map(k => `<button data-analyze="${esc(k)}">${esc(k)}</button>`).join("") : "";
 }
 $("#analyzeForm").addEventListener("submit", e => { e.preventDefault(); runAnalyze(); });
+/* 맨 위 검색창: 어느 화면에서든 키워드를 넣으면 바로 분석 */
+$("#topSearch").addEventListener("submit", e => {
+  e.preventDefault();
+  const kw = $("#topSearchInput").value.trim();
+  if (!kw) { $("#topSearchInput").focus(); return; }
+  showTab("analyze"); $("#analyzeInput").value = kw; $("#topSearchInput").value = ""; runAnalyze();
+});
 async function runAnalyze() {
   const kw = $("#analyzeInput").value.trim();
   if (!kw) { $("#analyzeInput").focus(); return; }
@@ -1161,11 +1169,13 @@ function renderDock() {
   if (!el) { el = document.createElement("aside"); el.id = "writeDock"; el.className = "write-dock"; document.body.appendChild(el); }
   const q = DQ || {}, cur = q.current, wait = q.queue || [];
   const today = new Date().toISOString().slice(0, 10);
+  const seen = dockSeenIds();
   const autoToday = DRAFTS.filter(d => d.auto && (d.created_at || "").slice(0, 10) === today && d.status === "초안");
+  const fresh = autoToday.filter(d => !seen.includes(d.id));  // 한 번 닫거나 본 초안은 다시 알리지 않음
   if (!cur && !wait.length) {
-    if (autoToday.length && !sessionStorageGet("dockSeen" + today)) {
+    if (fresh.length) {
       el.hidden = false;
-      el.innerHTML = `<button class="wd-x" data-dockclose aria-label="닫기">✕</button><b>오늘 미리 써 둔 초안 ${autoToday.length}편</b><span class="wd-sub">${autoToday.map(d => esc(d.keyword)).join(" · ")}</span><button class="btn dark sm" data-dockopen="${esc(autoToday[0].id)}">초안 보기 →</button>`;
+      el.innerHTML = `<button class="wd-x" data-dockclose aria-label="닫기">✕</button><b>새로 미리 써 둔 초안 ${fresh.length}편</b><span class="wd-sub">${fresh.map(d => esc(d.keyword)).join(" · ")}</span><button class="btn dark sm" data-dockopen="${esc(fresh[0].id)}">초안 보기 →</button>`;
     } else el.hidden = true;
     return;
   }
@@ -1175,6 +1185,10 @@ function renderDock() {
     ${cur ? `<span class="wd-sub">${esc(cur.stage || "")} · ${Math.floor(sec / 60)}분 ${sec % 60}초</span>` : ""}
     ${wait.length ? `<div class="wd-wait">다음: ${wait.map(w => `<span class="wchip">${esc(w.keyword)}${w.auto ? "(자동)" : ""}<button data-dqcancel="${w.job}" aria-label="${esc(w.keyword)} 빼기">✕</button></span>`).join("")}</div>` : ""}
     <span class="wd-sub faint">${cur && /고쳐 쓰는/.test(cur.stage || "") ? "양식에서 크게 빠진 곳이 있어 한 번 더 쓰는 중 · 2~4분 더" : "Gemini(Antigravity)가 사실 확인하며 쓰는 중 · 보통 3~5분 · 다른 화면을 봐도 계속 써요 · 멈추려면 취소"}</span>`;
+}
+function dockSeenIds() { try { return JSON.parse(localStorage.getItem("dockSeenIds") || "[]"); } catch { return []; } }
+function markDockSeen() {  // 지금 있는 자동 초안을 모두 '봤음'으로 (브라우저를 껐다 켜도 기억)
+  try { localStorage.setItem("dockSeenIds", JSON.stringify([...new Set([...dockSeenIds(), ...DRAFTS.filter(d => d.auto).map(d => d.id)])].slice(-300))); } catch {}
 }
 function sessionStorageGet(k) { try { return sessionStorage.getItem(k); } catch { return null; } }
 function sessionStorageSet(k, v) { try { sessionStorage.setItem(k, v); } catch {} }
@@ -1201,7 +1215,7 @@ async function pollDrafts() {
 function watchDrafts() { if (!DQ_POLL) DQ_POLL = setInterval(pollDrafts, 3000); }
 document.addEventListener("click", async e => {
   const o = e.target.closest("[data-dockopen]");
-  if (o) { sessionStorageSet("dockSeen" + new Date().toISOString().slice(0, 10), "1"); showTab("drafts"); await loadDrafts(o.dataset.dockopen); renderDock(); return; }
+  if (o) { markDockSeen(); showTab("drafts"); await loadDrafts(o.dataset.dockopen); renderDock(); return; }
   const cx = e.target.closest("[data-dqcancel]");
   if (cx) {
     const isCur = DQ?.current && String(DQ.current.job) === cx.dataset.dqcancel;
@@ -1210,7 +1224,7 @@ document.addEventListener("click", async e => {
     try { const r = await api("/api/draft/cancel", { job: Number(cx.dataset.dqcancel) }); if (!isCur) WAIT_JOBS.delete(Number(cx.dataset.dqcancel)); DQ = r.status; renderDock(); if (!isCur) toast("대기 목록에서 뺐어요"); } catch (err) { toast(err.message); }
     return;
   }
-  if (e.target.closest("[data-dockclose]")) { sessionStorageSet("dockSeen" + new Date().toISOString().slice(0, 10), "1"); renderDock(); }
+  if (e.target.closest("[data-dockclose]")) { markDockSeen(); renderDock(); }
 });
 (async () => {  // 처음 열 때: 이미 끝난 이벤트는 알림 없이 넘기고, 쓰는 중이면 현황 표시
   try {
