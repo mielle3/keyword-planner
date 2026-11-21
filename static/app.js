@@ -1311,6 +1311,7 @@ function promptCardsHTML(md) {
     <div class="ip-grid">${ps.map((x, i) => `<article class="ip-card"><div class="ip-no">#${i + 1}</div><h4>${esc(x.head)}</h4>${x.what ? `<p class="ip-what">${esc(x.what)}</p>` : ""}${x.ko ? `<p class="ip-ko">${esc(x.ko)}</p>` : ""}
       <pre class="ip-pre">${esc(x.prompt)}</pre><button class="btn dark sm" data-copy="${esc(x.prompt)}">프롬프트 복사</button></article>`).join("")}</div></section>`;
 }
+function refsPart(md) { const m = (md || "").match(/■\s*참고한 공식 자료[^\n]*\n([\s\S]*?)(?=\n\s*(?:-{3,}|■)|$)/); return m ? ("■ 참고한 공식 자료\n" + m[1].trim()) : ""; }
 function tagsPart(md) { const m = (md || "").match(/■\s*네이버 블로그[^\n]*\n+([^\n]+)/); return m ? m[1].trim() : ""; }
 function renderDrafts() {
   const counts = s => DRAFTS.filter(d => d.status === s).length;
@@ -1332,7 +1333,7 @@ function renderDrafts() {
       <div class="dv-actions">
         <div class="seg" role="radiogroup" aria-label="보기"><button role="radio" aria-checked="${DRAFT_MODE === "preview"}" data-dm="preview">미리보기</button><button role="radio" aria-checked="${DRAFT_MODE === "edit"}" data-dm="edit">편집</button></div>
         <select id="dvStatus" aria-label="상태">${DRAFT_STATUSES.map(s => `<option ${s === d.status ? "selected" : ""}>${s}</option>`).join("")}</select>
-        <button class="btn" id="dvCopyBody" title="서론부터 마치며까지 + 태그 (스마트에디터에 붙여넣기용)">본문 복사</button>
+        <button class="btn" id="dvCopyBody" title="확인 일자부터 면책 문구까지 + 참고한 공식 자료 + 태그 (스마트에디터에 붙여넣기용)">본문 복사</button>
         <button class="btn" id="dvCopyAll">전체 복사</button>
         <a class="btn dark" href="/api/drafts/${encodeURIComponent(d.id)}/docx" download="${esc((d.created_at || "").slice(0, 10) + "_" + (d.keyword || "초안").replace(/[\\/:*?"<>|]+/g, " ").slice(0, 40) + ".docx")}">docx 저장</a>
         <button class="btn" id="dvRedo" title="같은 글감으로 새로 쓰기 (새 초안으로 보관)">다시 쓰기</button>
@@ -1345,7 +1346,7 @@ function renderDrafts() {
       ? `<textarea id="dvText" class="dv-text" spellcheck="false">${esc(d.text)}</textarea><div class="row-end"><span class="muted" id="dvSaved"></span><button class="btn dark" id="dvSave">고친 내용 저장</button></div>`
       : `<div class="dv-body">${draftMd(d.text)}</div>`}`;
   $("#dvStatus").onchange = async e => { DRAFT = await api("/api/drafts/" + d.id, { action: "status", status: e.target.value }); DRAFTS = await api("/api/drafts"); renderDrafts(); toast(`‘${e.target.value}’로 바꿨어요`); };
-  $("#dvCopyBody").onclick = () => { copy(bodyPart(d.text).replace(/\*\*(.+?)\*\*/g, "$1").replace(/^>\s?/gm, "") + "\n\n" + tagsPart(d.text)); };
+  $("#dvCopyBody").onclick = () => { copy(bodyPart(d.text).replace(/\*\*(.+?)\*\*/g, "$1").replace(/^>\s?/gm, "") + (refsPart(d.text) ? "\n\n" + refsPart(d.text) : "") + "\n\n" + tagsPart(d.text)); };
   $("#dvCopyAll").onclick = () => copy(d.text);
   $("#dvDelete").onclick = async () => { if (!confirm("이 초안을 삭제할까요?")) return; DRAFTS = await api("/api/drafts/" + d.id, { action: "delete" }); DRAFT = null; await loadDrafts(); toast("삭제했어요"); };
   $("#dvRedo").onclick = async () => {

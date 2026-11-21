@@ -1393,3 +1393,5 @@ dialog .mine-body, dialog .topic-picker { overflow-y: auto; min-height: 0; flex:
 .dv-quote.warn p { font-weight: 400; color: #1F4E8C; }
 .dv-quote.warn p:first-child { font-weight: 700; color: var(--ink); }
 .dv-quote p:empty { height: 10px; margin: 0; }
+/* 참고한 공식 자료: 블로그 13 크기에 맞춤 */
+.dv-sec + .dv-li, .dv-sec ~ .dv-li { font-size: 13px; }
