@@ -28,10 +28,11 @@ OLD_DEFAULT_GUIDES = {"f6bb50a3a4463a3fabab14ccb79c75b5bb4e123b0e34f863719e64c00
                       "3620ce3f06472fa115d2494c3d9ee284c176116396b03402e827c5ebe8c93bef",
                       "513517507612fc0309677eccd64036dbc7dbb17f14e64b2663d86f668aa070e5",
                       "6cbed19bef719ab124271087459f4e15bf287411589078fde34b825ba25f3289",
-                      "ea85552c4a2f488578bf64aabbc0b90c5d5e082c1a48f43985d58108641ef8f5"}  # v56까지 보낸 지침
+                      "ea85552c4a2f488578bf64aabbc0b90c5d5e082c1a48f43985d58108641ef8f5",
+                      "65db9579d5c8d039ce913a352268f31cdcc91e55d3c4245cb831d709fc0d8290"}  # v58까지 보낸 지침
 
 
-OLD_ESSAY_GUIDES = set()  # 읽을거리형 기본 지침의 예전 판 (고치지 않았으면 자동 교체)
+OLD_ESSAY_GUIDES = {"4daefb41ecf10b68cab44a5e092bf4756970d4e730128849c7af6229216fdd33"}  # 읽을거리형 기본 지침의 예전 판 (고치지 않았으면 자동 교체)
 
 ESSAY_RE = re.compile(r"영화|드라마|넷플릭스|티빙|디즈니\+|웨이브|쿠팡플레이|OTT|애니|웹툰|책|소설|에세이|도서|시집|음악|앨범|플레이리스트|노래|"
                       r"공연 후기|전시 후기|관람 후기|후기|리뷰|여행기|여행 코스|가볼만한|데이트|맛집|카페|브런치|일상|감성|추천작|작품|시리즈|명작")
@@ -260,8 +261,8 @@ def draft_request(item, cfg, today):
                "## 고쳐 쓰는 원칙",
                "- 원문의 숫자·날짜·출처·고유명사는 그대로 쓰고 바꾸지 않습니다. 원문에 없는 수치는 공식 자료로 확인한 것만 더하고, 더한 것은 참고 자료 칸에 출처를 적습니다.",
                "- 사용자 자신의 사이트·서비스 소개는 맨 뒤 번호 섹션 하나(이용 방법)와 면책 문구로 줄이고, 처음 언급할 때 운영자임을 한 번 밝힙니다. 첫 문장을 사이트 소개로 시작하지 않습니다.",
-               "- 사이트 화면 캡처 설명이 여러 개면 꼭 필요한 1~2개만 이미지 삽입 위치로 남기고, 나머지 데이터는 카드뉴스 프롬프트로 바꿉니다.",
-               "- 독자가 사이트 없이도 쓸 수 있는 정보(기준·절차·확인할 것·문의처)를 앞쪽에 둡니다.",
+               "- 사이트 화면 캡처 설명이 여러 개면 꼭 필요한 1~2개만 이미지 삽입 위치로 남기고, 나머지는 지침의 이미지 규칙에 맞는 프롬프트로 바꿉니다.",
+               "- 정보 글이면 독자가 사이트 없이도 쓸 수 있는 정보(기준·절차·확인할 것·문의처)를 앞쪽에 둡니다. 영화·문화·여행 같은 읽을거리 글이면 문단의 흐름을 살리고 박스·체크리스트를 줄입니다.",
                "- 제목은 숫자가 앞에 오는 건조한 서술형으로 바꿉니다. 감탄·낚시형(\"꼭 확인하세요!\")을 쓰지 않습니다.",
                "- 방어적인 마무리(\"양해 바랍니다\")는 정정 요청 창구 한 줄로 바꿉니다.",
                "- 블로그 화면에서 같이 복사된 메뉴 글자(프로파일, URL 복사, 통계, 공감, 댓글 등)는 무시합니다."]
@@ -296,8 +297,8 @@ def draft_request(item, cfg, today):
         out.append(f"- 참고 제목(더 좋게 고쳐도 됨): {' / '.join(b['titles'][:3])}")
     note = (item.get("user_note") or "").strip()
     if note:  # 기획안의 '내 생각 반영' 칸
-        out += ["", "## 사용자 메모 (최우선 반영)",
-                "사용자가 이 글에 꼭 반영하고 싶은 생각입니다. 구성·각도·예시·강조점은 이 메모를 가장 먼저 따르고, 사실 확인·출처 원칙은 그대로 지킵니다.",
+        out += ["", "## 사용자 메모 = 이 글의 기획 의도 (최우선 반영)",
+                "작가 지침 '0. 사용자 의도와 콘셉트' 규칙에 따라, 이 메모가 지침의 기본 틀(구성·각도·문체·이미지)을 변형합니다. 메모에 없는 부분은 지침대로 쓰고, 사실 확인·출처·지어낸 경험 금지·출력 순서는 지킵니다.",
                 note[:2000]]
     tool = item.get("tool")
     if isinstance(tool, dict) and tool.get("name"):
@@ -967,7 +968,8 @@ def make_draft(store, cfg, item, saved, today, progress=None):
     text = local_fix(text)
     chk = check_draft(text, style)
     fixed = 0
-    if not chk["ok"] and _needs_rewrite(chk):
+    intent = bool((item.get("user_note") or "").strip())  # 사용자 의도로 형식을 바꾼 글은 기본 틀로 되돌려 고쳐 쓰지 않음
+    if not chk["ok"] and _needs_rewrite(chk) and not intent:
         say(f"양식 검사 {chk['passed']}/{chk['total']} · 빠진 항목을 고쳐 쓰는 중")
         try:
             t2, s2, _m = call(_fix_request(user, text, chk))
@@ -983,7 +985,7 @@ def make_draft(store, cfg, item, saved, today, progress=None):
             pass  # 고쳐 쓰기가 실패하면 첫 초안을 그대로 저장 (검사 결과는 화면에 표시)
     say("저장하는 중")
     rec = save_draft(store, cfg, item, saved, text, provider, model, bool(web), sources, round(time.time() - t0), style=style)
-    store.set_meta(rec["id"], fixed=fixed, auto=bool(cfg.get("_auto")), first_seconds=t_first)
+    store.set_meta(rec["id"], fixed=fixed, auto=bool(cfg.get("_auto")), first_seconds=t_first, intent=intent)
     return {**rec, "check": chk, "fixed": fixed, "auto": bool(cfg.get("_auto")), "first_seconds": t_first}
 
 

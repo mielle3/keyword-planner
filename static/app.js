@@ -474,7 +474,7 @@ document.addEventListener("click", async e => {
   const star = e.target.closest("[data-star]");
   if (star) { e.stopPropagation(); await toggleSave(findItem(star.dataset.star)); return; }
   const wr = e.target.closest("[data-write]");
-  if (wr) { e.preventDefault(); e.stopPropagation(); writeDraft(findItem(wr.dataset.write), null); return; }
+  if (wr) { e.preventDefault(); e.stopPropagation(); openPlan(findItem(wr.dataset.write), { from: "오늘의 추천" }); return; }
   const open = e.target.closest("[data-open]");
   if (open) { openDrawer(findItem(open.dataset.open)); return; }
   const sortTh = e.target.closest("th[data-sort]");
@@ -563,15 +563,7 @@ function renderDrawer(it) {
     <h2 id="dKeyword">${esc(it.keyword)}${siteBadge(it)}</h2>
     <p class="d-deck">${esc(b.one_line)}</p>
     <div class="d-write"><button class="btn primary" id="dDraftTop">AI 초안 쓰기 ✍</button><span class="muted">작가 지침대로 네이버 블로그 초안을 써서 초안 탭에 보관해요</span></div>
-    <div class="d-note">
-      <b>내 생각 반영</b> <small class="muted">적으면 초안에 가장 먼저 반영돼요 (비워 둬도 됨)</small>
-      <textarea id="dNote" rows="3" placeholder="예) 떠나셈 재산세 계산기(https://주소)로 직접 계산해 보게 안내. 1주택자 공시가 3억 예시, 7월·9월 납부 강조.">${esc(noteGet(it.keyword))}</textarea>
-      ${(STATE?.site_tools || []).length ? `<label class="inline-label">연결할 도구 <select id="dTool">${toolOptions(it)}</select></label>` : ""}
-      <div class="w-style"><span>글 종류</span><div class="seg" id="dStyle" role="radiogroup" aria-label="글 종류">
-        <button type="button" role="radio" aria-checked="true" data-ds="">자동 (${STYLE_NAME[guessStyle(it.keyword, it.topic)]})</button>
-        <button type="button" role="radio" aria-checked="false" data-ds="info">정보형</button>
-        <button type="button" role="radio" aria-checked="false" data-ds="essay">읽을거리형</button></div></div>
-    </div>
+
     ${figuresHTML(it)}
 
   </header>
@@ -617,9 +609,8 @@ function renderDrawer(it) {
   </div>`;
 
   $("#dSave").onclick = async () => { await toggleSave(it); openDrawer(it); };
-  $("#dDraft").onclick = () => writeDraft(withMine(it), $("#dDraft"));
-  $("#dDraftTop").onclick = () => writeDraft(withMine(it), $("#dDraftTop"));
-  $("#dNote").oninput = e => noteSet(it.keyword, e.target.value);
+  $("#dDraft").onclick = () => openPlan(it, { from: "기획안" });
+  $("#dDraftTop").onclick = () => openPlan(it, { from: "기획안" });
   $("#dDislike").onclick = async () => { STATE = await api("/api/prefs", { dislike: it.keyword }); toast(`‘${it.keyword}’ 같은 글감은 다음 분석부터 내릴게요`); hideDrawer(); };
   const tc = $("#titleCheck"); tc.oninput = () => checkTitle(tc.value, it.keyword); checkTitle(tc.value, it.keyword);
   $("#drawer").classList.add("open"); $("#drawer").setAttribute("aria-hidden", "false"); $("#scrim").hidden = false;
@@ -1348,7 +1339,7 @@ function renderDrafts() {
       <div class="dv-meta"><span>${esc(d.keyword)}</span><span>${esc(fmtTime(d.created_at))}</span><span>${esc(AI_NAME[d.provider] || d.provider || "")} · ${esc(d.model || "")}</span>${d.style ? `<span>${STYLE_NAME[d.style] || ""} 지침</span>` : ""}<span>${d.web === true ? "웹 검색으로 사실 확인" : d.web === false ? "웹 검색 없이 작성" : "참고 자료 칸에서 출처 확인"}</span>${d.seconds ? `<span>작성 ${Math.floor(d.seconds / 60)}분 ${d.seconds % 60}초${d.fixed && d.first_seconds ? ` (첫 작성 ${Math.floor(d.first_seconds / 60)}분 ${d.first_seconds % 60}초 + 고쳐 쓰기)` : ""}</span>` : ""}</div>
       <h2>${esc(d.title || d.keyword)}</h2>
       <div class="dv-stats"><b class="${okLen ? "ok" : "warn"}">본문 ${chars.toLocaleString()}자</b><span>${okLen ? "분량 기준(3,000자↑) 충족" : "분량 기준 3,000자에 못 미쳐요"} · 확인 일자~자주 묻는 질문, 공백 포함 대략값</span>${d.auto ? `<i class="dv-auto">자동으로 미리 씀</i>` : ""}</div>
-      ${d.check ? `<details class="dv-check ${d.check.ok ? "ok" : "warn"}"><summary><b>Gems 양식 검사 ${d.check.passed}/${d.check.total}</b><span>${d.check.ok ? "작가 지침의 출력 양식을 모두 지켰어요" : "아래 ✕ 항목은 편집에서 손보거나 다시 쓰기를 눌러 주세요"}${d.fixed ? " · 첫 결과에서 빠진 곳을 자동으로 고쳐 썼어요" : ""}</span></summary>
+      ${d.check ? `<details class="dv-check ${d.check.ok ? "ok" : "warn"}"><summary><b>Gems 양식 검사 ${d.check.passed}/${d.check.total}</b><span>${d.check.ok ? "작가 지침의 출력 양식을 모두 지켰어요" : d.intent ? "내 생각에 맞춰 형식을 바꾼 글이라 기본 틀과 다른 항목은 ✕로 보일 수 있어요 (자동으로 되돌리지 않음)" : "아래 ✕ 항목은 편집에서 손보거나 다시 쓰기를 눌러 주세요"}${d.fixed ? " · 첫 결과에서 빠진 곳을 자동으로 고쳐 썼어요" : ""}</span></summary>
         <ul>${d.check.items.map(x => `<li class="${x.ok ? "ok" : "no"}">${x.ok ? "✓" : "✕"} ${esc(x.name)}${x.note ? ` <small>${esc(x.note)}</small>` : ""}</li>`).join("")}</ul></details>` : ""}
       <div class="dv-actions">
         <div class="seg" role="radiogroup" aria-label="보기"><button role="radio" aria-checked="${DRAFT_MODE === "preview"}" data-dm="preview">미리보기</button><button role="radio" aria-checked="${DRAFT_MODE === "edit"}" data-dm="edit">편집</button></div>
@@ -1357,6 +1348,7 @@ function renderDrafts() {
         <button class="btn" id="dvCopyAll">전체 복사</button>
         <a class="btn dark" href="/api/drafts/${encodeURIComponent(d.id)}/docx" download="${esc((d.created_at || "").slice(0, 10) + "_" + (d.keyword || "초안").replace(/[\\/:*?"<>|]+/g, " ").slice(0, 40) + ".docx")}">docx 저장</a>
         <button class="btn" id="dvRedo" title="같은 글감으로 새로 쓰기 (새 초안으로 보관)">다시 쓰기</button>
+        <button class="btn" id="dvRestyle" title="지금 초안의 내용은 살리고 글 형식만 바꿔 새 초안으로 보관">${d.style === "essay" ? "정보형으로 바꿔 쓰기" : "읽을거리형으로 바꿔 쓰기"}</button>
         <button class="btn ghost" id="dvDelete">삭제</button>
       </div>
     </header>
@@ -1369,9 +1361,15 @@ function renderDrafts() {
   $("#dvCopyBody").onclick = () => { copy(bodyPart(d.text).replace(/\*\*(.+?)\*\*/g, "$1").replace(/^>\s?/gm, "") + (refsPart(d.text) ? "\n\n" + refsPart(d.text) : "") + "\n\n" + tagsPart(d.text)); };
   $("#dvCopyAll").onclick = () => copy(d.text);
   $("#dvDelete").onclick = async () => { if (!confirm("이 초안을 삭제할까요?")) return; DRAFTS = await api("/api/drafts/" + d.id, { action: "delete" }); DRAFT = null; await loadDrafts(); toast("삭제했어요"); };
+  $("#dvRestyle").onclick = async () => {
+    const to = d.style === "essay" ? "info" : "essay";
+    openFix(d.text || "", { style: to, title: d.title || d.keyword,
+                       user_note: to === "essay" ? "정보 정리형으로 쓴 초안입니다. 내용과 사실은 살리고, 읽을거리형 지침대로 문단 중심의 매끄러운 글로 다시 써 주세요. 핵심 ✔·목차·박스·자주 묻는 질문은 빼고, 꼭 필요한 기본 정보 표 하나만 남깁니다."
+                                                 : "읽을거리형으로 쓴 초안입니다. 내용과 사실은 살리고, 정보형 지침대로 핵심만 먼저 보기·목차·표·박스·자주 묻는 질문을 갖춘 정리형 글로 다시 써 주세요." });
+  };
   $("#dvRedo").onclick = async () => {
     const it = findItem(d.item_id) || { keyword: d.keyword, topic: d.topic, brief: {}, metrics: {}, src: {} };
-    await writeDraft(it, $("#dvRedo"));
+    openPlan(it, { from: "초안 다시 쓰기" });
   };
   if (DRAFT_MODE === "edit") {
     const ta = $("#dvText");
@@ -1546,7 +1544,8 @@ document.addEventListener("click", async e => {
   if (c) {
     const g = ANALYZE.concepts[+c.dataset.concept];
     const base = (ANALYZE.items || []).find(x => x.id === g.lead_id) || ANALYZE.items[0];
-    return writeDraft(withPlan(base, { title: g.title, concept: g.angle, reader: g.reader, keywords: g.keywords.map(k => k.keyword) }), c);
+    return openPlan(withPlan(base, { title: g.title, concept: g.angle, reader: g.reader, keywords: g.keywords.map(k => k.keyword) }),
+                    { from: "글 콘셉트", note: `${g.title}\n${g.angle}` });
   }
   const d = e.target.closest("[data-idea]");
   if (d) {
@@ -1554,7 +1553,7 @@ document.addEventListener("click", async e => {
     const base = itemFor(x.keyword);
     const it = withPlan(base, x);
     if (norm2(base.keyword) !== norm2(x.keyword)) it.keyword = x.keyword;
-    return writeDraft(it, d);
+    return openPlan(it, { from: "AI 글 아이디어", note: [x.title, x.concept, x.must_include?.length ? "꼭 다룰 내용: " + x.must_include.join(", ") : ""].filter(Boolean).join("\n") });
   }
   const od = e.target.closest("[data-opendraft]");
   if (od) { showTab("drafts"); await loadDrafts(od.dataset.opendraft); }
@@ -1593,18 +1592,34 @@ if ($("#saveTools")) $("#saveTools").onclick = async () => {
 
 
 /* ---------- '새 글' 창: 키워드 + 내 생각 → 초안 (또는 이미 쓴 글 고치기) ---------- */
-let W_MODE = "new";
-function openWrite(mode) {
+let W_MODE = "new", PLAN_BASE = null;
+function setWStyle(st) { $$("#wStyle [data-ws]").forEach(x => x.setAttribute("aria-checked", String((x.dataset.ws || "") === (st || "")))); }
+/* 모든 글 기획의 단일 루트: 어디서 출발하든 이 창에서 키워드·글 종류·내 생각을 확인하고 쓴다 */
+function openPlan(base, opts = {}) {
+  PLAN_BASE = base ? JSON.parse(JSON.stringify(base)) : null;
+  const kw = opts.keyword || base?.keyword || "";
+  $("#wKeyword").value = kw;
+  $("#wConcept").value = opts.note != null && opts.note !== "" ? opts.note : (kw ? noteGet(kw) : "");
+  setWStyle(opts.style || base?.style || "");
+  openWrite("new", opts.from);
+  wStyleHint();
+}
+function openFix(source, opts = {}) {
+  $("#rwSource").value = source || ""; $("#rwNote").value = opts.note || "";
+  setWStyle(opts.style || "");
+  openWrite("fix", opts.title ? "초안 형식 바꾸기" : "");
+}
+function openWrite(mode, from) {
   W_MODE = mode;
   $("#wNewBox").hidden = mode !== "new"; $("#wFixBox").hidden = mode === "new";
-  $("#wTitle").textContent = mode === "new" ? "새 글" : "이미 쓴 글 고치기";
-  $("#wSub").textContent = mode === "new" ? "키워드와 내 생각만 적으면 나머지는 프로그램이 알아서 합니다." : "올린 글을 붙여 넣으면 작가 지침 형식으로 고쳐서 초안에 보관합니다.";
+  $("#wTitle").textContent = mode === "new" ? "글 기획" : "이미 쓴 글 고치기";
+  $("#wSub").textContent = (from ? `출발: ${from} · ` : "") + (mode === "new" ? "키워드·글 종류·내 생각을 확인하고 쓰세요. 검색 데이터와 내 사이트 도구 연결은 프로그램이 알아서 합니다." : "글을 붙여 넣으면 작가 지침 형식으로 고쳐서 초안에 보관합니다.");
   $("#wSwitch").textContent = mode === "new" ? "이미 쓴 글 고치기 →" : "← 새 글 쓰기";
   $("#wGo").textContent = mode === "new" ? "AI 초안 쓰기 ✍" : "고치기 시작";
   openDialog($("#writeDialog")); setTimeout(() => (mode === "new" ? $("#wKeyword") : $("#rwSource")).focus(), 50);
 }
-$("#writeNew").onclick = () => openWrite("new");
-$("#rewriteBtn").onclick = () => openWrite("fix");
+$("#writeNew").onclick = () => openPlan(null, {});
+$("#rewriteBtn").onclick = () => openFix("", {});
 $("#wSwitch").onclick = () => openWrite(W_MODE === "new" ? "fix" : "new");
 $("#wGo").onclick = async () => {
   if (W_MODE === "new") {
@@ -1612,7 +1627,16 @@ $("#wGo").onclick = async () => {
     if (!kw) { toast("키워드를 적어 주세요"); $("#wKeyword").focus(); return; }
     $("#writeDialog").close();
     const st = $("#wStyle [aria-checked=true]")?.dataset.ws || "";
-    await writeDraft({ id: "new-" + Date.now(), keyword: kw.slice(0, 40), topic: "내 기획", brief: {}, metrics: {}, src: {}, user_note: note, enrich: true, ...(st ? { style: st } : {}) });
+    noteSet(kw, note);
+    let it;
+    if (PLAN_BASE && norm2(PLAN_BASE.keyword) === norm2(kw)) {  // 분석된 글감에서 출발: 수치·기획을 그대로 씀
+      it = PLAN_BASE; it.user_note = note; delete it.style; if (st) it.style = st;
+    } else {  // 키워드만: 서버가 검색 데이터를 먼저 모음
+      it = { id: "new-" + Date.now(), keyword: kw.slice(0, 40), topic: "내 기획", brief: {}, metrics: {}, src: {}, user_note: note, enrich: true, ...(st ? { style: st } : {}) };
+      if (PLAN_BASE?.concept_plan) it.concept_plan = PLAN_BASE.concept_plan;
+    }
+    PLAN_BASE = null;
+    await writeDraft(it);
     $("#wKeyword").value = ""; $("#wConcept").value = "";
     return;
   }
@@ -1621,8 +1645,9 @@ $("#wGo").onclick = async () => {
   const lines = src.split("\n").map(s => s.trim()).filter(s => s && !/^\[?(프로파일|URL 복사|통계|본문 기타 기능)/.test(s) && !/^https?:\/\//.test(s));
   const title = (lines.find(s => s.length >= 8 && !/^\[/.test(s)) || "기존 글").slice(0, 80);
   $("#writeDialog").close();
+  const st2 = $("#wStyle [aria-checked=true]")?.dataset.ws || "";
   await writeDraft({ id: "rw-" + Date.now(), keyword: title, topic: "내 글 다듬기", brief: { titles: [title] }, metrics: {}, src: {},
-                     rewrite_source: src.slice(0, 20000), user_note: $("#rwNote").value.trim() });
+                     rewrite_source: src.slice(0, 20000), user_note: $("#rwNote").value.trim(), ...(st2 ? { style: st2 } : {}) });
   $("#rwSource").value = ""; $("#rwNote").value = "";
 };
 

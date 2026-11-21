@@ -66,7 +66,7 @@ EVERGREEN_CHECK_PATH = DATA / "evergreen_check.json"
 import writer as _writer  # AI 글쓰기 (작가 지침·블로그 기억·초안 보관·docx)
 WRITER = _writer.Store(DATA)
 KST = timezone(timedelta(hours=9))
-APP_VERSION = "2026.11.21-58"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
+APP_VERSION = "2026.11.21-59"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 DEFAULT_CONFIG = {
@@ -3316,6 +3316,10 @@ def draft_worker():
 
                 def say(msg, job=job):
                     job["stage"] = msg
+                if not job["item"].get("enrich") and not job["item"].get("tool") and not job["item"].get("rewrite_source"):
+                    t = tool_fit(job["item"].get("keyword", ""), cfg)  # 어느 루트로 와도 내 사이트 도구는 자동 연결
+                    if t:
+                        job["item"]["tool"] = t
                 if job["item"].get("enrich"):  # '새 글' 창: 키워드만 받았으면 검색 데이터(연관 검색어·수치·도구 연결)를 먼저 모음
                     say("검색 데이터 모으는 중")
                     try:
