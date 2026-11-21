@@ -1575,3 +1575,18 @@ if ($("#saveTools")) $("#saveTools").onclick = async () => {
   STATE = await api("/api/prefs", { site_tools: tools }); renderTools();
   toast(tools.length ? `도구 ${tools.length}개를 저장했어요 · 다음 분석·검색부터 자동 연결돼요` : "도구 목록을 비웠어요");
 };
+
+
+/* ---------- 내 글 다듬기: 기존 블로그 글 → 작가 지침 형식 수정본 ---------- */
+$("#rewriteBtn").onclick = () => { $("#rwInfo").textContent = ""; openDialog($("#rewriteDialog")); setTimeout(() => $("#rwSource").focus(), 50); };
+$("#rwSource").oninput = e => { $("#rwInfo").textContent = e.target.value.trim() ? `${e.target.value.trim().length.toLocaleString()}자` : ""; };
+$("#rwGo").onclick = async () => {
+  const src = $("#rwSource").value.trim();
+  if (src.length < 300) { toast("원문을 300자 이상 붙여 넣어 주세요"); return; }
+  const lines = src.split("\n").map(s => s.trim()).filter(s => s && !/^\[?(프로파일|URL 복사|통계|본문 기타 기능)/.test(s) && !/^https?:\/\//.test(s));
+  const title = (lines.find(s => s.length >= 8 && !/^\[/.test(s)) || "기존 글").slice(0, 80);
+  const it = { id: "rw-" + Date.now(), keyword: title, topic: "내 글 다듬기", brief: { titles: [title] }, metrics: {}, src: {},
+               rewrite_source: src.slice(0, 20000), user_note: $("#rwNote").value.trim() };
+  $("#rewriteDialog").close();
+  await writeDraft(it);
+};
