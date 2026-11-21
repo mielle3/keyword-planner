@@ -31,6 +31,26 @@ OLD_DEFAULT_GUIDES = {"f6bb50a3a4463a3fabab14ccb79c75b5bb4e123b0e34f863719e64c00
                       "ea85552c4a2f488578bf64aabbc0b90c5d5e082c1a48f43985d58108641ef8f5"}  # v56까지 보낸 지침
 
 
+OLD_ESSAY_GUIDES = set()  # 읽을거리형 기본 지침의 예전 판 (고치지 않았으면 자동 교체)
+
+ESSAY_RE = re.compile(r"영화|드라마|넷플릭스|티빙|디즈니\+|웨이브|쿠팡플레이|OTT|애니|웹툰|책|소설|에세이|도서|시집|음악|앨범|플레이리스트|노래|"
+                      r"공연 후기|전시 후기|관람 후기|후기|리뷰|여행기|여행 코스|가볼만한|데이트|맛집|카페|브런치|일상|감성|추천작|작품|시리즈|명작")
+INFO_RE = re.compile(r"신청|지원금|환급|세금|보험|대출|계산|기준|조건|방법|절차|서류|일정|마감|등급컷|과태료|요금|금리|연말정산|청약|발표|접수")
+
+
+def pick_style(item):
+    """글 종류 자동 선택: 사용자가 고른 게 있으면 그대로, 아니면 키워드·분야로 판단 (정보형이 기본)."""
+    s = (item or {}).get("style")
+    if s in ("info", "essay"):
+        return s
+    text = f"{item.get('keyword', '')} {item.get('topic', '')}"
+    if item.get("rewrite_source"):
+        text += " " + item["rewrite_source"][:400]
+    if INFO_RE.search(item.get("keyword", "")):
+        return "info"
+    return "essay" if ESSAY_RE.search(text) else "info"
+
+
 class WriterError(Exception):
     """사용자에게 그대로 보여 줄 수 있는 오류."""
 
@@ -95,25 +115,29 @@ class Store:
         self.memory_path = self.mem_dir / "블로그_기억.md"
         self.index_path = self.drafts_dir / "index.json"
 
-    # 작가 지침
-    def default_guide(self):
-        return (APP_DIR / "writer_guide.md").read_text(encoding="utf-8")
+    # 작가 지침: info(정보형) · essay(읽을거리형: 영화·책·리뷰·여행기 등)
+    def guide_file(self, style="info"):
+        return self.guide_path if style != "essay" else self.mem_dir / "작가_지침_읽을거리.md"
 
-    def guide(self):
-        if not self.guide_path.exists():
+    def default_guide(self, style="info"):
+        return (APP_DIR / ("writer_guide_essay.md" if style == "essay" else "writer_guide.md")).read_text(encoding="utf-8")
+
+    def guide(self, style="info"):
+        path = self.guide_file(style)
+        if not path.exists():
             self.mem_dir.mkdir(parents=True, exist_ok=True)
-            self.guide_path.write_text(self.default_guide(), encoding="utf-8")
-        text = self.guide_path.read_text(encoding="utf-8")
+            path.write_text(self.default_guide(style), encoding="utf-8")
+        text = path.read_text(encoding="utf-8")
         # 사용자가 고치지 않은 예전 기본 지침이면 새 기본 지침으로 자동 교체 (고친 지침은 그대로 둠)
         import hashlib
-        if hashlib.sha256(text.strip().encode("utf-8")).hexdigest() in OLD_DEFAULT_GUIDES:
-            text = self.default_guide()
-            self.guide_path.write_text(text, encoding="utf-8")
+        if hashlib.sha256(text.strip().encode("utf-8")).hexdigest() in (OLD_DEFAULT_GUIDES if style != "essay" else OLD_ESSAY_GUIDES):
+            text = self.default_guide(style)
+            path.write_text(text, encoding="utf-8")
         return text
 
-    def save_guide(self, text):
+    def save_guide(self, text, style="info"):
         self.mem_dir.mkdir(parents=True, exist_ok=True)
-        self.guide_path.write_text(text.strip() + "\n", encoding="utf-8")
+        self.guide_file(style).write_text(text.strip() + "\n", encoding="utf-8")
 
     # 초안 보관함
     def index(self):
@@ -157,7 +181,7 @@ class Store:
             (self.drafts_dir / f"{did}.md").write_text(text, encoding="utf-8")
             rec["title"] = parse_title(text) or rec.get("title")
             rec["chars"] = body_chars(text)
-            rec["check"] = check_draft(text)
+            rec["check"] = check_draft(text, rec.get("style", "info"))
             rec["edited_at"] = now_iso()
         if status:
             rec["status"] = status
@@ -314,10 +338,11 @@ def draft_request(item, cfg, today):
     return "\n".join(out)
 
 
-def system_prompt(guide, memory, web):
+def system_prompt(guide, memory, web, style="info"):
     tail = ["", "---", "", "# 실행 환경 안내 (키워드 플래너)",
-            "- 결과물은 위 9장의 출력 양식 그대로, 마크다운 텍스트로만 답합니다. 앞뒤 인사나 설명을 붙이지 않습니다.",
-            "- 이미지는 사용자가 Gemini로 직접 만듭니다. 당신은 이미지를 만들지 않고, 참고 자료 아래·태그 바로 위의 '■ Gemini 이미지 프롬프트'에 이미지 6장 프롬프트를 각각 ~~~ 블록 하나씩 단독 실행되는 완성형으로 씁니다. #1은 글 주제를 함축한 강렬한 표지 포스터(정보 카드 틀을 쓰지 않음), #2~#6은 같은 디자인 틀(HEX 5색·구성·스타일)을 매번 반복한 섹션별 정보 카드입니다.",
+            "- 결과물은 위 지침의 출력 양식 그대로, 마크다운 텍스트로만 답합니다. 앞뒤 인사나 설명을 붙이지 않습니다.",
+            ("- 이미지는 사용자가 Gemini로 직접 만듭니다. 당신은 이미지를 만들지 않고, 참고 자료 아래·태그 바로 위의 '■ Gemini 이미지 프롬프트'에 #1 대표 이미지와 #2·#3 분위기 이미지(글자 없음) 프롬프트 3개를 ~~~ 블록 하나씩 씁니다. 실제 포스터·배우 얼굴·책 표지는 재현하지 않습니다." if style == "essay" else
+             "- 이미지는 사용자가 Gemini로 직접 만듭니다. 당신은 이미지를 만들지 않고, 참고 자료 아래·태그 바로 위의 '■ Gemini 이미지 프롬프트'에 이미지 6장 프롬프트를 각각 ~~~ 블록 하나씩 단독 실행되는 완성형으로 씁니다. #1은 글 주제를 함축한 강렬한 표지 포스터(정보 카드 틀을 쓰지 않음), #2~#6은 같은 디자인 틀(HEX 5색·구성·스타일)을 매번 반복한 섹션별 정보 카드입니다."),
             "- '함께 읽으면 좋은 글'에는 아래 블로그 기억의 '내 네이버 블로그에 이미 올린 글' 목록에 있는 제목만 씁니다. 목록이 없거나 관련 글이 없으면 그 섹션을 뺍니다."]
     if web is None:
         tail.append("- 웹 검색을 쓸 수 있으면 정부·기관·기업 공식 사이트를 우선 확인하고 확인한 자료만 ■ 참고한 공식 자료 칸에 적습니다. 쓸 수 없으면 바뀔 수 있는 수치·날짜·조건을 단정하지 말고, 참고 자료 칸에 '웹 검색 없이 작성됨 · 게시 전 공식 자료 확인 필요'라고 적습니다.")
@@ -748,16 +773,17 @@ def manual_prompt(store, cfg, item, saved, today):
     """붙여넣기 방식: Claude(Max)·Gemini 채팅에 붙여 넣을 요청문.
     - full: 작가 지침 + 블로그 기억 + 글감 (아무 채팅에나)
     - short: 블로그 기억 + 글감 (작가 지침을 Claude 프로젝트·Gemini Gems에 미리 넣어 둔 경우)"""
-    guide = store.guide()
+    style = pick_style(item)
+    guide = store.guide(style)
     memory = build_memory(store, cfg, saved)
     user = draft_request(item, cfg, today)
-    full = system_prompt(guide, memory, None) + "\n\n---\n\n# 이번 요청\n\n" + user
+    full = system_prompt(guide, memory, None, style) + "\n\n---\n\n# 이번 요청\n\n" + user
     short = ("(작가 지침은 이 프로젝트/Gem에 들어 있는 지침을 따르세요. 이미지는 만들지 말고 맨 아래에 Gemini 이미지 프롬프트 3개만 쓰세요.)\n\n"
              + memory.strip() + "\n\n---\n\n# 이번 요청\n\n" + user)
-    return {"full": full, "short": short, "guide": guide}
+    return {"full": full, "short": short, "guide": guide, "style": style}
 
 
-def save_draft(store, cfg, item, saved, text, provider, model, web, sources=None, seconds=0):
+def save_draft(store, cfg, item, saved, text, provider, model, web, sources=None, seconds=0, style=None):
     text = (text or "").strip()
     if len(text) < 200:
         raise WriterError("붙여 넣은 내용이 너무 짧아요. AI가 쓴 초안 전체를 붙여 넣어 주세요.")
@@ -765,14 +791,17 @@ def save_draft(store, cfg, item, saved, text, provider, model, web, sources=None
            "keyword": item.get("keyword", ""), "topic": item.get("topic", ""), "title": parse_title(text),
            "status": "초안", "created_at": now_iso(), "provider": provider, "model": model,
            "web": web, "sources": (sources or sources_from_text(text))[:12], "chars": body_chars(text),
-           "seconds": seconds, "item_id": item.get("id"), "check": check_draft(text)}
+           "seconds": seconds, "item_id": item.get("id"), "style": style or pick_style(item),
+           "check": check_draft(text, style or pick_style(item))}
     store.add(rec, text)
     build_memory(store, cfg, saved)  # 방금 쓴 초안까지 기억에 반영
     return {**rec, "text": text}
 
 
-def check_draft(text):
-    """작가 지침(9장 출력 양식)대로 썼는지 프로그램이 직접 검사. 크게 빠진 항목은 AI에게 고쳐 쓰게 함."""
+def check_draft(text, style="info"):
+    """작가 지침(출력 양식)대로 썼는지 프로그램이 직접 검사. 크게 빠진 항목은 AI에게 고쳐 쓰게 함."""
+    if style == "essay":
+        return check_essay(text)
     t = text or ""
     body = body_part(t)
 
@@ -820,6 +849,37 @@ def check_draft(text):
     return {"ok": all(x["ok"] for x in out), "passed": sum(x["ok"] for x in out), "total": len(out), "items": out, "chars": chars}
 
 
+def check_essay(text):
+    """읽을거리형 지침 검사: 문단 중심 글이라 항목이 가벼움."""
+    t = text or ""
+    body = body_part(t)
+    i = t.rfind("■ 네이버 블로그")
+    tags_sec = t[i:] if i >= 0 else ""
+    n_tags = len(re.findall(r"#[^\s#]+", tags_sec))
+    j = t.find("■ 참고한")
+    ref = t[j:t.find("■", j + 1)] if j >= 0 else ""
+    nums = [int(n) for n in re.findall(r"(?m)^##\s*(\d+)\.", body)]
+    prompts = len(re.findall(r"(?m)^(?:~~~|```)[^\n]*\n\s*Aspect ratio", t))
+    imgs = sum(1 for k in range(1, 4) if re.search(rf"이미지\s*#{k}\b", body))
+    q = len(re.findall(r"[가-힣](?:나요|까요|을까|ㄹ까|니까요)\?", body))
+    chars = body_chars(t)
+    items = [
+        ("기획: 메인 키워드·추천 제목 3개", bool(re.search(r"메인 키워드", t) and re.search(r"추천 제목[^\n]*\n+\s*1\..+\n+\s*2\..+\n+\s*3\.", t)), ""),
+        ("소제목 3~5개 (번호 순서대로)", 3 <= len(nums) <= 5 and nums == list(range(1, len(nums) + 1)), f"{len(nums)}개"),
+        ("마무리", bool(re.search(r"(?m)^##\s*마무리", body)), ""),
+        ("이미지 삽입 위치 3곳", imgs == 3, f"{imgs}곳"),
+        ("분량 2,000자 이상 (권장 2,500~3,500)", chars >= 2000, f"{chars:,}자"),
+        ("의문형 문장 없음", q == 0, f"{q}개" if q else ""),
+        ("본문에 URL 없음", not re.search(r"https?://", body), ""),
+        ("참고한 공식 자료", bool(ref.strip()), ""),
+        ("Gemini 이미지 프롬프트 3개", prompts >= 3, f"{prompts}개"),
+        ("네이버 태그 10~15개", 10 <= n_tags <= 15, f"{n_tags}개"),
+        ("태그는 글 맨 마지막", bool(tags_sec) and t.rfind("■") == i and "~~~" not in tags_sec, ""),
+    ]
+    out = [{"name": n, "ok": bool(ok), "note": note} for n, ok, note in items]
+    return {"ok": all(x["ok"] for x in out), "passed": sum(x["ok"] for x in out), "total": len(out), "items": out, "chars": chars}
+
+
 def local_fix(text):
     """AI를 다시 부르지 않고 프로그램이 바로 고치는 것: 태그를 맨 끝으로, 태그 15개 이내, 본문 속 URL 제거."""
     t = (text or "").rstrip()
@@ -843,12 +903,12 @@ def local_fix(text):
 
 
 # AI에게 다시 쓰게 할 만큼 큰 문제 (나머지는 프로그램이 고치거나 화면에 표시만)
-MAJOR = ("기획", "핵심만 먼저", "소제목 5~6개", "표 3개", "이미지 삽입", "Gemini 카드뉴스", "자주 묻는", "섹션마다 핵심")
+MAJOR = ("기획", "핵심만 먼저", "소제목 5~6개", "소제목 3~5개", "표 3개", "이미지 삽입", "Gemini 카드뉴스", "Gemini 이미지 프롬프트", "자주 묻는", "섹션마다 핵심")
 
 
 def _needs_rewrite(chk):
     for x in chk["items"]:
-        if not x["ok"] and (x["name"].startswith(MAJOR) or (x["name"].startswith("분량") and chk["chars"] < 2700)):
+        if not x["ok"] and (x["name"].startswith(MAJOR) or (x["name"].startswith("분량") and chk["chars"] < (1700 if "2,000" in x["name"] else 2700))):
             return True
     return False
 
@@ -894,24 +954,25 @@ def make_draft(store, cfg, item, saved, today, progress=None):
     web = cfg.get("ai_web_check", True)
     if provider == "manual":
         raise WriterError("붙여넣기 방식에서는 요청문을 복사해 Gemini·Claude에 붙여 넣어 주세요.")
-    guide = store.guide()
+    style = pick_style(item)
+    guide = store.guide(style)
     memory = build_memory(store, cfg, saved)
-    system, user = system_prompt(guide, memory, web), draft_request(item, cfg, today)
+    system, user = system_prompt(guide, memory, web, style), draft_request(item, cfg, today)
     t0 = time.time()
     call = _caller(provider, cfg, store, system, web)
-    say("작가 지침(Gems)대로 초안을 쓰는 중")
+    say("읽을거리형 지침으로 쓰는 중" if style == "essay" else "작가 지침(정보형)으로 쓰는 중")
     # 유료 API로 몰래 넘어가지 않음: 구독(CLI)이 실패하면 멈추고 이유를 보여 줌
     text, sources, model = call(user)
     t_first = round(time.time() - t0)
     text = local_fix(text)
-    chk = check_draft(text)
+    chk = check_draft(text, style)
     fixed = 0
     if not chk["ok"] and _needs_rewrite(chk):
         say(f"양식 검사 {chk['passed']}/{chk['total']} · 빠진 항목을 고쳐 쓰는 중")
         try:
             t2, s2, _m = call(_fix_request(user, text, chk))
             t2 = local_fix(t2)
-            c2 = check_draft(t2)
+            c2 = check_draft(t2, style)
             if c2["passed"] >= chk["passed"] and len(t2) > len(text) * 0.6:
                 text, chk, fixed = t2, c2, 1
                 seen = {x.get("url") for x in (sources or [])}
@@ -921,7 +982,7 @@ def make_draft(store, cfg, item, saved, today, progress=None):
         except WriterError:
             pass  # 고쳐 쓰기가 실패하면 첫 초안을 그대로 저장 (검사 결과는 화면에 표시)
     say("저장하는 중")
-    rec = save_draft(store, cfg, item, saved, text, provider, model, bool(web), sources, round(time.time() - t0))
+    rec = save_draft(store, cfg, item, saved, text, provider, model, bool(web), sources, round(time.time() - t0), style=style)
     store.set_meta(rec["id"], fixed=fixed, auto=bool(cfg.get("_auto")), first_seconds=t_first)
     return {**rec, "check": chk, "fixed": fixed, "auto": bool(cfg.get("_auto")), "first_seconds": t_first}
 

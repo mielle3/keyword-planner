@@ -1415,3 +1415,7 @@ dialog .mine-body, dialog .topic-picker { overflow-y: auto; min-height: 0; flex:
 #writeDialog .mine-body { padding: 4px 32px 8px; }
 #writeDialog .dlg-foot { padding: 12px 32px 20px; }
 #writeDialog .inline-label { display: block; font-weight: 800; margin: 8px 0 6px; }
+
+/* v58: 글 종류 선택 */
+.w-style { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 10px 0 0; font-weight: 800; font-size: 13px; }
+.w-style .seg button { padding: 6px 10px; font-size: 12.5px; }

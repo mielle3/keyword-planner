@@ -567,6 +567,10 @@ function renderDrawer(it) {
       <b>내 생각 반영</b> <small class="muted">적으면 초안에 가장 먼저 반영돼요 (비워 둬도 됨)</small>
       <textarea id="dNote" rows="3" placeholder="예) 떠나셈 재산세 계산기(https://주소)로 직접 계산해 보게 안내. 1주택자 공시가 3억 예시, 7월·9월 납부 강조.">${esc(noteGet(it.keyword))}</textarea>
       ${(STATE?.site_tools || []).length ? `<label class="inline-label">연결할 도구 <select id="dTool">${toolOptions(it)}</select></label>` : ""}
+      <div class="w-style"><span>글 종류</span><div class="seg" id="dStyle" role="radiogroup" aria-label="글 종류">
+        <button type="button" role="radio" aria-checked="true" data-ds="">자동 (${STYLE_NAME[guessStyle(it.keyword, it.topic)]})</button>
+        <button type="button" role="radio" aria-checked="false" data-ds="info">정보형</button>
+        <button type="button" role="radio" aria-checked="false" data-ds="essay">읽을거리형</button></div></div>
     </div>
     ${figuresHTML(it)}
 
@@ -754,12 +758,21 @@ function renderAI() {
     : (ready ? `${name} 사용` : `${name} · 키 필요`) + (ai.provider === "gemini" ? " · 항상 최고 버전" : "");
   if ($("#draftCount")) $("#draftCount").textContent = ai.drafts || "";
 }
+let GUIDE_STYLE = "info", MEM = null;
+document.addEventListener("click", e => {
+  const g = e.target.closest("[data-gs]");
+  if (!g) return;
+  GUIDE_STYLE = g.dataset.gs;
+  $$("#guideStyle [data-gs]").forEach(b => b.setAttribute("aria-checked", String(b === g)));
+  if (MEM) { $("#guideText").value = GUIDE_STYLE === "essay" ? MEM.guide_essay : MEM.guide; $("#guidePath").textContent = GUIDE_STYLE === "essay" ? MEM.guide_essay_path : MEM.guide_path; }
+});
 async function loadMemory() {
   try {
     const d = await api("/api/memory");
-    if (document.activeElement !== $("#guideText")) $("#guideText").value = d.guide;
+    MEM = d;
+    if (document.activeElement !== $("#guideText")) $("#guideText").value = GUIDE_STYLE === "essay" ? d.guide_essay : d.guide;
     $("#memoryText").textContent = d.memory;
-    $("#guidePath").textContent = d.guide_path; $("#memoryPath").textContent = d.memory_path;
+    $("#guidePath").textContent = GUIDE_STYLE === "essay" ? d.guide_essay_path : d.guide_path; $("#memoryPath").textContent = d.memory_path;
   } catch {}
 }
 function renderAuto() {
@@ -1146,10 +1159,10 @@ $("#aiCheck").onclick = async () => {
   } catch (err) { toast("확인하지 못했어요: " + err.message); }
   finally { b.disabled = false; b.textContent = "AI 연결 확인"; }
 };
-$("#guideSave").onclick = async () => { await api("/api/memory", { guide: $("#guideText").value }); toast("작가 지침을 저장했어요 · 다음 초안부터 반영돼요"); };
+$("#guideSave").onclick = async () => { await api("/api/memory", { guide: $("#guideText").value, style: GUIDE_STYLE }); await loadMemory(); toast((GUIDE_STYLE === "essay" ? "읽을거리형" : "정보형") + " 지침을 저장했어요 · 다음 초안부터 반영돼요"); };
 $("#guideReset").onclick = async () => {
-  if (!confirm("작가 지침을 기본값(Gems 정리본)으로 되돌릴까요? 고친 내용은 사라집니다.")) return;
-  const d = await api("/api/memory", { reset_guide: true }); $("#guideText").value = d.guide; toast("기본 지침으로 되돌렸어요");
+  if (!confirm((GUIDE_STYLE === "essay" ? "읽을거리형" : "정보형") + " 지침을 기본값으로 되돌릴까요? 고친 내용은 사라집니다.")) return;
+  const d = await api("/api/memory", { reset_guide: true, style: GUIDE_STYLE }); $("#guideText").value = d.guide; await loadMemory(); toast("기본 지침으로 되돌렸어요");
 };
 
 /* ---------- AI 초안 쓰기 ---------- */
@@ -1332,7 +1345,7 @@ function renderDrafts() {
   const d = DRAFT, chars = d.chars || 0, okLen = chars >= 3000;
   $("#draftView").innerHTML = `
     <header class="dv-head">
-      <div class="dv-meta"><span>${esc(d.keyword)}</span><span>${esc(fmtTime(d.created_at))}</span><span>${esc(AI_NAME[d.provider] || d.provider || "")} · ${esc(d.model || "")}</span><span>${d.web === true ? "웹 검색으로 사실 확인" : d.web === false ? "웹 검색 없이 작성" : "참고 자료 칸에서 출처 확인"}</span>${d.seconds ? `<span>작성 ${Math.floor(d.seconds / 60)}분 ${d.seconds % 60}초${d.fixed && d.first_seconds ? ` (첫 작성 ${Math.floor(d.first_seconds / 60)}분 ${d.first_seconds % 60}초 + 고쳐 쓰기)` : ""}</span>` : ""}</div>
+      <div class="dv-meta"><span>${esc(d.keyword)}</span><span>${esc(fmtTime(d.created_at))}</span><span>${esc(AI_NAME[d.provider] || d.provider || "")} · ${esc(d.model || "")}</span>${d.style ? `<span>${STYLE_NAME[d.style] || ""} 지침</span>` : ""}<span>${d.web === true ? "웹 검색으로 사실 확인" : d.web === false ? "웹 검색 없이 작성" : "참고 자료 칸에서 출처 확인"}</span>${d.seconds ? `<span>작성 ${Math.floor(d.seconds / 60)}분 ${d.seconds % 60}초${d.fixed && d.first_seconds ? ` (첫 작성 ${Math.floor(d.first_seconds / 60)}분 ${d.first_seconds % 60}초 + 고쳐 쓰기)` : ""}</span>` : ""}</div>
       <h2>${esc(d.title || d.keyword)}</h2>
       <div class="dv-stats"><b class="${okLen ? "ok" : "warn"}">본문 ${chars.toLocaleString()}자</b><span>${okLen ? "분량 기준(3,000자↑) 충족" : "분량 기준 3,000자에 못 미쳐요"} · 확인 일자~자주 묻는 질문, 공백 포함 대략값</span>${d.auto ? `<i class="dv-auto">자동으로 미리 씀</i>` : ""}</div>
       ${d.check ? `<details class="dv-check ${d.check.ok ? "ok" : "warn"}"><summary><b>Gems 양식 검사 ${d.check.passed}/${d.check.total}</b><span>${d.check.ok ? "작가 지침의 출력 양식을 모두 지켰어요" : "아래 ✕ 항목은 편집에서 손보거나 다시 쓰기를 눌러 주세요"}${d.fixed ? " · 첫 결과에서 빠진 곳을 자동으로 고쳐 썼어요" : ""}</span></summary>
@@ -1563,6 +1576,8 @@ function withMine(it) {
   if (note) { x.user_note = note; noteSet(it.keyword, note); }
   const sel = $("#dTool"); const tools = STATE?.site_tools || [];
   if (sel) x.tool = +sel.value >= 0 ? tools[+sel.value] : null;
+  const ds = $("#dStyle [aria-checked=true]")?.dataset.ds;
+  if (ds) x.style = ds;
   return x;
 }
 /* 설정: 내 사이트 도구 목록 (한 줄에 하나: 이름 | 주소 | 검색어1, 검색어2 | 설명) */
@@ -1596,7 +1611,8 @@ $("#wGo").onclick = async () => {
     const kw = $("#wKeyword").value.trim(), note = $("#wConcept").value.trim();
     if (!kw) { toast("키워드를 적어 주세요"); $("#wKeyword").focus(); return; }
     $("#writeDialog").close();
-    await writeDraft({ id: "new-" + Date.now(), keyword: kw.slice(0, 40), topic: "내 기획", brief: {}, metrics: {}, src: {}, user_note: note, enrich: true });
+    const st = $("#wStyle [aria-checked=true]")?.dataset.ws || "";
+    await writeDraft({ id: "new-" + Date.now(), keyword: kw.slice(0, 40), topic: "내 기획", brief: {}, metrics: {}, src: {}, user_note: note, enrich: true, ...(st ? { style: st } : {}) });
     $("#wKeyword").value = ""; $("#wConcept").value = "";
     return;
   }
@@ -1609,3 +1625,18 @@ $("#wGo").onclick = async () => {
                      rewrite_source: src.slice(0, 20000), user_note: $("#rwNote").value.trim() });
   $("#rwSource").value = ""; $("#rwNote").value = "";
 };
+
+
+/* ---------- 글 종류: 정보형 / 읽을거리형 (자동 판단은 서버와 같은 규칙) ---------- */
+const ESSAY_RE = /영화|드라마|넷플릭스|티빙|디즈니\+|웨이브|쿠팡플레이|OTT|애니|웹툰|책|소설|에세이|도서|시집|음악|앨범|플레이리스트|노래|공연 후기|전시 후기|관람 후기|후기|리뷰|여행기|여행 코스|가볼만한|데이트|맛집|카페|브런치|일상|감성|추천작|작품|시리즈|명작/;
+const INFO_RE = /신청|지원금|환급|세금|보험|대출|계산|기준|조건|방법|절차|서류|일정|마감|등급컷|과태료|요금|금리|연말정산|청약|발표|접수/;
+function guessStyle(kw, topic) { if (INFO_RE.test(kw || "")) return "info"; return ESSAY_RE.test(`${kw || ""} ${topic || ""}`) ? "essay" : "info"; }
+const STYLE_NAME = { info: "정보형", essay: "읽을거리형" };
+function wStyleHint() { const kw = $("#wKeyword").value.trim(); $("#wStyleHint").textContent = kw && ($("#wStyle [aria-checked=true]")?.dataset.ws || "") === "" ? `자동 → ${STYLE_NAME[guessStyle(kw)]}` : ""; }
+$("#wKeyword").addEventListener("input", wStyleHint);
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-ws]");
+  if (b) { $$("#wStyle [data-ws]").forEach(x => x.setAttribute("aria-checked", String(x === b))); wStyleHint(); }
+  const d = e.target.closest("[data-ds]");
+  if (d) { $$("#dStyle [data-ds]").forEach(x => x.setAttribute("aria-checked", String(x === d))); }
+});
