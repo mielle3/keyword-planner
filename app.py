@@ -66,7 +66,7 @@ EVERGREEN_CHECK_PATH = DATA / "evergreen_check.json"
 import writer as _writer  # AI 글쓰기 (작가 지침·블로그 기억·초안 보관·docx)
 WRITER = _writer.Store(DATA)
 KST = timezone(timedelta(hours=9))
-APP_VERSION = "2026.11.21-59"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
+APP_VERSION = "2026.11.21-60"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 DEFAULT_CONFIG = {
@@ -3437,7 +3437,8 @@ def apply_update():
         here = Path(__file__).parent
         bak = DATA / "backup" / APP_VERSION
         bak.mkdir(parents=True, exist_ok=True)
-        for f in UPDATE_FILES:
+        files = sorted({p.name for p in src.iterdir() if p.is_file() and not p.name.startswith(".") and p.name != "version.json"} | set(UPDATE_FILES))
+        for f in files:  # 새로 생긴 파일도 빠짐없이 (예전 목록 방식은 새 파일을 놓칠 수 있었음)
             if (here / f).exists():
                 shutil.copy2(here / f, bak / f)
             if (src / f).exists():
@@ -3470,6 +3471,15 @@ def upd_log(msg):
             f.write(f"{datetime.now(KST):%Y-%m-%d %H:%M:%S} {msg}\n")
     except Exception:
         pass
+
+
+def heal_missing_files():
+    """예전 버전의 업데이트로 새 파일이 빠졌으면 저장소에서 받아 채움."""
+    here = Path(__file__).parent
+    for f in ("writer_guide.md", "writer_guide_essay.md"):
+        if not (here / f).exists():
+            ok = _writer.fetch_repo_file(f)
+            upd_log(f"빠진 파일 {f} 복구 {'성공' if ok else '실패'}")
 
 
 def update_loop():
@@ -3589,6 +3599,7 @@ def main():
     threading.Thread(target=auto_refresh_loop, daemon=True).start()
     threading.Thread(target=draft_worker, daemon=True).start()
     threading.Thread(target=update_loop, daemon=True).start()
+    threading.Thread(target=heal_missing_files, daemon=True).start()
     if "--no-browser" not in sys.argv:
         threading.Timer(0.8, lambda: webbrowser.open(url)).start()
     try:

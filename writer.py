@@ -32,6 +32,24 @@ OLD_DEFAULT_GUIDES = {"f6bb50a3a4463a3fabab14ccb79c75b5bb4e123b0e34f863719e64c00
                       "65db9579d5c8d039ce913a352268f31cdcc91e55d3c4245cb831d709fc0d8290"}  # v58까지 보낸 지침
 
 
+UPDATE_REPO = "mielle3/keyword-planner"
+
+
+def fetch_repo_file(name):
+    """프로그램 폴더에 빠진 파일을 GitHub 공개 저장소에서 받아 저장 (성공하면 True)."""
+    for url, hdr in ((f"https://api.github.com/repos/{UPDATE_REPO}/contents/{urllib.parse.quote(name)}?ref=main",
+                      {"Accept": "application/vnd.github.raw+json", "User-Agent": "KeywordPlanner"}),
+                     (f"https://raw.githubusercontent.com/{UPDATE_REPO}/main/{urllib.parse.quote(name)}", {"User-Agent": "KeywordPlanner"})):
+        try:
+            data = urllib.request.urlopen(urllib.request.Request(url, headers=hdr), timeout=15).read()
+            if data:
+                (APP_DIR / name).write_bytes(data)
+                return True
+        except Exception:
+            continue
+    return False
+
+
 OLD_ESSAY_GUIDES = {"4daefb41ecf10b68cab44a5e092bf4756970d4e730128849c7af6229216fdd33"}  # 읽을거리형 기본 지침의 예전 판 (고치지 않았으면 자동 교체)
 
 ESSAY_RE = re.compile(r"영화|드라마|넷플릭스|티빙|디즈니\+|웨이브|쿠팡플레이|OTT|애니|웹툰|책|소설|에세이|도서|시집|음악|앨범|플레이리스트|노래|"
@@ -121,7 +139,13 @@ class Store:
         return self.guide_path if style != "essay" else self.mem_dir / "작가_지침_읽을거리.md"
 
     def default_guide(self, style="info"):
-        return (APP_DIR / ("writer_guide_essay.md" if style == "essay" else "writer_guide.md")).read_text(encoding="utf-8")
+        name = "writer_guide_essay.md" if style == "essay" else "writer_guide.md"
+        path = APP_DIR / name
+        if not path.exists():
+            fetch_repo_file(name)  # 예전 업데이트 코드가 새 파일을 빠뜨린 경우: 저장소에서 받아 복구
+        if path.exists():
+            return path.read_text(encoding="utf-8")
+        return (APP_DIR / "writer_guide.md").read_text(encoding="utf-8")  # 받을 수 없으면 정보형 지침으로 대신
 
     def guide(self, style="info"):
         path = self.guide_file(style)
