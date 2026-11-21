@@ -1,0 +1,6 @@
+API_키.md
+API_key*.md
+*.zip
+__pycache__/
+evergreen.json
+오류기록.txt
