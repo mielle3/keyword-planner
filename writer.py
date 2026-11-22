@@ -629,6 +629,9 @@ def find_agy(custom=""):
     """Antigravity CLI(agy) 위치. 개인 구글 계정(Google AI Pro·Ultra 구독)은 2026년부터 Gemini CLI 대신 이것으로 씀."""
     import os, shutil
     la = os.environ.get("LOCALAPPDATA", "")
+    custom = (custom or "").strip().strip('"')
+    if custom and os.path.isdir(custom):
+        custom = os.path.join(custom, "agy.exe")
     cands = [custom] if custom else []
     w = shutil.which("agy")
     if w:
@@ -636,6 +639,9 @@ def find_agy(custom=""):
     cands += [os.path.join(la, "agy", "bin", "agy.exe"), os.path.join(la, "Antigravity", "agy.exe"),
               os.path.join(la, "agy", "agy.exe"), os.path.join(os.path.expanduser("~"), ".local", "bin", "agy"), "/usr/local/bin/agy"]
     home = os.path.expanduser("~")
+    up = os.environ.get("USERPROFILE", "") or home
+    # LOCALAPPDATA가 비어 있는 실행 환경에서도 찾도록 사용자 폴더 기준 경로도 확인
+    cands += [os.path.join(up, "AppData", "Local", "agy", "bin", "agy.exe"), os.path.join(up, "AppData", "Local", "agy", "bin", "agy.cmd")]
     cands += [os.path.join(la, "Programs", "agy", "agy.exe"), os.path.join(la, "Programs", "Antigravity", "bin", "agy.exe"),
               os.path.join(home, ".antigravity", "bin", "agy.exe"), os.path.join(home, ".agy", "bin", "agy.exe"),
               os.path.join(home, ".local", "bin", "agy.exe")]
