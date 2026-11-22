@@ -1797,9 +1797,10 @@ function smartHtml(md) {
     else if (s.startsWith("## ")) out.push(P(inl(s.slice(3)), FS.heading, "font-weight:bold;color:#2f3f9e"));
     else if (s.startsWith("[📸")) out.push(P(esc(s), 13, "color:#999"));
     else if (/^\*\*Q[.．]/.test(s)) out.push(P(inl(s), FS.body, "font-weight:bold"));
+    else if (/^✔/.test(s)) out.push(P(inl(s), FS.body, "color:#184f84"));
     else if (/^[①-⑩]/.test(s)) {
       const m = s.match(/^([①-⑩]\s*[^:：]{1,30}[:：])([\s\S]*)$/);
-      const color = "#2f3f9e";
+      const color = "#184f84";  // 핵심만 먼저 보기(✔) 줄과 같은 색
       out.push(m ? P(`<span style="color:${color}">${inl(m[1])}</span>${inl(m[2])}`) : P(inl(s), FS.body, `color:${color}`));
     }
     else out.push(P(inl(s)));
