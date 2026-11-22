@@ -1593,3 +1593,10 @@ select { height: 40px; box-sizing: border-box; }
 .dl-item.sel .dl-box { background: var(--mark); }
 .dv-body table, .dv-body table td, .dv-body table th { font-size: 13px !important; }
 .dv-body, .dv-body table, .dv-body td, .dv-body th { font-family: 'NanumMaruBuri', '나눔마루부리', 'MaruBuri', serif; }
+
+/* v93: 어떤 메뉴를 눌러도 화면 틀이 움직이지 않게
+   1) 페이지 길이가 달라도 세로 스크롤바 자리를 항상 확보 (스크롤바가 생겼다 사라지며 좌우로 밀리던 것)
+   2) 선택된 메뉴는 글자를 굵게 바꾸지 않고(너비가 바뀌어 옆 메뉴가 밀림) 그림자로 진하게만 */
+html { overflow-y: scroll; scrollbar-gutter: stable; }
+.tabs button[aria-selected="true"] { font-weight: 600 !important; text-shadow: 0 0 .55px currentColor, 0 0 .55px currentColor; }
+.tabs .count:empty { display: inline-grid; visibility: hidden; }  /* 개수가 나중에 들어와도 메뉴가 밀리지 않게 자리 확보 */
