@@ -1581,3 +1581,13 @@ select { height: 40px; box-sizing: border-box; }
 .appbar .ver.has-upd { background: var(--mark); color: #0e0e10; border-color: var(--ink); }
 .btn.copy-main { background: var(--mark) !important; color: #0e0e10 !important; border-color: var(--ink) !important; font-weight: 800; }
 .dv-menu .menu-copy { background: var(--mark); font-weight: 800; color: #0e0e10; }
+
+/* v73: 초안 정리하기 (여러 개 골라 삭제) */
+.tidy-bar { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 8px; padding: 10px 12px; margin-bottom: 10px; background: var(--paper); border: 2px solid var(--ink); }
+.tidy-bar b { margin-right: auto; font-size: 13.5px; }
+.danger-btn { color: #c62828 !important; border-color: #c62828 !important; }
+.danger-btn:disabled { opacity: .4; }
+.dl-item.tidy { position: relative; padding-left: 48px !important; }
+.dl-box { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border: 2px solid var(--ink); display: grid; place-items: center; font-weight: 900; background: #fff; color: #0e0e10; }
+.dl-item.sel { background: color-mix(in srgb, var(--mark) 35%, var(--paper)) !important; }
+.dl-item.sel .dl-box { background: var(--mark); }

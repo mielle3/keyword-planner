@@ -1162,6 +1162,7 @@ $("#guideReset").onclick = async () => {
 
 /* ---------- AI 초안 쓰기 ---------- */
 let DRAFTS = [], DRAFT = null, DRAFT_FILTER = "전체", DRAFT_MODE = "preview";
+let TIDY = false; const TIDY_SEL = new Set();  // 정리하기: 여러 초안을 골라 한 번에 삭제
 const DRAFT_STATUSES = ["초안", "수정 중", "발행 완료"];
 async function writeDraft(it, btn) {
   const ai = STATE.ai || {};
@@ -1332,10 +1333,12 @@ function renderDrafts() {
   const counts = s => DRAFTS.filter(d => d.status === s).length;
   $("#draftFilter").innerHTML = ["전체", ...DRAFT_STATUSES].map(s => `<button role="radio" aria-checked="${s === DRAFT_FILTER}" data-df="${s}">${s} <small>${s === "전체" ? DRAFTS.length : counts(s)}</small></button>`).join("");
   const list = DRAFTS.filter(d => DRAFT_FILTER === "전체" || d.status === DRAFT_FILTER);
-  $("#draftList").innerHTML = list.length ? list.map(d => `<button class="dl-item ${DRAFT && d.id === DRAFT.id ? "on" : ""}" data-did="${esc(d.id)}">
+  if ($("#draftTidy")) $("#draftTidy").textContent = TIDY ? "정리 끝내기" : "정리하기";
+  const tidyBar = TIDY ? `<div class="tidy-bar"><b>${TIDY_SEL.size}개 선택</b><button class="btn sm" type="button" id="tidyAll">${list.length && list.every(d => TIDY_SEL.has(d.id)) ? "선택 해제" : "모두 선택"}</button><button class="btn sm danger-btn" type="button" id="tidyDel" ${TIDY_SEL.size ? "" : "disabled"}>선택한 초안 삭제</button></div>` : "";
+  $("#draftList").innerHTML = tidyBar + (list.length ? list.map(d => `<button class="dl-item ${TIDY ? "tidy" : ""} ${TIDY && TIDY_SEL.has(d.id) ? "sel" : ""} ${!TIDY && DRAFT && d.id === DRAFT.id ? "on" : ""}" data-did="${esc(d.id)}">${TIDY ? `<span class="dl-box" aria-hidden="true">${TIDY_SEL.has(d.id) ? "✓" : ""}</span>` : ""}
       <span class="dl-meta"><i class="dl-st s${DRAFT_STATUSES.indexOf(d.status)}">${esc(d.status)}</i>${d.auto ? `<i class="dl-auto">자동</i>` : ""}${d.check ? `<i class="dl-chk ${d.check.ok ? "ok" : ""}">양식 ${d.check.passed}/${d.check.total}</i>` : ""}${esc(fmtTime(d.created_at))}</span>
       <b>${esc(d.title || d.keyword)}</b><span class="dl-kw">${esc(d.keyword)} · ${d.chars ? d.chars.toLocaleString() + "자" : ""}</span></button>`).join("")
-    : `<div class="dl-empty">${DRAFTS.length ? "이 상태의 초안이 없어요." : "아직 초안이 없어요.<br>추천 글감의 기획안에서 <b>AI 초안 쓰기</b>를 누르면 프로그램이 작가 지침대로 써서 여기에 보관해요. 자동 분석 때 상위 글감은 미리 써 두기도 해요."}</div>`;
+    : `<div class="dl-empty">${DRAFTS.length ? "이 상태의 초안이 없어요." : "아직 초안이 없어요.<br>추천 글감의 기획안에서 <b>AI 초안 쓰기</b>를 누르면 프로그램이 작가 지침대로 써서 여기에 보관해요. 자동 분석 때 상위 글감은 미리 써 두기도 해요."}</div>`);
   if (!DRAFT) { $("#draftView").innerHTML = `<div class="dv-empty"><h2>초안을 고르세요</h2><p class="muted">왼쪽 목록에서 초안을 누르면 여기에서 보고 고칠 수 있어요.</p></div>`; return; }
   const d = DRAFT, chars = d.chars || 0, okLen = chars >= 3000;
   $("#draftView").innerHTML = `
@@ -1417,7 +1420,20 @@ function renderDrafts() {
 }
 document.addEventListener("click", async e => {
   const it = e.target.closest("[data-did]");
+  if (it && TIDY) { const id = it.dataset.did; TIDY_SEL.has(id) ? TIDY_SEL.delete(id) : TIDY_SEL.add(id); renderDrafts(); return; }
   if (it) { DRAFT = await api("/api/drafts/" + it.dataset.did); renderDrafts(); $("#draftView").scrollTop = 0; return; }
+  if (e.target.closest("#draftTidy")) { TIDY = !TIDY; TIDY_SEL.clear(); renderDrafts(); return; }
+  if (e.target.closest("#tidyAll")) {
+    const list = DRAFTS.filter(d => DRAFT_FILTER === "전체" || d.status === DRAFT_FILTER);
+    if (list.every(d => TIDY_SEL.has(d.id))) TIDY_SEL.clear(); else list.forEach(d => TIDY_SEL.add(d.id));
+    renderDrafts(); return;
+  }
+  if (e.target.closest("#tidyDel")) {
+    const ids = [...TIDY_SEL]; if (!ids.length || !confirm(`초안 ${ids.length}개를 삭제할까요? 되돌릴 수 없어요.`)) return;
+    for (const id of ids) { try { await api("/api/drafts/" + id, { action: "delete" }); } catch {} }
+    if (DRAFT && TIDY_SEL.has(DRAFT.id)) DRAFT = null;
+    TIDY_SEL.clear(); TIDY = false; await loadDrafts(); toast(`초안 ${ids.length}개를 삭제했어요`); return;
+  }
   const df = e.target.closest("[data-df]");
   if (df) { DRAFT_FILTER = df.dataset.df; renderDrafts(); return; }
   const dm = e.target.closest("[data-dm]");
