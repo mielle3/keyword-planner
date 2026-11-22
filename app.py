@@ -88,7 +88,7 @@ EVERGREEN_CHECK_PATH = DATA / "evergreen_check.json"
 import writer as _writer  # AI 글쓰기 (작가 지침·블로그 기억·초안 보관·docx)
 WRITER = _writer.Store(DATA)
 KST = timezone(timedelta(hours=9))
-APP_VERSION = "2026.11.21-80"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
+APP_VERSION = "2026.11.21-81"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 DEFAULT_CONFIG = {

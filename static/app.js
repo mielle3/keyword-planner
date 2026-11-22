@@ -1301,6 +1301,11 @@ function draftMd(md) {  // 간단한 마크다운 → 보기용 HTML
 function bodyPart(md) {
   let t = md || ""; const s = t.indexOf("[본문 시작]");
   if (s >= 0) t = t.slice(s + "[본문 시작]".length);
+  // 맨 위 '주제 · 세부주제' 라벨 줄·'확인 일자: …' 줄은 복사하지 않음
+  { const ls = t.split("\n"); let seen = 0;
+    for (let i = 0; i < ls.length && seen < 4; i++) { const x = ls[i].trim(); if (!x) continue; seen++;
+      if (/^확인 (일자|시각)\s*[:：]/.test(x) || (x.length <= 30 && /^[^.!?:：#\[\]|>]+ · [^.!?:：#\[\]|>]+$/.test(x))) ls[i] = null; }
+    t = ls.filter(x => x !== null).join("\n").replace(/\n{3,}/g, "\n\n"); }
   const e = t.search(/\n(?:-{3,}\s*\n+\s*)?■\s*(?:네이버 블로그|참고한|Gemini 이미지)/);
   return (e >= 0 ? t.slice(0, e) : t).trim();
 }
