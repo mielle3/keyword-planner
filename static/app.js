@@ -1168,9 +1168,12 @@ async function writeDraft(it, btn) {
   const ai = STATE.ai || {};
   if (ai.provider === "manual") return openManual(it);
   if (ai.provider === "antigravity" && !ai.antigravity) {
+    // 화면을 연 뒤에 설치했을 수 있으니 최신 상태를 한 번 더 확인
+    try { STATE = await api("/api/state"); } catch {}
+    if ((STATE.ai || {}).antigravity) return writeDraft(it, btn);
     // 이 PC에 Antigravity가 없음 (예: 회사 PC) → 설치하거나, 이번 글은 붙여넣기 방식으로
     if (confirm("이 PC에는 Antigravity(Gemini 자동 작성)가 설치돼 있지 않아요.\n\n[확인] 지금 설치하기 (설정 화면으로 이동)\n[취소] 이번 글은 Gemini 앱에 붙여 넣는 방식으로 쓰기")) {
-      hideDrawer(); showTab("settings"); setTimeout(() => { $(".ai-card")?.scrollIntoView({ behavior: "smooth" }); $("#agyInstall")?.click(); }, 300);
+      hideDrawer(); showTab("settings"); setTimeout(() => { $(".ai-card")?.scrollIntoView({ behavior: "smooth" }); $("#agyState").textContent = "← ①을 눌러 설치하세요"; }, 300);
     } else openManual(it);
     return;
   }
