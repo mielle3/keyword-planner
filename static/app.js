@@ -1812,7 +1812,9 @@ function smartHtml(md) {
     else out.push(P(inl(s)));
     i++;
   }
-  if (refs) out.push(P("<br>"), ...refs.split("\n").map((l, k) => P(inl(l), FS.small, k === 0 ? "font-weight:bold" : "")));
+  // 참고한 공식 자료: 본문과 다른 칸이라 위·아래에 가는 구분선
+  const RULE = () => P("─".repeat(28), 13, "color:#c9d3df;letter-spacing:-1px");
+  if (refs) out.push(P("<br>"), RULE(), ...refs.split("\n").map((l, k) => P(inl(l), FS.small, k === 0 ? "font-weight:bold" : "")), RULE());
   if (tags) out.push(P("<br>"), P(esc(tags), 15));
   // 연속된 문단은 스마트에디터 글 상자(se-component se-text) 하나로 묶음
   const html = []; let buf = [];
