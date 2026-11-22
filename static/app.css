@@ -1591,3 +1591,4 @@ select { height: 40px; box-sizing: border-box; }
 .dl-box { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border: 2px solid var(--ink); display: grid; place-items: center; font-weight: 900; background: #fff; color: #0e0e10; }
 .dl-item.sel { background: color-mix(in srgb, var(--mark) 35%, var(--paper)) !important; }
 .dl-item.sel .dl-box { background: var(--mark); }
+.dv-body table, .dv-body table td, .dv-body table th { font-size: 13px !important; }
