@@ -1786,8 +1786,21 @@ function smartHtml(md) {
       const rows = [];
       while (i < lines.length && lines[i].trim().startsWith("|")) { const c = lines[i].trim().replace(/^\||\|$/g, "").split("|").map(x => x.trim()); if (!c.every(x => /^:?-{2,}:?$/.test(x) || !x)) rows.push(c); i++; }
       // 표 글자는 13 (내 블로그 표와 같게) · 스마트에디터 표 모양(se-table/se-cell + se-fs-fs13)으로
-      const cell = (c, head) => `<td class="se-cell" style="border-bottom:1px solid #ddd;padding:10px 12px;font-size:13px;${head ? "background-color:#F2F2F2;" : ""}"><div class="se-module se-module-text"><p class="se-text-paragraph se-text-paragraph-align-" style="margin:0;line-height:1.9;font-size:13px"><span class="se-fs-fs13 se-ff-nanummaruburi" style="font-size:13px;font-weight:normal;">${inl(c)}</span></p></div></td>`;
-      out.push(`<div class="se-component se-table se-l-default"><div class="se-component-content"><div class="se-section se-section-table se-l-default" style="width:100%"><div class="se-table-container"><table class="se-table-content" style="border-collapse:collapse;width:100%;border-top:2px solid #333;font-size:13px"><tbody>${rows.map((r, ri) => `<tr class="se-tr">${r.map(c => cell(c, ri === 0)).join("")}</tr>`).join("")}</tbody></table></div></div></div></div>`);
+      // 열 너비: 표마다 칸 내용 길이를 보고 자동으로 (첫 칸=항목 이름은 줄바꿈 없이 한 줄에 들어가게)
+      const ncol = Math.max(...rows.map(r => r.length));
+      const tlen = c => [...String(c || "").replace(/\*\*/g, "")].reduce((n, ch) => n + (/[\u3131-\uD79D《》（）]/.test(ch) ? 1 : 0.55), 0);
+      const need = [...Array(ncol)].map((_, ci) => Math.max(...rows.map(r => tlen(r[ci]))));
+      // 짧은 칸(항목 이름·순위·저자 등)은 한 줄에 들어가는 너비를 먼저 주고, 긴 설명 칸이 남은 너비를 나눠 가짐
+      const CAP = (740 - 24 * ncol) / 13;  // 네이버 본문 폭에서 13 크기 글자가 들어가는 칸 수(대략)
+      const shortC = need.map(n => n <= 16), base = need.map((n, ci) => shortC[ci] ? n + 1 : 0);
+      const used = base.reduce((a, b) => a + b, 0), longs = need.map((n, ci) => shortC[ci] ? 0 : n);
+      const longSum = longs.reduce((a, b) => a + b, 0);
+      let chars = longSum ? base.map((b, ci) => shortC[ci] ? b : Math.max(8, (CAP - used) * longs[ci] / longSum)) : base.map(b => b + (CAP - used) / ncol);
+      if (chars.some(x => x <= 0) || !isFinite(chars[0])) chars = need.map(n => Math.max(n, 3));
+      const px = chars.map(c => c * 13 + 24), tot = px.reduce((a, b) => a + b, 0);
+      const pcts = px.map(p => p / tot * 100);
+      const cell = (c, head, ci) => `<td class="se-cell" colspan="1" rowspan="1" style="width:${pcts[ci].toFixed(2)}%;border-bottom:1px solid #ddd;padding:10px 12px;font-size:13px;${head ? "background-color:#F2F2F2;" : ""}"><div class="se-module se-module-text"><p class="se-text-paragraph se-text-paragraph-align-" style="margin:0;line-height:1.9;font-size:13px"><span class="se-fs-fs13 se-ff-nanummaruburi" style="font-size:13px;font-weight:normal;">${inl(c)}</span></p></div></td>`;
+      out.push(`<div class="se-component se-table se-l-default"><div class="se-component-content"><div class="se-section se-section-table se-l-default" style="width:100%"><div class="se-table-container"><table class="se-table-content" style="border-collapse:collapse;width:100%;table-layout:fixed;border-top:2px solid #333;font-size:13px"><tbody>${rows.map((r, ri) => `<tr class="se-tr">${r.map((c, ci) => cell(c, ri === 0, ci)).join("")}</tr>`).join("")}</tbody></table></div></div></div></div>`);
       continue;
     }
     if (s.startsWith(">")) {
