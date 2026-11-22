@@ -1592,3 +1592,4 @@ select { height: 40px; box-sizing: border-box; }
 .dl-item.sel { background: color-mix(in srgb, var(--mark) 35%, var(--paper)) !important; }
 .dl-item.sel .dl-box { background: var(--mark); }
 .dv-body table, .dv-body table td, .dv-body table th { font-size: 13px !important; }
+.dv-body, .dv-body table, .dv-body td, .dv-body th { font-family: 'NanumMaruBuri', '나눔마루부리', 'MaruBuri', serif; }
