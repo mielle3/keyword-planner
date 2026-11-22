@@ -315,6 +315,23 @@
       </details>
     </section>
 
+    <section class="card voice-card">
+      <header><h2>내 문체 학습 <span class="tag rec">초안이 내가 쓴 것처럼</span></h2><span class="keystate" id="voiceState"></span></header>
+      <p class="muted">반응이 좋았던 내 블로그 글을 골라 학습시키면, 문장 길이·어미·도입과 마무리·소제목 짓는 법·자주 쓰는 표현을 프로필로 만들어 모든 초안에 적용합니다. 구성은 작가 지침, 문장은 내 문체로 씁니다.</p>
+      <div class="voice-grid">
+        <div>
+          <div class="row-start" style="gap:8px;margin-bottom:8px"><b>내 블로그 글에서 고르기</b><button class="btn sm" type="button" id="voiceLoad">최근 글 불러오기</button></div>
+          <div class="voice-list" id="voiceList"><p class="muted" style="font-size:13px">설정 → 스스로 일하기의 블로그 ID를 넣고 "최근 글 불러오기"를 누르세요. 글 주소를 한 줄에 하나씩 붙여 넣어도 됩니다.</p></div>
+          <textarea id="voiceUrls" rows="2" placeholder="또는 글 주소를 한 줄에 하나씩 (예: https://blog.naver.com/아이디/글번호)"></textarea>
+        </div>
+        <div>
+          <b>학습된 프로필</b> <small class="muted">직접 고쳐도 돼요</small>
+          <textarea id="voiceProfile" rows="10" spellcheck="false" placeholder="아직 학습한 문체가 없어요"></textarea>
+          <div class="row-end" style="gap:8px"><button class="btn ghost" type="button" id="voiceClear">지우기</button><button class="btn" type="button" id="voiceSave">프로필 저장</button><button class="btn dark" type="button" id="voiceLearn">문체 학습하기</button></div>
+        </div>
+      </div>
+    </section>
+
     <section class="card auto-card">
       <header><h2>스스로 일하기 · 공부하기</h2></header>
       <div class="auto-grid">
@@ -518,8 +535,8 @@
       <textarea id="wConcept" rows="7" placeholder="어떤 글을 쓰고 싶은지 자유롭게 적으세요.&#10;예) 배우셈 운영자 입장에서 학원법 환불 기준을 표로 정리하고 실제 계산 예시를 넣기. 사이트 소개는 맨 뒤에만."></textarea>
     </div>
     <div class="mine-body" id="wFixBox" hidden>
-      <label class="inline-label">고칠 글 (블로그 글을 통째로 복사해 붙여 넣기)</label>
-      <textarea id="rwSource" rows="11" placeholder="Ctrl+A → Ctrl+C로 복사해 붙여 넣으세요"></textarea>
+      <label class="inline-label">고칠 글 (블로그 글 주소 또는 본문)</label>
+      <textarea id="rwSource" rows="11" placeholder="블로그 글 주소(https://blog.naver.com/아이디/글번호)를 넣거나, 글을 Ctrl+A → Ctrl+C로 복사해 붙여 넣으세요"></textarea>
       <label class="inline-label" style="margin-top:8px">고칠 방향 (비워도 됨)</label>
       <textarea id="rwNote" rows="2" placeholder="예) 홍보 느낌 줄이기"></textarea>
     </div>

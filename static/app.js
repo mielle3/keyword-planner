@@ -1357,6 +1357,7 @@ function renderDrafts() {
             <div class="dv-menu">
               <button id="dvRedo" title="같은 글감으로 처음부터 다시 써서 이 초안을 덮어써요">다시 쓰기</button>
               <button id="dvRestyle" title="내용은 살리고 형식만 바꿔 이 초안을 덮어써요">형식 바꾸기</button>
+              <button id="dvCopyPlain">본문 텍스트로 복사 (서식 없이)</button>
               <button id="dvCopyAll">전체 복사 (기획·프롬프트 포함)</button>
               ${d.versions ? `<button id="dvUndo">되돌리기 (이전 버전 ${d.versions}개)</button>` : ""}
               <button id="dvDelete" class="danger">삭제</button>
@@ -1376,8 +1377,9 @@ function renderDrafts() {
       ? `<textarea id="dvText" class="dv-text" spellcheck="false">${esc(d.text)}</textarea><div class="row-end"><span class="muted" id="dvSaved"></span><button class="btn dark" id="dvSave">고친 내용 저장</button></div>`
       : `<div class="dv-body">${draftMd(d.text)}</div>`}`;
   $("#dvStatus").onchange = async e => { DRAFT = await api("/api/drafts/" + d.id, { action: "status", status: e.target.value }); DRAFTS = await api("/api/drafts"); renderDrafts(); toast(`‘${e.target.value}’로 바꿨어요`); };
-  $("#dvCopyBody").onclick = () => { copy(bodyPart(d.text).replace(/\*\*(.+?)\*\*/g, "$1").replace(/^>\s?/gm, "") + (refsPart(d.text) ? "\n\n" + refsPart(d.text) : "") + "\n\n" + tagsPart(d.text)); };
+  $("#dvCopyBody").onclick = () => copySmart(d.text);
   $("#dvCopyAll").onclick = () => copy(d.text);
+  $("#dvCopyPlain").onclick = () => copy(bodyPart(d.text).replace(/\*\*(.+?)\*\*/g, "$1").replace(/^>\s?/gm, "") + (refsPart(d.text) ? "\n\n" + refsPart(d.text) : "") + "\n\n" + tagsPart(d.text));
   $("#dvDelete").onclick = async () => { if (!confirm("이 초안을 삭제할까요?")) return; DRAFTS = await api("/api/drafts/" + d.id, { action: "delete" }); DRAFT = null; await loadDrafts(); toast("삭제했어요"); };
   $("#dvRevise").onclick = () => { $("#dvReviseBox").hidden = false; $("#dvReviseText").focus(); };
   $("#dvReviseCancel").onclick = () => { $("#dvReviseBox").hidden = true; };
@@ -1737,4 +1739,96 @@ setInterval(() => { try { renderSync(); } catch {} }, 3000);
 document.addEventListener("click", e => {
   const m = document.querySelector(".dv-more[open]");
   if (m && (!m.contains(e.target) || e.target.closest(".dv-menu button"))) m.removeAttribute("open");
+});
+
+
+/* ---------- 스마트에디터용 서식 복사: 본문 16 · 소제목 19 파란 굵게 · 참고 자료 13 · 표 · 박스 ---------- */
+function smartHtml(md) {
+  const body = bodyPart(md), refs = refsPart(md), tags = tagsPart(md);
+  const inl = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+  const FS = (STATE && STATE.editor_fs) || { body: 16, heading: 19, small: 13 };
+  const P = (html, size = FS.body, extra = "") => `<p style="margin:0;line-height:1.8"><span style="font-size:${size}px;${extra}">${html}</span></p>`;
+  const lines = body.replace(/\r/g, "").split("\n"); const out = []; let i = 0;
+  while (i < lines.length) {
+    const s = lines[i].trim();
+    if (s.startsWith("|")) {
+      const rows = [];
+      while (i < lines.length && lines[i].trim().startsWith("|")) { const c = lines[i].trim().replace(/^\||\|$/g, "").split("|").map(x => x.trim()); if (!c.every(x => /^:?-{2,}:?$/.test(x) || !x)) rows.push(c); i++; }
+      out.push(`<table style="border-collapse:collapse;width:100%;border-top:2px solid #333">${rows.map((r, ri) => `<tr>${r.map(c => ri ? `<td style="border-bottom:1px solid #ddd;padding:10px 12px;font-size:15px">${inl(c)}</td>` : `<th style="background:#F2F2F2;border-bottom:1px solid #ddd;padding:10px 12px;font-size:15px;text-align:left">${inl(c)}</th>`).join("")}</tr>`).join("")}</table>`);
+      continue;
+    }
+    if (s.startsWith(">")) {
+      const q = []; while (i < lines.length && lines[i].trim().startsWith(">")) { q.push(lines[i].trim().replace(/^>\s?/, "")); i++; }
+      const warn = q.some(x => x.includes("⚠"));
+      out.push(`<blockquote style="margin:8px 0;padding:14px 18px;border-left:4px solid ${warn ? "#E08A00" : "#2563EB"};background:${warn ? "#FFF4E0" : "#EAF1FF"}">${q.map((x, k) => x ? P(inl(x), 16, (!warn || k === 0) ? "font-weight:bold" : "") : P("<br>")).join("")}</blockquote>`);
+      continue;
+    }
+    if (!s) out.push(P("<br>"));
+    else if (/^```|^~~~/.test(s)) {}
+    else if (/^[-=]{3,}$/.test(s)) out.push("<hr>");
+    else if (s.startsWith("## ")) out.push(P(inl(s.slice(3)), FS.heading, "font-weight:bold;color:#2B6CB0"));
+    else if (s.startsWith("[📸")) out.push(P(esc(s), 13, "color:#999"));
+    else out.push(P(inl(s)));
+    i++;
+  }
+  if (refs) out.push(P("<br>"), ...refs.split("\n").map((l, k) => P(inl(l), FS.small, k === 0 ? "font-weight:bold" : "")));
+  if (tags) out.push(P("<br>"), P(esc(tags), 15));
+  return out.join("");
+}
+async function copySmart(md) {
+  const html = smartHtml(md);
+  const plain = bodyPart(md).replace(/\*\*(.+?)\*\*/g, "$1").replace(/^>\s?/gm, "") + (refsPart(md) ? "\n\n" + refsPart(md) : "") + "\n\n" + tagsPart(md);
+  try {
+    await navigator.clipboard.write([new ClipboardItem({ "text/html": new Blob([html], { type: "text/html" }), "text/plain": new Blob([plain], { type: "text/plain" }) })]);
+  } catch {
+    const box = document.createElement("div"); box.contentEditable = "true"; box.style.cssText = "position:fixed;left:-9999px;top:0"; box.innerHTML = html; document.body.appendChild(box);
+    const r = document.createRange(); r.selectNodeContents(box); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    try { document.execCommand("copy"); } catch {} sel.removeAllRanges(); box.remove();
+  }
+  const F2 = (STATE && STATE.editor_fs) || { body: 16, heading: 19, small: 13 };
+  toast(`서식째 복사했어요 · 스마트에디터 본문에 붙여 넣으세요 (소제목 ${F2.heading}·본문 ${F2.body}·참고 자료 ${F2.small})`);
+}
+
+/* ---------- 내 문체 학습 ---------- */
+async function loadVoice() {
+  try {
+    const v = await api("/api/voice");
+    if (document.activeElement !== $("#voiceProfile")) $("#voiceProfile").value = v.profile || "";
+    $("#voiceState").className = "keystate" + (v.profile ? " ok" : "");
+    $("#voiceState").textContent = v.job.running ? `학습 중… ${v.job.seconds}초` : v.job.error ? v.job.error : v.profile ? "적용 중" : "아직 없음";
+    return v;
+  } catch {}
+}
+if ($("#voiceLoad")) {
+  $("#voiceLoad").onclick = async () => {
+    const b = $("#voiceLoad"); b.disabled = true; b.textContent = "불러오는 중…";
+    try {
+      const r = await api("/api/myblog", {});
+      const posts = (r.posts || []).slice(0, 20);
+      $("#voiceList").innerHTML = posts.length ? posts.map((p, i) => `<label class="voice-item"><input type="checkbox" value="${esc(p.link)}" ${i < 5 ? "checked" : ""}><span>${esc(p.title)}</span><small>${esc(p.date || "")}</small></label>`).join("")
+        : `<p class="muted" style="font-size:13px">${esc(r.error || "글을 찾지 못했어요. 블로그 ID를 확인해 주세요.")}</p>`;
+    } catch (err) { toast(err.message); }
+    finally { b.disabled = false; b.textContent = "최근 글 불러오기"; }
+  };
+  $("#voiceLearn").onclick = async () => {
+    const urls = [...$$("#voiceList input:checked").map(x => x.value), ...$("#voiceUrls").value.split("\n").map(s => s.trim()).filter(s => /blog\.naver\.com/.test(s))];
+    if (urls.length < 2) { toast("반응이 좋았던 내 글을 2편 이상 골라 주세요"); return; }
+    try {
+      await api("/api/voice", { learn: true, urls });
+      toast(`글 ${urls.length}편을 읽고 문체를 학습하는 중이에요 (1~3분)`);
+      for (let k = 0; k < 120; k++) { await new Promise(r => setTimeout(r, 3000)); const v = await loadVoice(); if (v && !v.job.running) { toast(v.job.error || "문체 학습이 끝났어요 · 다음 초안부터 내 문체로 써요"); break; } }
+    } catch (err) { toast(err.message); }
+  };
+  $("#voiceSave").onclick = async () => { await api("/api/voice", { profile: $("#voiceProfile").value }); await loadVoice(); toast("문체 프로필을 저장했어요"); };
+  $("#voiceClear").onclick = async () => { if (!confirm("학습한 문체를 지울까요?")) return; await api("/api/voice", { profile: "" }); await loadVoice(); toast("지웠어요 · 작가 지침의 문체로 써요"); };
+}
+document.addEventListener("click", e => { if (e.target.closest('[data-tab="settings"]')) setTimeout(loadVoice, 100); });
+
+/* ---------- 이미 쓴 글 고치기: 블로그 글 주소만 넣어도 읽어 옴 ---------- */
+if ($("#rwSource")) $("#rwSource").addEventListener("blur", async () => {
+  const v = $("#rwSource").value.trim();
+  if (!/^https?:\/\/(m\.)?blog\.naver\.com\/\S+$/.test(v)) return;
+  toast("블로그 글을 읽어 오는 중…");
+  try { const p = await api("/api/naver/post", { url: v }); $("#rwSource").value = `${p.title}\n\n${p.text}`; toast(`‘${p.title.slice(0, 20)}’ 글을 읽어 왔어요 (${p.stats.chars.toLocaleString()}자)`); }
+  catch (err) { toast(err.message); }
 });

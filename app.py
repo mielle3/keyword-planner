@@ -22,6 +22,7 @@ import subprocess
 import os
 import shutil
 import hashlib
+import html
 import hmac
 import json
 import math
@@ -87,7 +88,7 @@ EVERGREEN_CHECK_PATH = DATA / "evergreen_check.json"
 import writer as _writer  # AI 글쓰기 (작가 지침·블로그 기억·초안 보관·docx)
 WRITER = _writer.Store(DATA)
 KST = timezone(timedelta(hours=9))
-APP_VERSION = "2026.11.21-65"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
+APP_VERSION = "2026.11.21-66"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 DEFAULT_CONFIG = {
@@ -1634,6 +1635,83 @@ def my_blog_posts(cfg, refresh=False):
     return posts[:50]
 
 
+# ---------- 네이버 블로그 글 읽기 (스마트에디터 ONE → 초안 형식) ----------
+def _nv_text(fragment):
+    t = re.sub(r"<br\s*/?>", "\n", fragment)
+    t = re.sub(r"</p>", "\n", t)
+    t = re.sub(r"<(b|strong)[^>]*>(.*?)</\1>", lambda m: "**" + strip_tags(m.group(2)).strip() + "**" if strip_tags(m.group(2)).strip() else "", t, flags=re.S)
+    t = re.sub(r"<[^>]+>", "", t)
+    t = html.unescape(t).replace("​", "").replace("\xa0", " ")
+    return "\n".join(l.rstrip() for l in t.splitlines())
+
+
+def naver_post_ref(url_or_id):
+    """URL에서 blogId·logNo 추출 (blog.naver.com/아이디/번호, PostView, m.blog 모두)."""
+    u = str(url_or_id).strip()
+    m = re.search(r"blogId=([\w-]+).*?logNo=(\d+)", u) or re.search(r"blog\.naver\.com/([\w-]+)/(\d+)", u)
+    return (m.group(1), m.group(2)) if m else (None, None)
+
+
+def fetch_naver_post(url):
+    """공개 네이버 블로그 글을 읽어 {title, text(초안 형식), stats} 반환."""
+    bid, no = naver_post_ref(url)
+    if not bid:
+        raise ValueError("네이버 블로그 글 주소가 아니에요 (예: https://blog.naver.com/아이디/글번호)")
+    raw = http_get(f"https://blog.naver.com/PostView.naver?blogId={bid}&logNo={no}", timeout=15)
+    h = raw.decode("utf-8", "replace") if isinstance(raw, bytes) else raw
+    title = ""
+    mt = re.search(r'<div class="se-module se-module-text se-title-text">(.*?)</div>', h, re.S) or re.search(r"<title>(.*?)</title>", h, re.S)
+    if mt:
+        title = re.sub(r"\s*:\s*네이버 블로그\s*$", "", _nv_text(mt.group(1)).strip())
+    start = h.find('class="se-main-container"')
+    if start < 0:
+        raise ValueError("글 본문을 찾지 못했어요 (비공개이거나 예전 편집기로 쓴 글일 수 있어요)")
+    body = h[start:]
+    end = re.search(r'<div class="(post_footer_contents|post-btn|wrap_postcomment)', body)
+    body = body[:end.start()] if end else body
+    parts = re.split(r'(?=<div class="se-component se-)', body)
+    out, st = [], {"headings": 0, "images": 0, "tables": 0, "quotes": 0, "font_sizes": {}}
+    for p in parts:
+        m = re.match(r'<div class="se-component se-(\w+)', p)
+        if not m:
+            continue
+        kind = m.group(1)
+        for fs in re.findall(r"se-fs-fs(\d+)", p):
+            st["font_sizes"][fs] = st["font_sizes"].get(fs, 0) + 1
+        if kind == "sectionTitle":
+            st["headings"] += 1
+            out.append("## " + _nv_text(p).strip().replace("\n", " "))
+        elif kind == "quotation":
+            st["quotes"] += 1
+            q = [l for l in _nv_text(p).splitlines() if l.strip()]
+            out.append("\n".join("> " + l.strip() for l in q))
+        elif kind == "table":
+            st["tables"] += 1
+            rows = []
+            for tr in re.findall(r"<tr[^>]*>(.*?)</tr>", p, re.S):
+                cells = [_nv_text(c).strip().replace("\n", " ") for c in re.findall(r"<td[^>]*>(.*?)</td>", tr, re.S)]
+                if cells:
+                    rows.append("| " + " | ".join(cells) + " |")
+            if rows:
+                rows.insert(1, "| " + " | ".join([":---"] * (rows[0].count("|") - 1)) + " |")
+                out.append("\n".join(rows))
+        elif kind in ("image", "imageGroup", "imageStrip"):
+            st["images"] += 1
+            cap = re.search(r'<div class="se-module se-module-text se-caption">(.*?)</div>', p, re.S)
+            out.append("[📸 이미지" + (": " + _nv_text(cap.group(1)).strip() if cap else "") + "]")
+        elif kind == "horizontalLine":
+            out.append("---")
+        elif kind in ("text", "oglink", "placesMap"):
+            t = _nv_text(p).strip()
+            if t:
+                out.append(t)
+    text = "\n\n".join(x for x in out if x.strip())
+    text = re.sub(r"\*\*\s*\*\*", "", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    st["chars"] = len(re.sub(r"\s+", "", text))
+    return {"title": title, "text": text, "stats": st, "url": f"https://blog.naver.com/{bid}/{no}"}
+
+
 def apply_learning(items, cfg):
     """공부한 것 반영: 관심 없음(−), 내 블로그에 이미 쓴 주제(−), 저장·발행한 분야(+)."""
     dislikes = [norm(d) for d in cfg.get("dislikes", []) if d]
@@ -2102,6 +2180,29 @@ def keyword_records(keyword, cfg):
               for d in WRITER.index() if any(w in norm(d.get("keyword", "") + (d.get("title") or "")) for w in words)][:8]
     mine = [m for m in cfg.get("my_keywords", []) if any(w in norm(m) for w in words)][:8]
     return {"posts": posts, "drafts": drafts, "my_keywords": mine}
+
+
+# ---------- 내 문체 학습 ----------
+VOICE_JOB = {"running": False, "error": "", "started": 0, "done": 0}
+
+
+def start_voice_learn(samples):
+    if VOICE_JOB["running"]:
+        return
+    VOICE_JOB.update(running=True, error="", started=time.time())
+
+    def work():
+        try:
+            _writer.learn_voice(WRITER, load_config(), samples)
+            VOICE_JOB.update(done=time.time())
+        except _writer.WriterError as e:
+            VOICE_JOB["error"] = str(e)
+        except Exception as e:
+            traceback.print_exc()
+            VOICE_JOB["error"] = f"문체를 학습하지 못했어요: {e}"
+        finally:
+            VOICE_JOB["running"] = False
+    threading.Thread(target=work, daemon=True).start()
 
 
 # ---------- AI 글 아이디어 (검색 수치 + 콘셉트 묶음 + 내 기록 + 최근 뉴스를 검토) ----------
@@ -2845,6 +2946,7 @@ def app_state():
             "topic_examples": examples, "topic_presets": TOPIC_PRESETS, "version": APP_VERSION, "data_dir": str(DATA), "auto_topics": auto_topics,
             "include_issues": cfg.get("include_issues", True), "my_keywords": cfg.get("my_keywords", []),
             "update": {k: _update[k] for k in ("latest", "notes", "available", "error")},
+            "editor_fs": cfg.get("editor_fs") or {"body": 16, "heading": 19, "small": 13},
             "sync": {"data_dir": str(DATA), "local": str(DATA) == str(local_data_dir()), "onedrive": str(onedrive_dir() or ""),
                      "host": HOST, "others": other_hosts()},
             "auto": {"startup": bool(startup_shortcut_path() and startup_shortcut_path().exists()),
@@ -2920,6 +3022,9 @@ class Handler(BaseHTTPRequestHandler):
             st = IDEAS.get(k) or {}
             return self._send(200, {"running": bool(st.get("running")), "ideas": st.get("ideas", []), "error": st.get("error", ""),
                                     "seconds": round(time.time() - st["started"]) if st.get("started") else 0})
+        if path == "/api/voice":
+            return self._send(200, {"profile": WRITER.voice(), "path": str(WRITER.voice_path), "job": {**VOICE_JOB,
+                                    "seconds": round(time.time() - VOICE_JOB["started"]) if VOICE_JOB["running"] else 0}})
         if path == "/api/update/check":
             return self._send(200, {**check_update(force=True), "current": APP_VERSION})
         if path == "/api/draft/status":
@@ -3155,6 +3260,43 @@ class Handler(BaseHTTPRequestHandler):
             except Exception as e:
                 traceback.print_exc()
                 return self._send(500, {"error": f"분석하지 못했어요: {e}"})
+        if path == "/api/voice":
+            if body.get("learn"):
+                samples = [str(s) for s in (body.get("samples") or []) if str(s).strip()][:6]
+                stats = []
+                for u in (body.get("urls") or [])[:6]:  # 내 블로그 글을 직접 읽어 옴
+                    try:
+                        p = fetch_naver_post(u)
+                        samples.append(f"제목: {p['title']}\n\n{p['text']}")
+                        stats.append(p["stats"])
+                    except Exception as e:
+                        print("글 읽기 실패:", u, e)
+                if stats:
+                    fs = {}
+                    for s_ in stats:
+                        for k, v in s_["font_sizes"].items():
+                            fs[k] = fs.get(k, 0) + v
+                    body_fs = max((k for k in fs if k in ("15", "16", "17")), key=lambda k: fs[k], default="16")  # 본문 크기: 내가 실제로 가장 많이 쓴 크기
+                    cfg_ = load_config()
+                    cfg_["editor_fs"] = {"body": int(body_fs), "heading": 19, "small": 13}
+                    save_config(cfg_)
+                    samples.append("[편집 통계 · 원문 HTML에서 측정] 글자 크기 사용 횟수: " + ", ".join(f"{k}={v}" for k, v in sorted(fs.items(), key=lambda x: -x[1]))
+                                   + f" · 글당 평균 이미지 {sum(s_['images'] for s_ in stats) / len(stats):.1f}장, 표 {sum(s_['tables'] for s_ in stats) / len(stats):.1f}개, 인용 박스 {sum(s_['quotes'] for s_ in stats) / len(stats):.1f}개, 본문 {sum(s_['chars'] for s_ in stats) // len(stats):,}자(공백 제외)")
+                if not ai_ready(load_config()):
+                    return self._send(400, {"error": "AI가 연결되지 않았어요. 설정 → AI 글쓰기를 먼저 연결해 주세요."})
+                if sum(len(s) for s in samples) < 800:
+                    return self._send(400, {"error": "내 글을 2편 이상(각 1,000자 이상) 붙여 넣어 주세요."})
+                start_voice_learn(samples)
+                return self._send(200, {"ok": True})
+            if "profile" in body:
+                WRITER.save_voice(str(body.get("profile") or "")[:30000])
+                return self._send(200, {"ok": True, "profile": WRITER.voice()})
+            return self._send(400, {"error": "요청을 이해하지 못했어요"})
+        if path == "/api/naver/post":
+            try:
+                return self._send(200, fetch_naver_post(str(body.get("url", ""))))
+            except Exception as e:
+                return self._send(400, {"error": f"글을 읽지 못했어요: {e}"})
         if path == "/api/ideas":
             kw = str(body.get("keyword", "")).strip()[:40]
             if not kw:

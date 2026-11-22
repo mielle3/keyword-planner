@@ -33,6 +33,7 @@ OLD_DEFAULT_GUIDES = {"f6bb50a3a4463a3fabab14ccb79c75b5bb4e123b0e34f863719e64c00
 
 
 UPDATE_REPO = "mielle3/keyword-planner"
+VOICE = {"text": ""}  # make_draft 때 store.voice()로 채움 (system_prompt에서 사용)
 
 
 def fetch_repo_file(name):
@@ -165,6 +166,24 @@ class Store:
             text = self.default_guide(style)
             path.write_text(text, encoding="utf-8")
         return text
+
+    # 내 문체 프로필 (사용자 본인 글에서 학습)
+    @property
+    def voice_path(self):
+        return self.mem_dir / "내_문체_프로필.md"
+
+    def voice(self):
+        try:
+            return self.voice_path.read_text(encoding="utf-8").strip()
+        except Exception:
+            return ""
+
+    def save_voice(self, text):
+        self.mem_dir.mkdir(parents=True, exist_ok=True)
+        if text.strip():
+            self.voice_path.write_text(text.strip() + "\n", encoding="utf-8")
+        elif self.voice_path.exists():
+            self.voice_path.unlink()
 
     def save_guide(self, text, style="info"):
         self.mem_dir.mkdir(parents=True, exist_ok=True)
@@ -435,6 +454,12 @@ def system_prompt(guide, memory, web, style="info"):
         tail.append("- 웹 검색 도구로 정부·기관·기업 공식 사이트를 우선 확인하고, 확인한 자료만 ■ 참고한 공식 자료 칸에 적습니다.")
     else:
         tail.append("- 이번에는 웹 검색을 쓸 수 없습니다. 바뀔 수 있는 수치·날짜·조건은 단정하지 말고 '공식 공지 확인'을 안내하며, 참고 자료 칸에는 '이번 초안은 웹 검색 없이 작성됨 · 게시 전 공식 자료 확인 필요'라고 적습니다.")
+    voice = (VOICE.get("text") or "").strip()
+    if voice:
+        tail += ["", "---", "", "# 내 문체 프로필 (사용자 본인의 글에서 학습한 문체)",
+                 "글의 구성·출력 양식·편집 형식은 위 작가 지침을 따르고, **문장·말투·어미·도입과 마무리 방식·자주 쓰는 표현**은 이 프로필을 따릅니다. "
+                 "프로필과 지침의 문체 규칙이 다르면 프로필을 따릅니다(사용자 메모가 있으면 메모가 가장 우선). 프로필의 예시 문장을 그대로 복사하지 말고, 같은 결로 새로 씁니다.",
+                 "", voice]
     return guide.strip() + "\n\n---\n\n" + memory.strip() + "\n" + "\n".join(tail)
 
 
@@ -861,6 +886,7 @@ def manual_prompt(store, cfg, item, saved, today):
     style = pick_style(item)
     guide = store.guide(style)
     memory = build_memory(store, cfg, saved)
+    VOICE["text"] = store.voice()
     user = draft_request(item, cfg, today)
     full = system_prompt(guide, memory, None, style) + "\n\n---\n\n# 이번 요청\n\n" + user
     short = ("(작가 지침은 이 프로젝트/Gem에 들어 있는 지침을 따르세요. 이미지는 만들지 말고 맨 아래에 Gemini 이미지 프롬프트 3개만 쓰세요.)\n\n"
@@ -1091,6 +1117,7 @@ def make_draft(store, cfg, item, saved, today, progress=None):
     style = pick_style(item)
     guide = store.guide(style)
     memory = build_memory(store, cfg, saved)
+    VOICE["text"] = store.voice()
     system, user = system_prompt(guide, memory, web, style), draft_request(item, cfg, today)
     t0 = time.time()
     call = _caller(provider, cfg, store, system, web)
@@ -1120,6 +1147,62 @@ def make_draft(store, cfg, item, saved, today, progress=None):
     rec = save_draft(store, cfg, item, saved, text, provider, model, bool(web), sources, round(time.time() - t0), style=style)
     store.set_meta(rec["id"], fixed=fixed, auto=bool(cfg.get("_auto")), first_seconds=t_first, intent=intent)
     return {**rec, "check": chk, "fixed": fixed, "auto": bool(cfg.get("_auto")), "first_seconds": t_first}
+
+
+VOICE_SYSTEM = """# 역할
+당신은 글쓰기 문체 분석가입니다. 사용자가 직접 쓴 네이버 블로그 글 여러 편을 읽고, 다른 AI가 이 사람처럼 쓸 수 있도록 **문체 프로필**을 만듭니다.
+
+# 원칙
+- 글의 주제·정보가 아니라 **쓰는 방식**을 분석합니다.
+- 실제 글에서 확인되는 특징만 씁니다. 추측하거나 일반론을 늘어놓지 않습니다.
+- 각 항목은 구체적으로: "문장이 짧다" 대신 "한 문장 평균 30~45자, 2~3문장마다 줄바꿈".
+- 잘 된 점(살릴 것)과 반복되는 약점(고칠 것)을 구분합니다.
+
+# 출력 (마크다운만, 앞뒤 설명 없이)
+## 한 줄 요약
+## 문장과 어미
+(평균 문장 길이, 주로 쓰는 어미 비율(~입니다/~해요 등), 문장 시작 습관)
+## 도입 방식
+(첫 2~3문장을 어떻게 여는지, 독자에게 말을 거는지)
+## 소제목과 구성
+(소제목 짓는 법·길이·번호, 섹션 순서 습관)
+## 문단과 줄바꿈
+(문단 길이, 빈 줄 사용, 모바일 가독성 습관)
+## 강조·표·박스
+(굵게 쓰는 대상, 표·체크리스트·인용 박스 쓰는 습관)
+## 자주 쓰는 표현 (살릴 것)
+(이 사람다운 표현 5~10개를 짧게 인용)
+## 반복되는 약점 (고칠 것)
+(반복 표현·장황한 부분·말버릇)
+## 마무리 방식
+## 예시 문장
+(이 사람 문체를 잘 보여 주는 원문 문장 5개를 그대로 인용)
+"""
+
+
+def learn_voice(store, cfg, samples):
+    """사용자 글 여러 편 → 내 문체 프로필(md) 생성·저장."""
+    provider = cfg.get("ai_provider", "antigravity")
+    stat = [s for s in samples if s.startswith("[편집 통계")]
+    posts = [s for s in samples if not s.startswith("[편집 통계")]
+    joined = "\n\n".join(f"## 글 {i + 1}\n\n{s.strip()[:9000]}" for i, s in enumerate(posts[:6]) if s.strip()) + ("\n\n" + stat[0] if stat else "")
+    if len(joined) < 800:
+        raise WriterError("분석할 글이 너무 짧아요. 내 글을 2편 이상(각 1,000자 이상) 붙여 넣어 주세요.")
+    user = "아래는 사용자가 직접 쓴 네이버 블로그 글입니다. 블로그 화면에서 같이 복사된 메뉴 글자(프로파일, URL 복사, 공감, 댓글 등)는 무시하세요.\n\n" + joined
+    note = "파일을 만들거나 고치지 말고, 문체 프로필 마크다운만 답변으로 출력하세요."
+    if provider == "antigravity":
+        text, _s, _m = call_agy(VOICE_SYSTEM, user, False, cfg.get("agy_path", ""), store.data, cfg.get("agy_model", ""), note=note)
+    elif provider == "claude_code":
+        text, _s, _m = call_claude_code(VOICE_SYSTEM, user + "\n\n" + note, False, cfg.get("claude_code_path", ""), store.data,
+                                        cfg.get("claude_code_model", "opus"))
+    else:
+        raise WriterError("문체 학습은 Antigravity 또는 Claude Max 연결이 필요해요.")
+    text = text.strip()
+    if "##" not in text or len(text) < 300:
+        raise WriterError("AI 답변에서 문체 프로필을 읽지 못했어요. 다시 시도해 주세요.")
+    profile = f"# 내 문체 프로필\n\n> 내 글 {len(posts)}편에서 학습 · {now_iso()[:10]} · 직접 고쳐도 됩니다\n\n" + text
+    store.save_voice(profile)
+    return profile
 
 
 IDEAS_SYSTEM = """# 역할
