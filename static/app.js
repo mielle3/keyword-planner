@@ -1754,23 +1754,25 @@ document.addEventListener("click", e => {
 /* ---------- 스마트에디터용 서식 복사: 본문 16 · 소제목 19 파란 굵게 · 참고 자료 13 · 표 · 박스 ---------- */
 function smartHtml(md) {
   const body = bodyPart(md), refs = refsPart(md), tags = tagsPart(md);
-  const inl = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+  const inl = s => esc(s).replace(/\*\*(.+?)\*\*/g, "$1");  // 본문 복사에서는 굵게를 쓰지 않음 (소제목만 굵게)
   const FS = (STATE && STATE.editor_fs) || { body: 16, heading: 19, small: 13 };
   // 스마트에디터 ONE이 자기 글에서 쓰는 모양(se-fs-fs크기 클래스)을 같이 넣어야 붙여 넣을 때 글자 크기가 살아남음
-  const P = (html, size = FS.body, extra = "") => `<p class="se-text-paragraph se-text-paragraph-align-" style="margin:0;line-height:1.7"><span class="se-fs-fs${size} se-ff-nanummaruburi" style="font-size:${size}px;${extra}">${html}</span></p>`;
+  const P = (html, size = FS.body, extra = "") => `<p class="se-text-paragraph se-text-paragraph-align-" style="margin:0;line-height:2"><span class="se-fs-fs${size} se-ff-nanummaruburi" style="font-family:'NanumMaruBuri','나눔마루부리',serif;font-size:${size}px;${/font-weight/.test(extra) ? "" : "font-weight:normal;"}${extra}">${html}</span></p>`;
   const lines = body.replace(/\r/g, "").replace(/([^\n]*\S[^\n]*)\n(\*\*Q[.．])/g, "$1\n\n$2").split("\n"); const out = []; let i = 0;
   while (i < lines.length) {
     const s = lines[i].trim();
     if (s.startsWith("|")) {
       const rows = [];
       while (i < lines.length && lines[i].trim().startsWith("|")) { const c = lines[i].trim().replace(/^\||\|$/g, "").split("|").map(x => x.trim()); if (!c.every(x => /^:?-{2,}:?$/.test(x) || !x)) rows.push(c); i++; }
-      out.push(`<table style="border-collapse:collapse;width:100%;border-top:2px solid #333">${rows.map((r, ri) => `<tr>${r.map(c => ri ? `<td style="border-bottom:1px solid #ddd;padding:10px 12px;font-size:15px">${inl(c)}</td>` : `<th style="background:#F2F2F2;border-bottom:1px solid #ddd;padding:10px 12px;font-size:15px;text-align:left">${inl(c)}</th>`).join("")}</tr>`).join("")}</table>`);
+      // 표 글자는 13 (내 블로그 표와 같게) · 스마트에디터 표 모양(se-table/se-cell + se-fs-fs13)으로
+      const cell = (c, head) => `<td class="se-cell" style="border-bottom:1px solid #ddd;padding:10px 12px;${head ? "background-color:#F2F2F2;" : ""}"><div class="se-module se-module-text"><p class="se-text-paragraph se-text-paragraph-align-" style="margin:0;line-height:2"><span class="se-fs-fs13 se-ff-nanummaruburi" style="font-family:'NanumMaruBuri','나눔마루부리',serif;font-size:13px;font-weight:normal;">${inl(c)}</span></p></div></td>`;
+      out.push(`<div class="se-component se-table se-l-default"><div class="se-component-content"><div class="se-section se-section-table se-l-default" style="width:100%"><div class="se-table-container"><table class="se-table-content" style="border-collapse:collapse;width:100%;border-top:2px solid #333"><tbody>${rows.map((r, ri) => `<tr class="se-tr">${r.map(c => cell(c, ri === 0)).join("")}</tr>`).join("")}</tbody></table></div></div></div></div>`);
       continue;
     }
     if (s.startsWith(">")) {
       const q = []; while (i < lines.length && lines[i].trim().startsWith(">")) { q.push(lines[i].trim().replace(/^>\s?/, "")); i++; }
       const warn = q.some(x => x.includes("⚠"));
-      out.push(`<blockquote style="margin:8px 0;padding:14px 18px;border-left:4px solid ${warn ? "#E08A00" : "#2563EB"};background:${warn ? "#FFF4E0" : "#EAF1FF"}">${q.map((x, k) => x ? P(inl(x), 16, (!warn || k === 0) ? "font-weight:bold" : "") : P("<br>")).join("")}</blockquote>`);
+      out.push(`<blockquote style="margin:8px 0;padding:14px 18px;border-left:4px solid ${warn ? "#E08A00" : "#2563EB"};background:${warn ? "#FFF4E0" : "#EAF1FF"}">${q.map((x, k) => x ? P(inl(x), FS.body) : P("<br>")).join("")}</blockquote>`);
       continue;
     }
     if (!s) out.push(P("<br>"));
@@ -1778,6 +1780,7 @@ function smartHtml(md) {
     else if (/^[-=]{3,}$/.test(s)) out.push("<hr>");
     else if (s.startsWith("## ")) out.push(P(inl(s.slice(3)), FS.heading, "font-weight:bold;color:#2f3f9e"));
     else if (s.startsWith("[📸")) out.push(P(esc(s), 13, "color:#999"));
+    else if (/^\*\*Q[.．]/.test(s)) out.push(P(inl(s), FS.body, "font-weight:bold"));
     else out.push(P(inl(s)));
     i++;
   }
@@ -1796,7 +1799,7 @@ async function copySmart(md) {
   try {
     await navigator.clipboard.write([new ClipboardItem({ "text/html": new Blob([html], { type: "text/html" }), "text/plain": new Blob([plain], { type: "text/plain" }) })]);
   } catch {
-    const box = document.createElement("div"); box.contentEditable = "true"; box.style.cssText = "position:fixed;left:-9999px;top:0"; box.innerHTML = html; document.body.appendChild(box);
+    const box = document.createElement("div"); box.contentEditable = "true"; box.style.cssText = "position:fixed;left:-9999px;top:0;font-weight:normal;font-family:sans-serif;color:#000;letter-spacing:0"; box.innerHTML = html; document.body.appendChild(box);
     const r = document.createRange(); r.selectNodeContents(box); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
     try { document.execCommand("copy"); } catch {} sel.removeAllRanges(); box.remove();
   }
