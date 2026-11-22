@@ -19,7 +19,7 @@ KST = timezone(timedelta(hours=9))
 CLAUDE_MODEL = "claude-opus-5-5"
 APP_DIR = Path(__file__).parent
 # 예전 버전의 기본 작가 지침(sha256). 사용자가 손대지 않았으면 새 지침으로 올려 줌
-OLD_DEFAULT_GUIDES = {"2228d665832e96c6568394f82940539a100aae17576214723e59f3dfb5323c71", "0c961d7c537c2be1a0e7613886ae38f6dbe302a68f6cfb3d1784cdacade57787", "a6f083674fa6e12b47a94a308965a6162027a2bd6c5ab0eec813bb798a992e60", "0cd20f813afa36be043b94d94405eef301eddfbfe9765425ffc35de3592f490b", "f6bb50a3a4463a3fabab14ccb79c75b5bb4e123b0e34f863719e64c001a9dc42",
+OLD_DEFAULT_GUIDES = {"b894956ecb9089c3354c665cdf684da4e198659d502ce0f79c1f83437b579539", "4ae5dbab9cc26888f6b56281624ace2319763bd1248671eb0cd7cc1c78ead867", "2228d665832e96c6568394f82940539a100aae17576214723e59f3dfb5323c71", "0c961d7c537c2be1a0e7613886ae38f6dbe302a68f6cfb3d1784cdacade57787", "a6f083674fa6e12b47a94a308965a6162027a2bd6c5ab0eec813bb798a992e60", "0cd20f813afa36be043b94d94405eef301eddfbfe9765425ffc35de3592f490b", "f6bb50a3a4463a3fabab14ccb79c75b5bb4e123b0e34f863719e64c001a9dc42",
                       "50ddd38bb2615fdda855534a003fe9f226bfb05e6d06d7f5b8072cdb3b332a68",
                       "737470eff321f4bf999e3a33d06e476814f40e558765752e63f81d31bd119726",
                       "88607b921186d719388360cffe4419d31c3bb103b8bee917379ceb3327609ba2",
@@ -51,10 +51,10 @@ def fetch_repo_file(name):
     return False
 
 
-OLD_ESSAY_GUIDES = {"d4ab69ab3c7c45557d336d05a2171330b004b3c54aa6ced436f4be26879c312f", "18eac005a699b2a7cfa1ddd23e90f5ff9f9f2f70f07388daa608dda49c558a7f", "4daefb41ecf10b68cab44a5e092bf4756970d4e730128849c7af6229216fdd33"}  # 읽을거리형 기본 지침의 예전 판 (고치지 않았으면 자동 교체)
+OLD_ESSAY_GUIDES = {"8902f714050f13c941454680dea97257484de367d3a10fa6f64d403cd0df4ff5", "d4ab69ab3c7c45557d336d05a2171330b004b3c54aa6ced436f4be26879c312f", "18eac005a699b2a7cfa1ddd23e90f5ff9f9f2f70f07388daa608dda49c558a7f", "4daefb41ecf10b68cab44a5e092bf4756970d4e730128849c7af6229216fdd33"}  # 읽을거리형 기본 지침의 예전 판 (고치지 않았으면 자동 교체)
 
 GUIDE_FILES = {"info": "writer_guide.md", "essay": "writer_guide_essay.md", "deal": "writer_guide_deal.md"}
-OLD_DEAL_GUIDES = {"e90e6b081db348c81e8a6db390e6dfc77f4fe2b2441d653cd72a29ca15b056f5", "eb6cf6538685a58580f804568b1244da811c1755c0ae7a3bcdb2182965a8a39d", "6bb7940776d446bcd5f7ecd7d6c4c0f76d8a391f7c009bb270b07f9ae8796a6a"}
+OLD_DEAL_GUIDES = {"b6f576099c0177811aaba58d82a0c054bbdcd661d8d73d92b7da92088360abf3", "ef714a4751cb6e8f163634329da698bc9733fb280c538a7c8056a624c0bb41c9", "e90e6b081db348c81e8a6db390e6dfc77f4fe2b2441d653cd72a29ca15b056f5", "eb6cf6538685a58580f804568b1244da811c1755c0ae7a3bcdb2182965a8a39d", "6bb7940776d446bcd5f7ecd7d6c4c0f76d8a391f7c009bb270b07f9ae8796a6a"}
 DEAL_RE = re.compile(r"할인|블프|블랙프라이데이|사이버먼데이|직구|핫딜|특가|쿠폰|프로모션|캐시백|최저가|세일|타임딜|사전예약|사전 예약|"
                      r"얼리버드|예매 오픈|티켓 오픈|티켓팅|예매|요금제|통신사 혜택|카드 혜택|광군제|아마존|알리|테무|쿠팡 로켓|정가")
 ESSAY_RE = re.compile(r"영화|드라마|넷플릭스|티빙|디즈니\+|웨이브|쿠팡플레이|OTT|애니|웹툰|책|소설|에세이|도서|시집|음악|앨범|플레이리스트|노래|"
@@ -1063,7 +1063,8 @@ def local_fix(text):
         # 번호 단계(①~⑩): 단계 사이 빈 줄 1개
         body = re.sub(r"(?m)^([①-⑩][^\n]*)\n(?=[①-⑩])", r"\1\n\n", body)
         # ✔·▪ 줄도 줄 사이 빈 줄 1개
-        body = re.sub(r"(?m)^([✔▪][^\n]*)\n(?=[✔▪])", r"\1\n\n", body)
+        for _ in range(2):  # 목록 줄(✔·▪·①·✅·❌·-·1.) 사이 빈 줄 1개
+            body = re.sub(r"(?m)^((?:[✔▪✅❌•①-⑩]|[-*] |\d{1,2}\. )[^\n]*)\n(?=(?:[✔▪✅❌•①-⑩]|[-*] |\d{1,2}\. ))", r"\1\n\n", body)
         t = t[:s] + body + t[e:]
     return t.strip() + "\n"
 

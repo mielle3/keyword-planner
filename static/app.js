@@ -1773,15 +1773,15 @@ function smartHtml(md) {
   const inl = s => esc(s).replace(/\*\*(.+?)\*\*/g, "$1");  // 본문 복사에서는 굵게를 쓰지 않음 (소제목만 굵게)
   const FS = (STATE && STATE.editor_fs) || { body: 16, heading: 19, small: 13 };
   // 스마트에디터 ONE이 자기 글에서 쓰는 모양(se-fs-fs크기 클래스)을 같이 넣어야 붙여 넣을 때 글자 크기가 살아남음
-  const P = (html, size = FS.body, extra = "") => `<p class="se-text-paragraph se-text-paragraph-align-" style="margin:0;line-height:2"><span class="se-fs-fs${size} se-ff-nanummaruburi" style="font-family:'NanumMaruBuri','나눔마루부리',serif;font-size:${size}px;${/font-weight/.test(extra) ? "" : "font-weight:normal;"}${extra}">${html}</span></p>`;
-  const lines = body.replace(/\r/g, "").replace(/([^\n]*\S[^\n]*)\n(\*\*Q[.．])/g, "$1\n\n$2").replace(/(^|\n)([①-⑩][^\n]*)\n(?=[①-⑩])/g, "$1$2\n\n").replace(/(^|\n)([▪✔][^\n]*)\n(?=[▪✔])/g, "$1$2\n\n").split("\n"); const out = []; let i = 0;
+  const P = (html, size = FS.body, extra = "") => `<p class="se-text-paragraph se-text-paragraph-align-" style="margin:0;line-height:1.9"><span class="se-fs-fs${size} se-ff-nanummaruburi" style="font-family:'NanumMaruBuri','나눔마루부리',serif;font-size:${size}px;${/font-weight/.test(extra) ? "" : "font-weight:normal;"}${extra}">${html}</span></p>`;
+  const lines = body.replace(/\r/g, "").replace(/([^\n]*\S[^\n]*)\n(\*\*Q[.．])/g, "$1\n\n$2").replace(/(^|\n)((?:[✔▪✅❌•①-⑩]|[-*] |\d{1,2}\. )[^\n]*)\n(?=(?:[✔▪✅❌•①-⑩]|[-*] |\d{1,2}\. ))/g, "$1$2\n\n").replace(/(^|\n)((?:[✔▪✅❌•①-⑩]|[-*] |\d{1,2}\. )[^\n]*)\n(?=(?:[✔▪✅❌•①-⑩]|[-*] |\d{1,2}\. ))/g, "$1$2\n\n").split("\n"); const out = []; let i = 0;
   while (i < lines.length) {
     const s = lines[i].trim();
     if (s.startsWith("|")) {
       const rows = [];
       while (i < lines.length && lines[i].trim().startsWith("|")) { const c = lines[i].trim().replace(/^\||\|$/g, "").split("|").map(x => x.trim()); if (!c.every(x => /^:?-{2,}:?$/.test(x) || !x)) rows.push(c); i++; }
       // 표 글자는 13 (내 블로그 표와 같게) · 스마트에디터 표 모양(se-table/se-cell + se-fs-fs13)으로
-      const cell = (c, head) => `<td class="se-cell" style="border-bottom:1px solid #ddd;padding:10px 12px;font-family:'NanumMaruBuri','나눔마루부리',serif;font-size:13px;${head ? "background-color:#F2F2F2;" : ""}"><div class="se-module se-module-text"><p class="se-text-paragraph se-text-paragraph-align-" style="margin:0;line-height:2;font-family:'NanumMaruBuri','나눔마루부리',serif;font-size:13px"><span class="se-fs-fs13 se-ff-nanummaruburi" style="font-family:'NanumMaruBuri','나눔마루부리',serif;font-size:13px;font-weight:normal;">${inl(c)}</span></p></div></td>`;
+      const cell = (c, head) => `<td class="se-cell" style="border-bottom:1px solid #ddd;padding:10px 12px;font-family:'NanumMaruBuri','나눔마루부리',serif;font-size:13px;${head ? "background-color:#F2F2F2;" : ""}"><div class="se-module se-module-text"><p class="se-text-paragraph se-text-paragraph-align-" style="margin:0;line-height:1.9;font-family:'NanumMaruBuri','나눔마루부리',serif;font-size:13px"><span class="se-fs-fs13 se-ff-nanummaruburi" style="font-family:'NanumMaruBuri','나눔마루부리',serif;font-size:13px;font-weight:normal;">${inl(c)}</span></p></div></td>`;
       out.push(`<div class="se-component se-table se-l-default"><div class="se-component-content"><div class="se-section se-section-table se-l-default" style="width:100%"><div class="se-table-container"><table class="se-table-content" style="border-collapse:collapse;width:100%;border-top:2px solid #333;font-family:'NanumMaruBuri','나눔마루부리',serif;font-size:13px"><tbody>${rows.map((r, ri) => `<tr class="se-tr">${r.map(c => cell(c, ri === 0)).join("")}</tr>`).join("")}</tbody></table></div></div></div></div>`);
       continue;
     }
@@ -1803,12 +1803,7 @@ function smartHtml(md) {
     }
     else if (s.startsWith("[📸")) out.push(P(esc(s), 13, "color:#999"));
     else if (/^\*\*Q[.．]/.test(s)) out.push(P(inl(s), FS.body, "font-weight:bold"));
-    else if (/^[✔▪]/.test(s)) out.push(P(inl(s), FS.body, "color:#184f84"));
-    else if (/^[①-⑩]/.test(s)) {
-      const m = s.match(/^([①-⑩]\s*[^:：]{1,30}[:：])([\s\S]*)$/);
-      const color = "#184f84";  // 핵심만 먼저 보기(✔) 줄과 같은 색
-      out.push(m ? P(`<span style="color:${color}">${inl(m[1])}</span>${inl(m[2])}`) : P(inl(s), FS.body, `color:${color}`));
-    }
+    else if (/^(?:[✔▪✅❌•①-⑩]|[-*] |\d{1,2}\. )/.test(s)) out.push(P(inl(s), FS.body, "color:#184f84"));  // 목록(✔·▪·①·✅·❌·-·1.)은 모두 같은 진한 파랑
     else out.push(P(inl(s)));
     i++;
   }
