@@ -66,7 +66,7 @@ EVERGREEN_CHECK_PATH = DATA / "evergreen_check.json"
 import writer as _writer  # AI 글쓰기 (작가 지침·블로그 기억·초안 보관·docx)
 WRITER = _writer.Store(DATA)
 KST = timezone(timedelta(hours=9))
-APP_VERSION = "2026.11.21-61"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
+APP_VERSION = "2026.11.21-62"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 DEFAULT_CONFIG = {
@@ -2921,7 +2921,8 @@ class Handler(BaseHTTPRequestHandler):
                 return
             return self._send(200, rec)
         if path == "/api/memory":
-            return self._send(200, {"guide": WRITER.guide(), "guide_essay": WRITER.guide("essay"),
+            return self._send(200, {"guide": WRITER.guide(), "guide_essay": WRITER.guide("essay"), "guide_deal": WRITER.guide("deal"),
+                                    "guide_deal_path": str(WRITER.guide_file("deal")),
                                     "memory": _writer.build_memory(WRITER, load_config(), load_saved()),
                                     "guide_path": str(WRITER.guide_path), "guide_essay_path": str(WRITER.guide_file("essay")),
                                     "memory_path": str(WRITER.memory_path)})
@@ -3083,7 +3084,7 @@ class Handler(BaseHTTPRequestHandler):
             _writer.build_memory(WRITER, load_config(), load_saved())
             return self._send(200, WRITER.get(m.group(1)))
         if path == "/api/memory":
-            st = "essay" if body.get("style") == "essay" else "info"
+            st = body.get("style") if body.get("style") in ("essay", "deal") else "info"
             if body.get("reset_guide"):
                 WRITER.save_guide(WRITER.default_guide(st), st)
             elif isinstance(body.get("guide"), str) and body["guide"].strip():
@@ -3397,7 +3398,7 @@ def auto_drafts(result):
 
 # ---------- 자동 업데이트: GitHub 공개 저장소에서 새 버전을 받아 스스로 교체 (키·초안·설정은 AppData에 있어 그대로) ----------
 UPDATE_REPO = "mielle3/keyword-planner"
-UPDATE_FILES = ("app.py", "writer.py", "writer_guide.md", "writer_guide_essay.md", "README.md", "실행_윈도우.bat",
+UPDATE_FILES = ("app.py", "writer.py", "writer_guide.md", "writer_guide_essay.md", "writer_guide_deal.md", "README.md", "실행_윈도우.bat",
                 "START_windows.bat", "실행_맥.command", "STOP_keywordplanner.bat")
 _update = {"checked": 0, "latest": "", "notes": "", "available": False, "error": "", "applying": False}
 
@@ -3486,7 +3487,7 @@ def upd_log(msg):
 def heal_missing_files():
     """예전 버전의 업데이트로 새 파일이 빠졌으면 저장소에서 받아 채움."""
     here = Path(__file__).parent
-    for f in ("writer_guide.md", "writer_guide_essay.md"):
+    for f in ("writer_guide.md", "writer_guide_essay.md", "writer_guide_deal.md"):
         if not (here / f).exists():
             ok = _writer.fetch_repo_file(f)
             upd_log(f"빠진 파일 {f} 복구 {'성공' if ok else '실패'}")

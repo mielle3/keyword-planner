@@ -52,6 +52,10 @@ def fetch_repo_file(name):
 
 OLD_ESSAY_GUIDES = {"4daefb41ecf10b68cab44a5e092bf4756970d4e730128849c7af6229216fdd33"}  # 읽을거리형 기본 지침의 예전 판 (고치지 않았으면 자동 교체)
 
+GUIDE_FILES = {"info": "writer_guide.md", "essay": "writer_guide_essay.md", "deal": "writer_guide_deal.md"}
+OLD_DEAL_GUIDES = set()
+DEAL_RE = re.compile(r"할인|블프|블랙프라이데이|사이버먼데이|직구|핫딜|특가|쿠폰|프로모션|캐시백|최저가|세일|타임딜|사전예약|사전 예약|"
+                     r"얼리버드|예매 오픈|티켓 오픈|티켓팅|예매|요금제|통신사 혜택|카드 혜택|광군제|아마존|알리|테무|쿠팡 로켓|정가")
 ESSAY_RE = re.compile(r"영화|드라마|넷플릭스|티빙|디즈니\+|웨이브|쿠팡플레이|OTT|애니|웹툰|책|소설|에세이|도서|시집|음악|앨범|플레이리스트|노래|"
                       r"공연 후기|전시 후기|관람 후기|후기|리뷰|여행기|여행 코스|가볼만한|데이트|맛집|카페|브런치|일상|감성|추천작|작품|시리즈|명작")
 INFO_RE = re.compile(r"신청|지원금|환급|세금|보험|대출|계산|기준|조건|방법|절차|서류|일정|마감|등급컷|과태료|요금|금리|연말정산|청약|발표|접수")
@@ -60,11 +64,13 @@ INFO_RE = re.compile(r"신청|지원금|환급|세금|보험|대출|계산|기�
 def pick_style(item):
     """글 종류 자동 선택: 사용자가 고른 게 있으면 그대로, 아니면 키워드·분야로 판단 (정보형이 기본)."""
     s = (item or {}).get("style")
-    if s in ("info", "essay"):
+    if s in ("info", "essay", "deal"):
         return s
     text = f"{item.get('keyword', '')} {item.get('topic', '')}"
     if item.get("rewrite_source"):
         text += " " + item["rewrite_source"][:400]
+    if DEAL_RE.search(item.get("keyword", "")):
+        return "deal"
     if INFO_RE.search(item.get("keyword", "")):
         return "info"
     return "essay" if ESSAY_RE.search(text) else "info"
@@ -136,10 +142,10 @@ class Store:
 
     # 작가 지침: info(정보형) · essay(읽을거리형: 영화·책·리뷰·여행기 등)
     def guide_file(self, style="info"):
-        return self.guide_path if style != "essay" else self.mem_dir / "작가_지침_읽을거리.md"
+        return {"essay": self.mem_dir / "작가_지침_읽을거리.md", "deal": self.mem_dir / "작가_지침_할인구매.md"}.get(style, self.guide_path)
 
     def default_guide(self, style="info"):
-        name = "writer_guide_essay.md" if style == "essay" else "writer_guide.md"
+        name = GUIDE_FILES.get(style, "writer_guide.md")
         path = APP_DIR / name
         if not path.exists():
             fetch_repo_file(name)  # 예전 업데이트 코드가 새 파일을 빠뜨린 경우: 저장소에서 받아 복구
@@ -155,7 +161,7 @@ class Store:
         text = path.read_text(encoding="utf-8")
         # 사용자가 고치지 않은 예전 기본 지침이면 새 기본 지침으로 자동 교체 (고친 지침은 그대로 둠)
         import hashlib
-        if hashlib.sha256(text.strip().encode("utf-8")).hexdigest() in (OLD_DEFAULT_GUIDES if style != "essay" else OLD_ESSAY_GUIDES):
+        if hashlib.sha256(text.strip().encode("utf-8")).hexdigest() in {"essay": OLD_ESSAY_GUIDES, "deal": OLD_DEAL_GUIDES}.get(style, OLD_DEFAULT_GUIDES):
             text = self.default_guide(style)
             path.write_text(text, encoding="utf-8")
         return text
@@ -420,6 +426,7 @@ def system_prompt(guide, memory, web, style="info"):
     tail = ["", "---", "", "# 실행 환경 안내 (키워드 플래너)",
             "- 결과물은 위 지침의 출력 양식 그대로, 마크다운 텍스트로만 답합니다. 앞뒤 인사나 설명을 붙이지 않습니다.",
             ("- 이미지는 사용자가 Gemini로 직접 만듭니다. 당신은 이미지를 만들지 않고, 참고 자료 아래·태그 바로 위의 '■ Gemini 이미지 프롬프트'에 #1 대표 이미지와 #2·#3 분위기 이미지(글자 없음) 프롬프트 3개를 ~~~ 블록 하나씩 씁니다. 실제 포스터·배우 얼굴·책 표지는 재현하지 않습니다." if style == "essay" else
+             "- 이미지는 사용자가 Gemini로 직접 만듭니다. 당신은 이미지를 만들지 않고, 참고 자료 아래·태그 바로 위의 '■ Gemini 이미지 프롬프트'에 4장(#1 표지 포스터, #2 할인 구조·마감 타임라인, #3 실가격 비교, #4 구매 체크리스트) 프롬프트를 ~~~ 블록 하나씩 씁니다. 실제 제품 사진·브랜드 로고·판매처 화면은 재현하지 않습니다." if style == "deal" else
              "- 이미지는 사용자가 Gemini로 직접 만듭니다. 당신은 이미지를 만들지 않고, 참고 자료 아래·태그 바로 위의 '■ Gemini 이미지 프롬프트'에 이미지 6장 프롬프트를 각각 ~~~ 블록 하나씩 단독 실행되는 완성형으로 씁니다. #1은 글 주제를 함축한 강렬한 표지 포스터(정보 카드 틀을 쓰지 않음), #2~#6은 같은 디자인 틀(HEX 5색·구성·스타일)을 매번 반복한 섹션별 정보 카드입니다."),
             "- '함께 읽으면 좋은 글'에는 아래 블로그 기억의 '내 네이버 블로그에 이미 올린 글' 목록에 있는 제목만 씁니다. 목록이 없거나 관련 글이 없으면 그 섹션을 뺍니다."]
     if web is None:
@@ -887,6 +894,8 @@ def check_draft(text, style="info"):
     """작가 지침(출력 양식)대로 썼는지 프로그램이 직접 검사. 크게 빠진 항목은 AI에게 고쳐 쓰게 함."""
     if style == "essay":
         return check_essay(text)
+    if style == "deal":
+        return check_deal(text)
     t = text or ""
     body = body_part(t)
 
@@ -929,6 +938,46 @@ def check_draft(text, style="info"):
         ("Gemini 카드뉴스 프롬프트 6개", prompts >= 6, f"{prompts}개"),
         ("네이버 태그 10~15개", 10 <= n_tags <= 15, f"{n_tags}개"),
         ("태그는 글 맨 마지막", tags_last, ""),
+    ]
+    out = [{"name": n, "ok": bool(ok), "note": note} for n, ok, note in items]
+    return {"ok": all(x["ok"] for x in out), "passed": sum(x["ok"] for x in out), "total": len(out), "items": out, "chars": chars}
+
+
+def check_deal(text):
+    """할인·구매형 지침 검사: 사용자 지정 순서(한눈에 보기 → 1) 할인 구조와 마감 → 2) 실가격 표 → 3) 적용 방식 → 4) 제외·주의 → 5) 체크리스트)."""
+    t = text or ""
+    body = body_part(t)
+    i = t.rfind("■ 네이버 블로그")
+    tags_sec = t[i:] if i >= 0 else ""
+    n_tags = len(re.findall(r"#[^\s#]+", tags_sec))
+    j = t.find("■ 참고한")
+    ref = t[j:t.find("■", j + 1)] if j >= 0 else ""
+    nums = [int(n) for n in re.findall(r"(?m)^##\s*(\d+)\.", body)]
+    prompts = len(re.findall(r"(?m)^(?:~~~|```)[^\n]*\n\s*Aspect ratio", t))
+    imgs = sum(1 for k in range(1, 5) if re.search(rf"이미지\s*#{k}\b", body))
+    checks = len(re.findall(r"(?m)^\s*✔", body))
+    sec2 = re.split(r"(?m)^##\s*3\.", re.split(r"(?m)^##\s*2\.", body, 1)[-1], 1)[0] if re.search(r"(?m)^##\s*2\.", body) else ""
+    price_table = bool(re.search(r"(?m)^\|.*(원|\$|₩).*\|", sec2))
+    foreign = "$" in body or "달러" in body or "USD" in body
+    chars = body_chars(t)
+    items = [
+        ("기획: 메인 키워드·추천 제목 3개", bool(re.search(r"메인 키워드", t) and re.search(r"추천 제목[^\n]*\n+\s*1\..+\n+\s*2\..+\n+\s*3\.", t)), ""),
+        ("맨 위 확인 시각", bool(re.search(r"확인 시각|기준", "\n".join(body.strip().splitlines()[:8]))), ""),
+        ("한눈에 보기 (✔ 3~5줄)", "한눈에 보기" in body and 3 <= checks <= 6, f"{checks}줄"),
+        ("소제목 1~5 (할인 구조·실가격·적용 방식·제외·체크리스트)", len(nums) >= 4 and nums == list(range(1, len(nums) + 1)), f"{len(nums)}개"),
+        ("대표 제품 실가격 표", price_table, ""),
+        ("환율 기준 (해외 가격일 때)", (not foreign) or bool(re.search(r"환율", body)), ""),
+        ("할인 적용 단계 (①②③)", bool(re.search(r"(?m)^\s*①", body)), ""),
+        ("제외 품목·주의 박스 (⚠️)", bool(re.search(r"(?m)^>\s*⚠", body)), ""),
+        ("구매 체크리스트 (✅ 3줄 이상)", len(re.findall(r"(?m)^\s*✅", body)) >= 3, ""),
+        ("이미지 삽입 위치 4곳", imgs == 4, f"{imgs}곳"),
+        ("분량 2,000자 이상 (권장 2,500~3,500)", chars >= 2000, f"{chars:,}자"),
+        ("본문에 URL 없음 (판매처 링크는 참고 자료에)", not re.search(r"https?://", body), ""),
+        ("면책 문구 (※ 확인 시각 기준)", bool(re.search(r"(?m)^※", body)), ""),
+        ("참고한 공식 자료 (URL)", bool(re.search(r"https?://", ref)), ""),
+        ("Gemini 이미지 프롬프트 4개", prompts >= 4, f"{prompts}개"),
+        ("네이버 태그 10~15개", 10 <= n_tags <= 15, f"{n_tags}개"),
+        ("태그는 글 맨 마지막", bool(tags_sec) and t.rfind("■") == i and "~~~" not in tags_sec, ""),
     ]
     out = [{"name": n, "ok": bool(ok), "note": note} for n, ok, note in items]
     return {"ok": all(x["ok"] for x in out), "passed": sum(x["ok"] for x in out), "total": len(out), "items": out, "chars": chars}
@@ -988,7 +1037,7 @@ def local_fix(text):
 
 
 # AI에게 다시 쓰게 할 만큼 큰 문제 (나머지는 프로그램이 고치거나 화면에 표시만)
-MAJOR = ("기획", "핵심만 먼저", "소제목 5~6개", "소제목 3~5개", "표 3개", "이미지 삽입", "Gemini 카드뉴스", "Gemini 이미지 프롬프트", "자주 묻는", "섹션마다 핵심")
+MAJOR = ("기획", "핵심만 먼저", "한눈에 보기", "소제목 5~6개", "소제목 3~5개", "소제목 1~5", "표 3개", "대표 제품 실가격", "이미지 삽입", "Gemini 카드뉴스", "Gemini 이미지 프롬프트", "자주 묻는", "섹션마다 핵심")
 
 
 def _needs_rewrite(chk):
@@ -1045,7 +1094,7 @@ def make_draft(store, cfg, item, saved, today, progress=None):
     system, user = system_prompt(guide, memory, web, style), draft_request(item, cfg, today)
     t0 = time.time()
     call = _caller(provider, cfg, store, system, web)
-    say("읽을거리형 지침으로 쓰는 중" if style == "essay" else "작가 지침(정보형)으로 쓰는 중")
+    say({"essay": "읽을거리형 지침으로 쓰는 중", "deal": "할인·구매형 지침으로 쓰는 중"}.get(style, "작가 지침(정보형)으로 쓰는 중"))
     # 유료 API로 몰래 넘어가지 않음: 구독(CLI)이 실패하면 멈추고 이유를 보여 줌
     text, sources, model = call(user)
     t_first = round(time.time() - t0)

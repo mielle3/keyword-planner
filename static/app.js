@@ -755,15 +755,15 @@ document.addEventListener("click", e => {
   if (!g) return;
   GUIDE_STYLE = g.dataset.gs;
   $$("#guideStyle [data-gs]").forEach(b => b.setAttribute("aria-checked", String(b === g)));
-  if (MEM) { $("#guideText").value = GUIDE_STYLE === "essay" ? MEM.guide_essay : MEM.guide; $("#guidePath").textContent = GUIDE_STYLE === "essay" ? MEM.guide_essay_path : MEM.guide_path; }
+  if (MEM) { $("#guideText").value = ({ essay: MEM.guide_essay, deal: MEM.guide_deal }[GUIDE_STYLE] || MEM.guide); $("#guidePath").textContent = ({ essay: MEM.guide_essay_path, deal: MEM.guide_deal_path }[GUIDE_STYLE] || MEM.guide_path); }
 });
 async function loadMemory() {
   try {
     const d = await api("/api/memory");
     MEM = d;
-    if (document.activeElement !== $("#guideText")) $("#guideText").value = GUIDE_STYLE === "essay" ? d.guide_essay : d.guide;
+    if (document.activeElement !== $("#guideText")) $("#guideText").value = ({ essay: d.guide_essay, deal: d.guide_deal }[GUIDE_STYLE] || d.guide);
     $("#memoryText").textContent = d.memory;
-    $("#guidePath").textContent = GUIDE_STYLE === "essay" ? d.guide_essay_path : d.guide_path; $("#memoryPath").textContent = d.memory_path;
+    $("#guidePath").textContent = ({ essay: d.guide_essay_path, deal: d.guide_deal_path }[GUIDE_STYLE] || d.guide_path); $("#memoryPath").textContent = d.memory_path;
   } catch {}
 }
 function renderAuto() {
@@ -1150,9 +1150,9 @@ $("#aiCheck").onclick = async () => {
   } catch (err) { toast("확인하지 못했어요: " + err.message); }
   finally { b.disabled = false; b.textContent = "AI 연결 확인"; }
 };
-$("#guideSave").onclick = async () => { await api("/api/memory", { guide: $("#guideText").value, style: GUIDE_STYLE }); await loadMemory(); toast((GUIDE_STYLE === "essay" ? "읽을거리형" : "정보형") + " 지침을 저장했어요 · 다음 초안부터 반영돼요"); };
+$("#guideSave").onclick = async () => { await api("/api/memory", { guide: $("#guideText").value, style: GUIDE_STYLE }); await loadMemory(); toast(STYLE_NAME[GUIDE_STYLE] + " 지침을 저장했어요 · 다음 초안부터 반영돼요"); };
 $("#guideReset").onclick = async () => {
-  if (!confirm((GUIDE_STYLE === "essay" ? "읽을거리형" : "정보형") + " 지침을 기본값으로 되돌릴까요? 고친 내용은 사라집니다.")) return;
+  if (!confirm(STYLE_NAME[GUIDE_STYLE] + " 지침을 기본값으로 되돌릴까요? 고친 내용은 사라집니다.")) return;
   const d = await api("/api/memory", { reset_guide: true, style: GUIDE_STYLE }); $("#guideText").value = d.guide; await loadMemory(); toast("기본 지침으로 되돌렸어요");
 };
 
@@ -1349,7 +1349,7 @@ function renderDrafts() {
         <a class="btn dark" href="/api/drafts/${encodeURIComponent(d.id)}/docx" download="${esc((d.created_at || "").slice(0, 10) + "_" + (d.keyword || "초안").replace(/[\\/:*?"<>|]+/g, " ").slice(0, 40) + ".docx")}">docx 저장</a>
         <button class="btn primary" id="dvRevise" title="고칠 내용을 적으면 이 초안을 그 자리에서 고쳐요">AI로 고치기</button>
         <button class="btn" id="dvRedo" title="같은 글감으로 처음부터 다시 써서 이 초안을 덮어써요">다시 쓰기</button>
-        <button class="btn" id="dvRestyle" title="내용은 살리고 형식만 바꿔 이 초안을 덮어써요">${d.style === "essay" ? "정보형으로 바꾸기" : "읽을거리형으로 바꾸기"}</button>
+        <button class="btn" id="dvRestyle" title="내용은 살리고 형식(정보형·읽을거리형·할인·구매형)만 바꿔 이 초안을 덮어써요">형식 바꾸기</button>
         ${d.versions ? `<button class="btn ghost" id="dvUndo" title="덮어쓰기 전 내용으로 되돌려요">되돌리기 (${d.versions})</button>` : ""}
         <button class="btn ghost" id="dvDelete">삭제</button>
       </div>
@@ -1382,10 +1382,10 @@ function renderDrafts() {
     try { DRAFT = await api("/api/drafts/" + d.id, { action: "undo" }); DRAFTS = await api("/api/drafts"); renderDrafts(); toast("이전 버전으로 되돌렸어요"); } catch (err) { toast(err.message); }
   };
   $("#dvRestyle").onclick = async () => {
-    const to = d.style === "essay" ? "info" : "essay";
+    const to = d.style === "info" || !d.style ? "essay" : "info";
     openFix(d.text || "", { style: to, title: d.title || d.keyword, target: d.id,
-                       user_note: to === "essay" ? "정보 정리형으로 쓴 초안입니다. 내용과 사실은 살리고, 읽을거리형 지침대로 문단 중심의 매끄러운 글로 다시 써 주세요. 핵심 ✔·목차·박스·자주 묻는 질문은 빼고, 꼭 필요한 기본 정보 표 하나만 남깁니다."
-                                                 : "읽을거리형으로 쓴 초안입니다. 내용과 사실은 살리고, 정보형 지침대로 핵심만 먼저 보기·목차·표·박스·자주 묻는 질문을 갖춘 정리형 글로 다시 써 주세요." });
+      note: "다른 형식으로 바꿔 쓰는 초안입니다. 내용과 사실은 살리고, 위에서 고른 글 종류의 지침(구성·편집 형식·이미지 규칙)대로 다시 써 주세요." });
+    toast("글 종류를 고르고 '고치기 시작'을 누르세요 · 이 초안을 덮어써요");
   };
   $("#dvRedo").onclick = async () => {
     const it = findItem(d.item_id) || { keyword: d.keyword, topic: d.topic, brief: {}, metrics: {}, src: {} };
@@ -1680,8 +1680,9 @@ $("#wGo").onclick = async () => {
 /* ---------- 글 종류: 정보형 / 읽을거리형 (자동 판단은 서버와 같은 규칙) ---------- */
 const ESSAY_RE = /영화|드라마|넷플릭스|티빙|디즈니\+|웨이브|쿠팡플레이|OTT|애니|웹툰|책|소설|에세이|도서|시집|음악|앨범|플레이리스트|노래|공연 후기|전시 후기|관람 후기|후기|리뷰|여행기|여행 코스|가볼만한|데이트|맛집|카페|브런치|일상|감성|추천작|작품|시리즈|명작/;
 const INFO_RE = /신청|지원금|환급|세금|보험|대출|계산|기준|조건|방법|절차|서류|일정|마감|등급컷|과태료|요금|금리|연말정산|청약|발표|접수/;
-function guessStyle(kw, topic) { if (INFO_RE.test(kw || "")) return "info"; return ESSAY_RE.test(`${kw || ""} ${topic || ""}`) ? "essay" : "info"; }
-const STYLE_NAME = { info: "정보형", essay: "읽을거리형" };
+function guessStyle(kw, topic) { if (DEAL_RE.test(kw || "")) return "deal"; if (INFO_RE.test(kw || "")) return "info"; return ESSAY_RE.test(`${kw || ""} ${topic || ""}`) ? "essay" : "info"; }
+const STYLE_NAME = { info: "정보형", essay: "읽을거리형", deal: "할인·구매형" };
+const DEAL_RE = /할인|블프|블랙프라이데이|사이버먼데이|직구|핫딜|특가|쿠폰|프로모션|캐시백|최저가|세일|타임딜|사전예약|사전 예약|얼리버드|예매 오픈|티켓 오픈|티켓팅|예매|요금제|통신사 혜택|카드 혜택|광군제|아마존|알리|테무|쿠팡 로켓|정가/;
 function wStyleHint() { const kw = $("#wKeyword").value.trim(); $("#wStyleHint").textContent = kw && ($("#wStyle [aria-checked=true]")?.dataset.ws || "") === "" ? `자동 → ${STYLE_NAME[guessStyle(kw)]}` : ""; }
 $("#wKeyword").addEventListener("input", wStyleHint);
 document.addEventListener("click", e => {

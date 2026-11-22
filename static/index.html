@@ -349,8 +349,9 @@
         <div class="seg" id="guideStyle" role="radiogroup" aria-label="지침 종류" style="margin:8px 0">
           <button type="button" role="radio" aria-checked="true" data-gs="info">정보형 (제도·금액·일정·방법)</button>
           <button type="button" role="radio" aria-checked="false" data-gs="essay">읽을거리형 (영화·책·리뷰·여행기)</button>
+          <button type="button" role="radio" aria-checked="false" data-gs="deal">할인·구매형 (직구·블프·프로모션·예매)</button>
         </div>
-        <p class="muted">글감에 맞춰 둘 중 하나가 자동으로 쓰여요. 고치면 다음 초안부터 반영돼요. 저장 위치: <code id="guidePath">…</code></p>
+        <p class="muted">글감에 맞춰 셋 중 하나가 자동으로 쓰여요. 고치면 다음 초안부터 반영돼요. 저장 위치: <code id="guidePath">…</code></p>
         <textarea id="guideText" rows="18" spellcheck="false"></textarea>
         <div class="row-end"><button class="btn" type="button" id="guideReset">기본 지침으로 되돌리기</button><button class="btn dark" type="button" id="guideSave">지침 저장</button></div>
       </details>
@@ -484,6 +485,7 @@
           <button type="button" role="radio" aria-checked="true" data-ws="">자동</button>
           <button type="button" role="radio" aria-checked="false" data-ws="info">정보형</button>
           <button type="button" role="radio" aria-checked="false" data-ws="essay">읽을거리형</button>
+          <button type="button" role="radio" aria-checked="false" data-ws="deal">할인·구매형</button>
         </div><small class="muted" id="wStyleHint"></small></div>
     </div>
     <div class="mine-body" id="wNewBox">
