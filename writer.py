@@ -19,7 +19,7 @@ KST = timezone(timedelta(hours=9))
 CLAUDE_MODEL = "claude-opus-5-5"
 APP_DIR = Path(__file__).parent
 # 예전 버전의 기본 작가 지침(sha256). 사용자가 손대지 않았으면 새 지침으로 올려 줌
-OLD_DEFAULT_GUIDES = {"a6f083674fa6e12b47a94a308965a6162027a2bd6c5ab0eec813bb798a992e60", "0cd20f813afa36be043b94d94405eef301eddfbfe9765425ffc35de3592f490b", "f6bb50a3a4463a3fabab14ccb79c75b5bb4e123b0e34f863719e64c001a9dc42",
+OLD_DEFAULT_GUIDES = {"0c961d7c537c2be1a0e7613886ae38f6dbe302a68f6cfb3d1784cdacade57787", "a6f083674fa6e12b47a94a308965a6162027a2bd6c5ab0eec813bb798a992e60", "0cd20f813afa36be043b94d94405eef301eddfbfe9765425ffc35de3592f490b", "f6bb50a3a4463a3fabab14ccb79c75b5bb4e123b0e34f863719e64c001a9dc42",
                       "50ddd38bb2615fdda855534a003fe9f226bfb05e6d06d7f5b8072cdb3b332a68",
                       "737470eff321f4bf999e3a33d06e476814f40e558765752e63f81d31bd119726",
                       "88607b921186d719388360cffe4419d31c3bb103b8bee917379ceb3327609ba2",
@@ -1060,6 +1060,8 @@ def local_fix(text):
         body = re.sub(r"\s*\(?https?://[^\s)]+\)?", "", t[s:e])
         # 자주 묻는 질문: 질문·답 묶음 사이에 빈 줄 1개 (질문 줄 앞이 붙어 있으면 띄움)
         body = re.sub(r"(?m)^([^\n]*\S[^\n]*)\n(\*\*Q[.．])", r"\1\n\n\2", body)
+        # 번호 단계(①~⑩): 단계 사이 빈 줄 1개
+        body = re.sub(r"(?m)^([①-⑩][^\n]*)\n(?=[①-⑩])", r"\1\n\n", body)
         t = t[:s] + body + t[e:]
     return t.strip() + "\n"
 
