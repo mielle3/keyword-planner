@@ -1359,9 +1359,10 @@ function renderDrafts() {
           <details class="dv-more">
             <summary class="btn">더보기${d.versions ? ` <small>되돌리기 ${d.versions}</small>` : ""} ▾</summary>
             <div class="dv-menu">
+              <button id="dvCopyBody2" class="menu-copy">📋 블로그에 붙일 본문 복사</button>
               <button id="dvRedo" title="같은 글감으로 처음부터 다시 써서 이 초안을 덮어써요">다시 쓰기</button>
               <button id="dvRestyle" title="내용은 살리고 형식만 바꿔 이 초안을 덮어써요">형식 바꾸기</button>
-              <button id="dvCopyPlain">본문 텍스트로 복사 (서식 없이)</button>
+              <button id="dvCopyPlain">본문 글자만 복사 (서식 없이)</button>
               <button id="dvCopyAll">전체 복사 (기획·프롬프트 포함)</button>
               ${d.versions ? `<button id="dvUndo">되돌리기 (이전 버전 ${d.versions}개)</button>` : ""}
               <button id="dvDelete" class="danger">삭제</button>
@@ -1382,6 +1383,7 @@ function renderDrafts() {
       : `<div class="dv-body">${draftMd(d.text)}</div>`}`;
   $("#dvStatus").onchange = async e => { DRAFT = await api("/api/drafts/" + d.id, { action: "status", status: e.target.value }); DRAFTS = await api("/api/drafts"); renderDrafts(); toast(`‘${e.target.value}’로 바꿨어요`); };
   $("#dvCopyBody").onclick = () => copySmart(d.text);
+  if ($("#dvCopyBody2")) $("#dvCopyBody2").onclick = () => { $(".dv-more").open = false; copySmart(d.text); };
   $("#dvCopyAll").onclick = () => copy(d.text);
   $("#dvCopyPlain").onclick = () => copy(bodyPart(d.text).replace(/\*\*(.+?)\*\*/g, "$1").replace(/^>\s?/gm, "") + (refsPart(d.text) ? "\n\n" + refsPart(d.text) : "") + "\n\n" + tagsPart(d.text));
   $("#dvDelete").onclick = async () => { if (!confirm("이 초안을 삭제할까요?")) return; DRAFTS = await api("/api/drafts/" + d.id, { action: "delete" }); DRAFT = null; await loadDrafts(); toast("삭제했어요"); };

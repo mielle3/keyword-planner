@@ -1580,3 +1580,4 @@ select { height: 40px; box-sizing: border-box; }
 .appbar .ver:hover { border-color: var(--rule); color: var(--ink); }
 .appbar .ver.has-upd { background: var(--mark); color: #0e0e10; border-color: var(--ink); }
 .btn.copy-main { background: var(--mark) !important; color: #0e0e10 !important; border-color: var(--ink) !important; font-weight: 800; }
+.dv-menu .menu-copy { background: var(--mark); font-weight: 800; color: #0e0e10; }
