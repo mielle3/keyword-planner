@@ -635,6 +635,27 @@ def find_agy(custom=""):
         cands.append(w)
     cands += [os.path.join(la, "agy", "bin", "agy.exe"), os.path.join(la, "Antigravity", "agy.exe"),
               os.path.join(la, "agy", "agy.exe"), os.path.join(os.path.expanduser("~"), ".local", "bin", "agy"), "/usr/local/bin/agy"]
+    home = os.path.expanduser("~")
+    cands += [os.path.join(la, "Programs", "agy", "agy.exe"), os.path.join(la, "Programs", "Antigravity", "bin", "agy.exe"),
+              os.path.join(home, ".antigravity", "bin", "agy.exe"), os.path.join(home, ".agy", "bin", "agy.exe"),
+              os.path.join(home, ".local", "bin", "agy.exe")]
+    # 프로그램을 켠 뒤에 설치했으면 이 프로그램의 PATH에는 아직 없음 → 윈도우에 저장된 최신 PATH(사용자·시스템)에서 다시 찾음
+    if os.name == "nt":
+        try:
+            import winreg
+            paths = []
+            for root, key in ((winreg.HKEY_CURRENT_USER, r"Environment"),
+                              (winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment")):
+                try:
+                    with winreg.OpenKey(root, key) as k:
+                        paths += os.path.expandvars(winreg.QueryValueEx(k, "Path")[0]).split(";")
+                except OSError:
+                    pass
+            for d in paths:
+                for n in ("agy.exe", "agy.cmd", "agy.bat"):
+                    cands.append(os.path.join(d.strip(), n))
+        except Exception:
+            pass
     for c in cands:
         if c and os.path.isfile(c) and "agy-node" not in os.path.basename(c).lower():
             return c
