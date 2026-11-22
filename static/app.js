@@ -1794,7 +1794,13 @@ function smartHtml(md) {
     if (!s) out.push(P("<br>"));
     else if (/^```|^~~~/.test(s)) {}
     else if (/^[-=]{3,}$/.test(s)) out.push("<hr>");
-    else if (s.startsWith("## ")) out.push(P(inl(s.slice(3)), FS.heading, "font-weight:bold;color:#2f3f9e"));
+    else if (s.startsWith("## ")) {
+      // 소제목: 번호는 진한 파랑 두 자리(02) + 제목은 먹색 굵게 + 아래 가는 구분선 (글자로 만들어 붙여 넣어도 남음)
+      const hm = s.slice(3).trim().match(/^(\d{1,2})[.)]\s*(.*)$/);
+      const head = hm ? `<span style="color:#184f84">${String(hm[1]).padStart(2, "0")}</span>&nbsp;&nbsp;${inl(hm[2])}` : inl(s.slice(3).trim());
+      out.push(P(head, FS.heading, "font-weight:bold;color:#1d2433"));
+      out.push(P("─".repeat(28), 13, "color:#c9d3df;letter-spacing:-1px"));
+    }
     else if (s.startsWith("[📸")) out.push(P(esc(s), 13, "color:#999"));
     else if (/^\*\*Q[.．]/.test(s)) out.push(P(inl(s), FS.body, "font-weight:bold"));
     else if (/^✔/.test(s)) out.push(P(inl(s), FS.body, "color:#184f84"));
