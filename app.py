@@ -88,7 +88,7 @@ EVERGREEN_CHECK_PATH = DATA / "evergreen_check.json"
 import writer as _writer  # AI 글쓰기 (작가 지침·블로그 기억·초안 보관·docx)
 WRITER = _writer.Store(DATA)
 KST = timezone(timedelta(hours=9))
-APP_VERSION = "2026.11.21-94"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
+APP_VERSION = "2026.11.21-95"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 DEFAULT_CONFIG = {
@@ -2182,6 +2182,46 @@ def keyword_records(keyword, cfg):
     return {"posts": posts, "drafts": drafts, "my_keywords": mine}
 
 
+# ---------- Antigravity CLI 설치·로그인 (설정 화면 버튼) ----------
+AGY_JOB = {"running": False, "log": "", "ok": None, "path": ""}
+
+
+def start_agy_install():
+    if AGY_JOB["running"]:
+        return
+    AGY_JOB.update(running=True, log="", ok=None, path="")
+
+    def work():
+        try:
+            if os.name != "nt":
+                raise RuntimeError("윈도우 PC에서만 설치할 수 있어요")
+            cmd = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command",
+                   "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; irm https://antigravity.google/cli/install.ps1 | iex"]
+            p = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=600,
+                               creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+            AGY_JOB["log"] = ((p.stdout or "") + "\n" + (p.stderr or "")).strip()[-3000:]
+            found = _writer.find_agy(load_config().get("agy_path", ""))
+            AGY_JOB.update(ok=bool(found), path=found or "")
+        except subprocess.TimeoutExpired:
+            AGY_JOB.update(ok=False, log="10분 안에 끝나지 않았어요. 회사 네트워크나 보안 프로그램이 다운로드를 막고 있을 수 있어요.")
+        except Exception as e:
+            AGY_JOB.update(ok=False, log=str(e))
+        finally:
+            AGY_JOB["running"] = False
+    threading.Thread(target=work, daemon=True).start()
+
+
+def open_agy_login():
+    """새 명령 창에서 agy를 실행해 구글 로그인하게 함."""
+    exe = _writer.find_agy(load_config().get("agy_path", ""))
+    if not exe:
+        raise RuntimeError("Antigravity가 아직 설치되지 않았어요. 먼저 [설치하기]를 눌러 주세요.")
+    if os.name != "nt":
+        raise RuntimeError("윈도우 PC에서만 열 수 있어요")
+    subprocess.Popen(["cmd", "/c", "start", "Antigravity 로그인", "cmd", "/k", exe])
+    return exe
+
+
 # ---------- 내 문체 학습 ----------
 VOICE_JOB = {"running": False, "error": "", "started": 0, "done": 0}
 
@@ -3022,6 +3062,8 @@ class Handler(BaseHTTPRequestHandler):
             st = IDEAS.get(k) or {}
             return self._send(200, {"running": bool(st.get("running")), "ideas": st.get("ideas", []), "error": st.get("error", ""),
                                     "seconds": round(time.time() - st["started"]) if st.get("started") else 0})
+        if path == "/api/agy/install":
+            return self._send(200, AGY_JOB)
         if path == "/api/voice":
             return self._send(200, {"profile": WRITER.voice(), "path": str(WRITER.voice_path), "job": {**VOICE_JOB,
                                     "seconds": round(time.time() - VOICE_JOB["started"]) if VOICE_JOB["running"] else 0}})
@@ -3260,6 +3302,14 @@ class Handler(BaseHTTPRequestHandler):
             except Exception as e:
                 traceback.print_exc()
                 return self._send(500, {"error": f"분석하지 못했어요: {e}"})
+        if path == "/api/agy/install":
+            start_agy_install()
+            return self._send(200, {"ok": True})
+        if path == "/api/agy/login":
+            try:
+                return self._send(200, {"ok": True, "path": open_agy_login()})
+            except Exception as e:
+                return self._send(400, {"error": str(e)})
         if path == "/api/voice":
             if body.get("learn"):
                 samples = [str(s) for s in (body.get("samples") or []) if str(s).strip()][:6]

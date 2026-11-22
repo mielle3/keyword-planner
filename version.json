@@ -1,4 +1,4 @@
 {
-  "version": "2026.11.21-94",
-  "notes": "Antigravity(agy) 찾기 강화: 프로그램을 켠 뒤 설치해도 윈도우에 저장된 최신 PATH와 흔한 설치 폴더에서 찾음"
+  "version": "2026.11.21-95",
+  "notes": "설정 → AI 글쓰기에 [① Antigravity 설치하기] [② 구글 로그인 창 열기] 버튼 · Antigravity 없는 PC에서 초안 쓰기를 누르면 설치 또는 붙여넣기 방식 선택"
 }

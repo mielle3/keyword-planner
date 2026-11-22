@@ -1600,3 +1600,5 @@ select { height: 40px; box-sizing: border-box; }
 html { overflow-y: scroll; scrollbar-gutter: stable; }
 .tabs button[aria-selected="true"] { font-weight: 600 !important; text-shadow: 0 0 .55px currentColor, 0 0 .55px currentColor; }
 .tabs .count:empty { display: inline-grid; visibility: hidden; }  /* 개수가 나중에 들어와도 메뉴가 밀리지 않게 자리 확보 */
+
+.agy-setup { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 6px 0 2px; }

@@ -262,6 +262,12 @@
       </div>
       <div class="ai-mode-box" data-mode="antigravity">
         <h3>Gemini로 자동 작성 (Antigravity CLI)</h3>
+        <div class="agy-setup">
+          <button class="btn dark" type="button" id="agyInstall">① Antigravity 설치하기</button>
+          <button class="btn" type="button" id="agyLogin">② 구글 로그인 창 열기</button>
+          <span class="muted" id="agyState" style="font-size:13px"></span>
+        </div>
+        <p class="muted" style="font-size:12.5px;margin:4px 0 10px">PC마다 한 번씩 필요해요 (집·회사 따로). ②에서 열린 검은 창에서 구글 로그인을 마치면 창을 닫아도 돼요. 버튼이 안 되면 아래 방법으로 직접 설치하세요.</p>
         <ol class="steps">
           <li>시작 메뉴에서 <b>PowerShell</b>을 열고 <code>irm https://antigravity.google/cli/install.ps1 | iex</code> 를 실행하세요.</li>
           <li>새 명령 창(cmd)에서 <code>agy</code> 를 한 번 실행해 Gemini 구독 계정으로 로그인하세요. 로그인 후 Ctrl+C로 나와도 돼요.</li>

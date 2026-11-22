@@ -1167,6 +1167,13 @@ const DRAFT_STATUSES = ["초안", "수정 중", "발행 완료"];
 async function writeDraft(it, btn) {
   const ai = STATE.ai || {};
   if (ai.provider === "manual") return openManual(it);
+  if (ai.provider === "antigravity" && !ai.antigravity) {
+    // 이 PC에 Antigravity가 없음 (예: 회사 PC) → 설치하거나, 이번 글은 붙여넣기 방식으로
+    if (confirm("이 PC에는 Antigravity(Gemini 자동 작성)가 설치돼 있지 않아요.\n\n[확인] 지금 설치하기 (설정 화면으로 이동)\n[취소] 이번 글은 Gemini 앱에 붙여 넣는 방식으로 쓰기")) {
+      hideDrawer(); showTab("settings"); setTimeout(() => { $(".ai-card")?.scrollIntoView({ behavior: "smooth" }); $("#agyInstall")?.click(); }, 300);
+    } else openManual(it);
+    return;
+  }
   if ((ai.provider === "claude" && !ai.claude) || (ai.provider === "gemini" && !ai.gemini) || (ai.provider === "antigravity" && !ai.antigravity)) {
     toast(ai.provider === "antigravity" ? "먼저 설정 → AI 글쓰기에서 Antigravity CLI를 설치해 주세요" : "먼저 설정 → AI 글쓰기에서 키를 넣어 주세요"); hideDrawer(); showTab("settings");
     setTimeout(() => $(".ai-card")?.scrollIntoView({ behavior: "smooth" }), 200); return;
@@ -1900,3 +1907,29 @@ if ($("#rwSource")) $("#rwSource").addEventListener("blur", async () => {
   try { const p = await api("/api/naver/post", { url: v }); $("#rwSource").value = `${p.title}\n\n${p.text}`; toast(`‘${p.title.slice(0, 20)}’ 글을 읽어 왔어요 (${p.stats.chars.toLocaleString()}자)`); }
   catch (err) { toast(err.message); }
 });
+
+
+/* ---------- Antigravity 설치·로그인 버튼 ---------- */
+if ($("#agyInstall")) {
+  const st = t => { $("#agyState").textContent = t; };
+  $("#agyInstall").onclick = async () => {
+    const b = $("#agyInstall"); b.disabled = true; st("설치 중… (1~3분, 이 화면을 닫지 마세요)");
+    try {
+      await api("/api/agy/install", {});
+      for (let i = 0; i < 300; i++) {
+        await new Promise(r => setTimeout(r, 2000));
+        const s = await api("/api/agy/install");
+        if (!s.running) {
+          if (s.ok) { st("설치 완료 ✓ 이제 ② 구글 로그인 창 열기를 누르세요"); STATE = await api("/api/state"); $("#aiCheck")?.click(); }
+          else { st("설치하지 못했어요"); alert("설치하지 못했어요.\n\n" + (s.log || "") + "\n\n회사 보안 정책으로 막혔을 수 있어요. 그럴 때는 위에서 '직접 붙여넣기'를 고르세요."); }
+          break;
+        }
+      }
+    } catch (e) { st(e.message); }
+    finally { b.disabled = false; }
+  };
+  $("#agyLogin").onclick = async () => {
+    try { await api("/api/agy/login", {}); st("검은 창이 열렸어요 · 구글 로그인을 마친 뒤 그 창을 닫고 [AI 연결 확인]을 누르세요"); }
+    catch (e) { st(e.message); }
+  };
+}
