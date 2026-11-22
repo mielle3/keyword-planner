@@ -51,10 +51,10 @@ def fetch_repo_file(name):
     return False
 
 
-OLD_ESSAY_GUIDES = {"4daefb41ecf10b68cab44a5e092bf4756970d4e730128849c7af6229216fdd33"}  # 읽을거리형 기본 지침의 예전 판 (고치지 않았으면 자동 교체)
+OLD_ESSAY_GUIDES = {"18eac005a699b2a7cfa1ddd23e90f5ff9f9f2f70f07388daa608dda49c558a7f", "4daefb41ecf10b68cab44a5e092bf4756970d4e730128849c7af6229216fdd33"}  # 읽을거리형 기본 지침의 예전 판 (고치지 않았으면 자동 교체)
 
 GUIDE_FILES = {"info": "writer_guide.md", "essay": "writer_guide_essay.md", "deal": "writer_guide_deal.md"}
-OLD_DEAL_GUIDES = set()
+OLD_DEAL_GUIDES = {"6bb7940776d446bcd5f7ecd7d6c4c0f76d8a391f7c009bb270b07f9ae8796a6a"}
 DEAL_RE = re.compile(r"할인|블프|블랙프라이데이|사이버먼데이|직구|핫딜|특가|쿠폰|프로모션|캐시백|최저가|세일|타임딜|사전예약|사전 예약|"
                      r"얼리버드|예매 오픈|티켓 오픈|티켓팅|예매|요금제|통신사 혜택|카드 혜택|광군제|아마존|알리|테무|쿠팡 로켓|정가")
 ESSAY_RE = re.compile(r"영화|드라마|넷플릭스|티빙|디즈니\+|웨이브|쿠팡플레이|OTT|애니|웹툰|책|소설|에세이|도서|시집|음악|앨범|플레이리스트|노래|"
@@ -1041,7 +1041,7 @@ def check_essay(text):
 
 
 def local_fix(text):
-    """AI를 다시 부르지 않고 프로그램이 바로 고치는 것: 태그를 맨 끝으로, 태그 15개 이내, 본문 속 URL 제거."""
+    """AI를 다시 부르지 않고 프로그램이 바로 고치는 것: 태그를 맨 끝으로, 태그 15개 이내, 본문 속 URL 제거, 질문·답 묶음 사이 빈 줄."""
     t = (text or "").rstrip()
     m = re.search(r"\n(?:-{3,}\s*\n+\s*)?(■\s*네이버 블로그[^\n]*\n+[^\n■]*)", t)
     if m:
@@ -1058,6 +1058,8 @@ def local_fix(text):
         e = re.search(r"\n(?:-{3,}\s*\n+\s*)?■\s*(?:네이버 블로그|참고한|Gemini 이미지)", t[s:])
         e = s + e.start() if e else len(t)
         body = re.sub(r"\s*\(?https?://[^\s)]+\)?", "", t[s:e])
+        # 자주 묻는 질문: 질문·답 묶음 사이에 빈 줄 1개 (질문 줄 앞이 붙어 있으면 띄움)
+        body = re.sub(r"(?m)^([^\n]*\S[^\n]*)\n(\*\*Q[.．])", r"\1\n\n\2", body)
         t = t[:s] + body + t[e:]
     return t.strip() + "\n"
 

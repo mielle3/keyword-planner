@@ -1751,7 +1751,7 @@ function smartHtml(md) {
   const inl = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
   const FS = (STATE && STATE.editor_fs) || { body: 16, heading: 19, small: 13 };
   const P = (html, size = FS.body, extra = "") => `<p style="margin:0;line-height:1.8"><span style="font-size:${size}px;${extra}">${html}</span></p>`;
-  const lines = body.replace(/\r/g, "").split("\n"); const out = []; let i = 0;
+  const lines = body.replace(/\r/g, "").replace(/([^\n]*\S[^\n]*)\n(\*\*Q[.．])/g, "$1\n\n$2").split("\n"); const out = []; let i = 0;
   while (i < lines.length) {
     const s = lines[i].trim();
     if (s.startsWith("|")) {
