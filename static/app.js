@@ -1774,7 +1774,7 @@ function smartHtml(md) {
   const FS = (STATE && STATE.editor_fs) || { body: 16, heading: 19, small: 13 };
   // 스마트에디터 ONE이 자기 글에서 쓰는 모양(se-fs-fs크기 클래스)을 같이 넣어야 붙여 넣을 때 글자 크기가 살아남음
   const P = (html, size = FS.body, extra = "") => `<p class="se-text-paragraph se-text-paragraph-align-" style="margin:0;line-height:2"><span class="se-fs-fs${size} se-ff-nanummaruburi" style="font-family:'NanumMaruBuri','나눔마루부리',serif;font-size:${size}px;${/font-weight/.test(extra) ? "" : "font-weight:normal;"}${extra}">${html}</span></p>`;
-  const lines = body.replace(/\r/g, "").replace(/([^\n]*\S[^\n]*)\n(\*\*Q[.．])/g, "$1\n\n$2").replace(/(^|\n)([①-⑩][^\n]*)\n(?=[①-⑩])/g, "$1$2\n\n").split("\n"); const out = []; let i = 0;
+  const lines = body.replace(/\r/g, "").replace(/([^\n]*\S[^\n]*)\n(\*\*Q[.．])/g, "$1\n\n$2").replace(/(^|\n)([①-⑩][^\n]*)\n(?=[①-⑩])/g, "$1$2\n\n").replace(/(^|\n)([▪✔][^\n]*)\n(?=[▪✔])/g, "$1$2\n\n").split("\n"); const out = []; let i = 0;
   while (i < lines.length) {
     const s = lines[i].trim();
     if (s.startsWith("|")) {
@@ -1803,7 +1803,7 @@ function smartHtml(md) {
     }
     else if (s.startsWith("[📸")) out.push(P(esc(s), 13, "color:#999"));
     else if (/^\*\*Q[.．]/.test(s)) out.push(P(inl(s), FS.body, "font-weight:bold"));
-    else if (/^✔/.test(s)) out.push(P(inl(s), FS.body, "color:#184f84"));
+    else if (/^[✔▪]/.test(s)) out.push(P(inl(s), FS.body, "color:#184f84"));
     else if (/^[①-⑩]/.test(s)) {
       const m = s.match(/^([①-⑩]\s*[^:：]{1,30}[:：])([\s\S]*)$/);
       const color = "#184f84";  // 핵심만 먼저 보기(✔) 줄과 같은 색

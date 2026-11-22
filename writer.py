@@ -1062,6 +1062,8 @@ def local_fix(text):
         body = re.sub(r"(?m)^([^\n]*\S[^\n]*)\n(\*\*Q[.．])", r"\1\n\n\2", body)
         # 번호 단계(①~⑩): 단계 사이 빈 줄 1개
         body = re.sub(r"(?m)^([①-⑩][^\n]*)\n(?=[①-⑩])", r"\1\n\n", body)
+        # ✔·▪ 줄도 줄 사이 빈 줄 1개
+        body = re.sub(r"(?m)^([✔▪][^\n]*)\n(?=[✔▪])", r"\1\n\n", body)
         t = t[:s] + body + t[e:]
     return t.strip() + "\n"
 
