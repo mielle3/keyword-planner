@@ -66,7 +66,7 @@ EVERGREEN_CHECK_PATH = DATA / "evergreen_check.json"
 import writer as _writer  # AI 글쓰기 (작가 지침·블로그 기억·초안 보관·docx)
 WRITER = _writer.Store(DATA)
 KST = timezone(timedelta(hours=9))
-APP_VERSION = "2026.11.21-60"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
+APP_VERSION = "2026.11.21-61"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 DEFAULT_CONFIG = {
@@ -3072,6 +3072,10 @@ class Handler(BaseHTTPRequestHandler):
             if act == "delete":
                 WRITER.delete(m.group(1))
                 return self._send(200, WRITER.index())
+            if act == "undo":
+                if not WRITER.undo(m.group(1)):
+                    return self._send(400, {"error": "되돌릴 이전 버전이 없어요"})
+                return self._send(200, WRITER.get(m.group(1)))
             rec = WRITER.update(m.group(1), text=body.get("text") if act == "save" else None,
                                 status=body.get("status") if act == "status" else None)
             if not rec:
@@ -3258,7 +3262,9 @@ _dq_wake = threading.Event()
 def enqueue_draft(item, auto=False):
     with _dq_lock:
         k = norm(item.get("keyword", ""))
-        same = [j for j in ([DRAFT_Q["current"]] if DRAFT_Q["current"] else []) + DRAFT_Q["queue"] if norm(j["item"]["keyword"]) == k]
+        same = [j for j in ([DRAFT_Q["current"]] if DRAFT_Q["current"] else []) + DRAFT_Q["queue"]
+                if norm(j["item"]["keyword"]) == k and j["item"].get("target_id") == item.get("target_id")
+                and not item.get("revise_instruction")]
         if same:  # 이미 쓰는 중(자동 포함)이면 그 작업을 그대로 기다림
             if not auto:
                 same[0]["auto"] = False
@@ -3316,7 +3322,11 @@ def draft_worker():
 
                 def say(msg, job=job):
                     job["stage"] = msg
-                if not job["item"].get("enrich") and not job["item"].get("tool") and not job["item"].get("rewrite_source"):
+                if job["item"].get("target_id") and job["item"].get("revise_instruction"):
+                    cur = WRITER.get(job["item"]["target_id"]) or {}
+                    job["item"]["revise_source"] = cur.get("text", "")
+                    job["item"].setdefault("style", cur.get("style") or "info")
+                if not job["item"].get("enrich") and not job["item"].get("tool") and not job["item"].get("rewrite_source") and not job["item"].get("revise_instruction"):
                     t = tool_fit(job["item"].get("keyword", ""), cfg)  # 어느 루트로 와도 내 사이트 도구는 자동 연결
                     if t:
                         job["item"]["tool"] = t
@@ -3324,7 +3334,7 @@ def draft_worker():
                     say("검색 데이터 모으는 중")
                     try:
                         main = analyze_keyword(job["item"]["keyword"])["items"][0]
-                        keep = {k: job["item"][k] for k in ("user_note", "concept_plan") if job["item"].get(k)}
+                        keep = {k: job["item"][k] for k in ("user_note", "concept_plan", "target_id", "style") if job["item"].get(k)}
                         job["item"] = {**main, **keep}
                     except Exception:
                         traceback.print_exc()

@@ -1347,11 +1347,18 @@ function renderDrafts() {
         <button class="btn" id="dvCopyBody" title="확인 일자부터 면책 문구까지 + 참고한 공식 자료 + 태그 (스마트에디터에 붙여넣기용)">본문 복사</button>
         <button class="btn" id="dvCopyAll">전체 복사</button>
         <a class="btn dark" href="/api/drafts/${encodeURIComponent(d.id)}/docx" download="${esc((d.created_at || "").slice(0, 10) + "_" + (d.keyword || "초안").replace(/[\\/:*?"<>|]+/g, " ").slice(0, 40) + ".docx")}">docx 저장</a>
-        <button class="btn" id="dvRedo" title="같은 글감으로 새로 쓰기 (새 초안으로 보관)">다시 쓰기</button>
-        <button class="btn" id="dvRestyle" title="지금 초안의 내용은 살리고 글 형식만 바꿔 새 초안으로 보관">${d.style === "essay" ? "정보형으로 바꿔 쓰기" : "읽을거리형으로 바꿔 쓰기"}</button>
+        <button class="btn primary" id="dvRevise" title="고칠 내용을 적으면 이 초안을 그 자리에서 고쳐요">AI로 고치기</button>
+        <button class="btn" id="dvRedo" title="같은 글감으로 처음부터 다시 써서 이 초안을 덮어써요">다시 쓰기</button>
+        <button class="btn" id="dvRestyle" title="내용은 살리고 형식만 바꿔 이 초안을 덮어써요">${d.style === "essay" ? "정보형으로 바꾸기" : "읽을거리형으로 바꾸기"}</button>
+        ${d.versions ? `<button class="btn ghost" id="dvUndo" title="덮어쓰기 전 내용으로 되돌려요">되돌리기 (${d.versions})</button>` : ""}
         <button class="btn ghost" id="dvDelete">삭제</button>
       </div>
     </header>
+    <div class="dv-revise" id="dvReviseBox" hidden>
+      <b>어떻게 고칠까요?</b> <small class="muted">요청한 부분만 고치고 나머지는 그대로 둬요 · 이 초안을 덮어쓰고, 이전 내용은 되돌리기로 복구할 수 있어요</small>
+      <textarea id="dvReviseText" rows="3" placeholder="예) 소제목 2를 더 짧게, 마무리 문단을 담백하게, 대표 이미지 프롬프트를 겨울 분위기로 다시"></textarea>
+      <div class="row-end"><button class="btn" type="button" id="dvReviseCancel">닫기</button><button class="btn dark" type="button" id="dvReviseGo">고치기 ✍</button></div>
+    </div>
     ${promptCardsHTML(d.text)}
     ${d.sources?.length ? `<details class="dv-sources"><summary>AI가 확인한 웹 자료 ${d.sources.length}개</summary><ul>${d.sources.map(s => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a></li>`).join("")}</ul></details>` : ""}
     ${DRAFT_MODE === "edit"
@@ -1361,15 +1368,28 @@ function renderDrafts() {
   $("#dvCopyBody").onclick = () => { copy(bodyPart(d.text).replace(/\*\*(.+?)\*\*/g, "$1").replace(/^>\s?/gm, "") + (refsPart(d.text) ? "\n\n" + refsPart(d.text) : "") + "\n\n" + tagsPart(d.text)); };
   $("#dvCopyAll").onclick = () => copy(d.text);
   $("#dvDelete").onclick = async () => { if (!confirm("이 초안을 삭제할까요?")) return; DRAFTS = await api("/api/drafts/" + d.id, { action: "delete" }); DRAFT = null; await loadDrafts(); toast("삭제했어요"); };
+  $("#dvRevise").onclick = () => { $("#dvReviseBox").hidden = false; $("#dvReviseText").focus(); };
+  $("#dvReviseCancel").onclick = () => { $("#dvReviseBox").hidden = true; };
+  $("#dvReviseGo").onclick = async () => {
+    const ins = $("#dvReviseText").value.trim();
+    if (!ins) { toast("고칠 내용을 적어 주세요"); return; }
+    $("#dvReviseBox").hidden = true;
+    await writeDraft({ id: "rv-" + Date.now(), keyword: d.keyword, topic: d.topic || "", style: d.style || "info", brief: {}, metrics: {}, src: {},
+                       target_id: d.id, revise_instruction: ins });
+  };
+  if ($("#dvUndo")) $("#dvUndo").onclick = async () => {
+    if (!confirm("덮어쓰기 전 내용으로 되돌릴까요?")) return;
+    try { DRAFT = await api("/api/drafts/" + d.id, { action: "undo" }); DRAFTS = await api("/api/drafts"); renderDrafts(); toast("이전 버전으로 되돌렸어요"); } catch (err) { toast(err.message); }
+  };
   $("#dvRestyle").onclick = async () => {
     const to = d.style === "essay" ? "info" : "essay";
-    openFix(d.text || "", { style: to, title: d.title || d.keyword,
+    openFix(d.text || "", { style: to, title: d.title || d.keyword, target: d.id,
                        user_note: to === "essay" ? "정보 정리형으로 쓴 초안입니다. 내용과 사실은 살리고, 읽을거리형 지침대로 문단 중심의 매끄러운 글로 다시 써 주세요. 핵심 ✔·목차·박스·자주 묻는 질문은 빼고, 꼭 필요한 기본 정보 표 하나만 남깁니다."
                                                  : "읽을거리형으로 쓴 초안입니다. 내용과 사실은 살리고, 정보형 지침대로 핵심만 먼저 보기·목차·표·박스·자주 묻는 질문을 갖춘 정리형 글로 다시 써 주세요." });
   };
   $("#dvRedo").onclick = async () => {
     const it = findItem(d.item_id) || { keyword: d.keyword, topic: d.topic, brief: {}, metrics: {}, src: {} };
-    openPlan(it, { from: "초안 다시 쓰기" });
+    openPlan({ ...it, target_id: d.id }, { from: "초안 다시 쓰기 · 이 초안을 덮어써요" });
   };
   if (DRAFT_MODE === "edit") {
     const ta = $("#dvText");
@@ -1604,10 +1624,12 @@ function openPlan(base, opts = {}) {
   openWrite("new", opts.from);
   wStyleHint();
 }
+let FIX_TARGET = null;
 function openFix(source, opts = {}) {
+  FIX_TARGET = opts.target || null;
   $("#rwSource").value = source || ""; $("#rwNote").value = opts.note || "";
   setWStyle(opts.style || "");
-  openWrite("fix", opts.title ? "초안 형식 바꾸기" : "");
+  openWrite("fix", opts.title ? "초안 형식 바꾸기 · 이 초안을 덮어써요" : "");
 }
 function openWrite(mode, from) {
   W_MODE = mode;
@@ -1620,6 +1642,7 @@ function openWrite(mode, from) {
 }
 $("#writeNew").onclick = () => openPlan(null, {});
 $("#rewriteBtn").onclick = () => openFix("", {});
+$("#writeNew").addEventListener("click", () => { FIX_TARGET = null; });
 $("#wSwitch").onclick = () => openWrite(W_MODE === "new" ? "fix" : "new");
 $("#wGo").onclick = async () => {
   if (W_MODE === "new") {
@@ -1634,6 +1657,7 @@ $("#wGo").onclick = async () => {
     } else {  // 키워드만: 서버가 검색 데이터를 먼저 모음
       it = { id: "new-" + Date.now(), keyword: kw.slice(0, 40), topic: "내 기획", brief: {}, metrics: {}, src: {}, user_note: note, enrich: true, ...(st ? { style: st } : {}) };
       if (PLAN_BASE?.concept_plan) it.concept_plan = PLAN_BASE.concept_plan;
+      if (PLAN_BASE?.target_id) it.target_id = PLAN_BASE.target_id;
     }
     PLAN_BASE = null;
     await writeDraft(it);
@@ -1647,7 +1671,8 @@ $("#wGo").onclick = async () => {
   $("#writeDialog").close();
   const st2 = $("#wStyle [aria-checked=true]")?.dataset.ws || "";
   await writeDraft({ id: "rw-" + Date.now(), keyword: title, topic: "내 글 다듬기", brief: { titles: [title] }, metrics: {}, src: {},
-                     rewrite_source: src.slice(0, 20000), user_note: $("#rwNote").value.trim(), ...(st2 ? { style: st2 } : {}) });
+                     rewrite_source: src.slice(0, 20000), user_note: $("#rwNote").value.trim(), ...(st2 ? { style: st2 } : {}), ...(FIX_TARGET ? { target_id: FIX_TARGET } : {}) });
+  FIX_TARGET = null;
   $("#rwSource").value = ""; $("#rwNote").value = "";
 };
 

@@ -217,10 +217,53 @@ class Store:
 
     def delete(self, did):
         self._write_index([r for r in self.index() if r["id"] != did])
-        try:
-            (self.drafts_dir / f"{did}.md").unlink()
-        except Exception:
-            pass
+        for p in [self.drafts_dir / f"{did}.md"] + list(self.drafts_dir.glob(f"{did}.v*.md")):
+            try:
+                p.unlink()
+            except Exception:
+                pass
+
+    # 덮어쓰기 · 되돌리기 (덮어쓰기 전 내용은 버전 파일로 보관)
+    def overwrite(self, did, text, **meta):
+        idx = self.index()
+        rec = next((r for r in idx if r["id"] == did), None)
+        if not rec:
+            return None
+        cur = self.drafts_dir / f"{did}.md"
+        n = int(rec.get("versions") or 0) + 1
+        if cur.exists():
+            (self.drafts_dir / f"{did}.v{n}.md").write_text(cur.read_text(encoding="utf-8"), encoding="utf-8")
+            rec["versions"] = n
+        cur.write_text(text, encoding="utf-8")
+        rec.update({k: v for k, v in meta.items() if v is not None})
+        rec["title"] = parse_title(text) or rec.get("title")
+        rec["chars"] = body_chars(text)
+        rec["check"] = check_draft(text, rec.get("style", "info"))
+        rec["edited_at"] = now_iso()
+        self._write_index(idx)
+        return rec
+
+    def undo(self, did):
+        idx = self.index()
+        rec = next((r for r in idx if r["id"] == did), None)
+        n = int((rec or {}).get("versions") or 0)
+        if not rec or n < 1:
+            return None
+        vp = self.drafts_dir / f"{did}.v{n}.md"
+        if not vp.exists():
+            rec["versions"] = n - 1
+            self._write_index(idx)
+            return rec
+        text = vp.read_text(encoding="utf-8")
+        (self.drafts_dir / f"{did}.md").write_text(text, encoding="utf-8")
+        vp.unlink()
+        rec["versions"] = n - 1
+        rec["title"] = parse_title(text) or rec.get("title")
+        rec["chars"] = body_chars(text)
+        rec["check"] = check_draft(text, rec.get("style", "info"))
+        rec["edited_at"] = now_iso()
+        self._write_index(idx)
+        return rec
 
 
 def now_iso():
@@ -279,6 +322,16 @@ def build_memory(store, cfg, saved):
 
 def draft_request(item, cfg, today):
     """키워드 플래너가 모은 데이터를 AI가 쓰기 좋게 정리한 요청문."""
+    if item.get("revise_instruction") and item.get("revise_source"):  # AI로 고치기: 요청한 부분만 수정
+        return "\n".join([f"오늘 날짜: {today.isoformat()} (한국 시간).", "",
+                           "아래 초안을 사용자의 수정 요청대로 고쳐 주세요.", "",
+                           "## 고치는 원칙",
+                           "- 요청한 부분만 고치고, 요청과 관계없는 문장·형식·숫자는 그대로 둡니다.",
+                           "- 고친 결과는 기획부터 태그까지 **초안 전체**를 출력합니다(바뀐 부분만 출력하지 않음).",
+                           "- 새로 넣는 사실·숫자는 확인한 것만 쓰고, 출처는 참고 자료 칸에 더합니다.",
+                           "- 설명이나 변경 목록을 덧붙이지 않습니다.", "",
+                           "## 수정 요청 (최우선)", item["revise_instruction"][:2000], "",
+                           "## 지금 초안", item["revise_source"][:30000]])
     if item.get("rewrite_source"):  # 내 글 다듬기: 이미 올린 글을 지침 형식으로 고쳐 쓰기
         out = [f"오늘 날짜: {today.isoformat()} (한국 시간).", "",
                "아래는 사용자가 이미 네이버 블로그에 올린 글입니다. 작가 지침의 출력 양식과 편집 형식에 맞춰 **수정본**을 써 주세요.", "",
@@ -812,6 +865,13 @@ def save_draft(store, cfg, item, saved, text, provider, model, web, sources=None
     text = (text or "").strip()
     if len(text) < 200:
         raise WriterError("붙여 넣은 내용이 너무 짧아요. AI가 쓴 초안 전체를 붙여 넣어 주세요.")
+    tid = item.get("target_id")
+    if tid and store.get(tid):  # 다시 쓰기·형식 바꾸기·AI로 고치기: 같은 초안을 덮어씀
+        st = style or pick_style(item)
+        rec = store.overwrite(tid, text, provider=provider, model=model, web=web, seconds=seconds, style=st,
+                              sources=(sources or sources_from_text(text))[:12])
+        build_memory(store, cfg, saved)
+        return {**rec, "text": text}
     rec = {"id": datetime.now(KST).strftime("%Y%m%d-%H%M%S-") + uuid.uuid4().hex[:4],
            "keyword": item.get("keyword", ""), "topic": item.get("topic", ""), "title": parse_title(text),
            "status": "초안", "created_at": now_iso(), "provider": provider, "model": model,
@@ -992,7 +1052,7 @@ def make_draft(store, cfg, item, saved, today, progress=None):
     text = local_fix(text)
     chk = check_draft(text, style)
     fixed = 0
-    intent = bool((item.get("user_note") or "").strip())  # 사용자 의도로 형식을 바꾼 글은 기본 틀로 되돌려 고쳐 쓰지 않음
+    intent = bool((item.get("user_note") or "").strip() or item.get("revise_instruction"))  # 사용자 의도로 형식을 바꾼 글은 기본 틀로 되돌려 고쳐 쓰지 않음
     if not chk["ok"] and _needs_rewrite(chk) and not intent:
         say(f"양식 검사 {chk['passed']}/{chk['total']} · 빠진 항목을 고쳐 쓰는 중")
         try:
