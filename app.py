@@ -45,15 +45,36 @@ from pathlib import Path
 
 BASE = Path(__file__).resolve().parent
 STATIC = BASE / "static"
-def user_data_dir():
-    """키·기록 저장 위치: 프로그램 폴더 밖의 사용자 설정 폴더 (새 버전을 어디에 풀어도 유지됨)."""
-    if os.environ.get("KEYWORD_PLANNER_DATA"):
-        return Path(os.environ["KEYWORD_PLANNER_DATA"])
+def local_data_dir():
+    """이 PC의 기본 저장 위치 (AppData)."""
     if sys.platform.startswith("win"):
         return Path(os.environ.get("APPDATA") or (Path.home() / "AppData" / "Roaming")) / "KeywordPlanner"
     if sys.platform == "darwin":
         return Path.home() / "Library" / "Application Support" / "KeywordPlanner"
     return Path(os.environ.get("XDG_DATA_HOME") or (Path.home() / ".local" / "share")) / "KeywordPlanner"
+
+
+def user_data_dir():
+    """키·기록 저장 위치. 기본은 이 PC의 AppData.
+    집·회사 PC를 같이 쓰려면 OneDrive 같은 동기화 폴더를 지정하고, AppData에는 그 위치만 적어 둠(data_location.txt)."""
+    if os.environ.get("KEYWORD_PLANNER_DATA"):
+        return Path(os.environ["KEYWORD_PLANNER_DATA"])
+    loc = local_data_dir() / "data_location.txt"
+    try:
+        p = Path(loc.read_text(encoding="utf-8").strip())
+        if str(p) and p.exists():
+            return p
+    except Exception:
+        pass
+    return local_data_dir()
+
+
+def onedrive_dir():
+    for k in ("OneDrive", "OneDriveConsumer", "OneDriveCommercial"):
+        v = os.environ.get(k)
+        if v and Path(v).exists():
+            return Path(v)
+    return None
 
 
 DATA = user_data_dir()
@@ -66,7 +87,7 @@ EVERGREEN_CHECK_PATH = DATA / "evergreen_check.json"
 import writer as _writer  # AI 글쓰기 (작가 지침·블로그 기억·초안 보관·docx)
 WRITER = _writer.Store(DATA)
 KST = timezone(timedelta(hours=9))
-APP_VERSION = "2026.11.21-63"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
+APP_VERSION = "2026.11.21-64"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 DEFAULT_CONFIG = {
@@ -2824,6 +2845,8 @@ def app_state():
             "topic_examples": examples, "topic_presets": TOPIC_PRESETS, "version": APP_VERSION, "data_dir": str(DATA), "auto_topics": auto_topics,
             "include_issues": cfg.get("include_issues", True), "my_keywords": cfg.get("my_keywords", []),
             "update": {k: _update[k] for k in ("latest", "notes", "available", "error")},
+            "sync": {"data_dir": str(DATA), "local": str(DATA) == str(local_data_dir()), "onedrive": str(onedrive_dir() or ""),
+                     "host": HOST, "others": other_hosts()},
             "auto": {"startup": bool(startup_shortcut_path() and startup_shortcut_path().exists()),
                      "windows": os.name == "nt", "hours": cfg.get("auto_refresh_hours", 4),
                      "drafts_per_day": cfg.get("auto_draft_per_day", 2)},
@@ -3049,6 +3072,23 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, rec)
             except _writer.WriterError as e:
                 return self._send(400, {"error": str(e)})
+        if path == "/api/datadir":
+            if body.get("reset"):
+                ok, msg = reset_data_dir()
+            else:
+                target = str(body.get("path") or "")
+                if body.get("onedrive"):
+                    od = onedrive_dir()
+                    if not od:
+                        return self._send(400, {"error": "이 PC에서 OneDrive 폴더를 찾지 못했어요. 폴더 경로를 직접 적어 주세요."})
+                    target = str(od / "KeywordPlanner_data")
+                try:
+                    ok, msg = set_data_dir(target)
+                except Exception as e:
+                    ok, msg = False, f"폴더를 바꾸지 못했어요: {e}"
+            if ok and body.get("restart", True):
+                threading.Timer(0.5, restart_self).start()
+            return self._send(200 if ok else 400, {"ok": ok, "message": msg} if ok else {"error": msg})
         if path == "/api/update/apply":
             ok, msg = apply_update()
             return self._send(200 if ok else 400, {"ok": ok, "message": msg} if ok else {"error": msg})
@@ -3373,7 +3413,7 @@ def auto_drafts(result):
         per_day = int(float(cfg.get("auto_draft_per_day", 2) or 0))
     except Exception:
         per_day = 0
-    if per_day <= 0 or not ai_ready(cfg) or not result:
+    if per_day <= 0 or not ai_ready(cfg) or not result or other_hosts():
         return
     today = datetime.now(KST).date().isoformat()
     idx = WRITER.index()
@@ -3503,6 +3543,80 @@ def update_loop():
         time.sleep(6 * 3600)
 
 
+# ---------- 집·회사 같이 쓰기: 데이터 폴더를 동기화 폴더(OneDrive 등)로 ----------
+import socket as _socket
+HOST = _socket.gethostname()
+
+
+def set_data_dir(target):
+    """target으로 데이터 폴더를 바꿈. target에 이미 키워드 플래너 데이터가 있으면 그대로 이어 쓰고(다른 PC에서 먼저 옮긴 경우),
+    없으면 지금 데이터를 복사. 바뀐 위치는 다음 실행부터 적용."""
+    import shutil
+    t = Path(str(target).strip().strip('"')).expanduser()
+    if not str(t) or str(t) in (".", "/"):
+        return False, "폴더 경로가 올바르지 않아요."
+    if t.resolve() == DATA.resolve():
+        return True, "이미 이 폴더를 쓰고 있어요."
+    t.mkdir(parents=True, exist_ok=True)
+    adopted = (t / "config.json").exists()
+    if not adopted:
+        for p in DATA.iterdir():
+            if p.name in ("update_tmp", "data_location.txt"):
+                continue
+            dst = t / p.name
+            if p.is_dir():
+                shutil.copytree(p, dst, dirs_exist_ok=True)
+            else:
+                shutil.copy2(p, dst)
+    loc = local_data_dir()
+    loc.mkdir(parents=True, exist_ok=True)
+    (loc / "data_location.txt").write_text(str(t), encoding="utf-8")
+    return True, ("다른 PC에서 쓰던 데이터를 찾았어요. 이 PC도 그 데이터로 이어서 씁니다." if adopted
+                  else "지금 데이터를 복사했어요. 다른 PC에서도 같은 폴더를 고르면 똑같이 쓸 수 있어요.")
+
+
+def reset_data_dir():
+    try:
+        (local_data_dir() / "data_location.txt").unlink()
+    except FileNotFoundError:
+        pass
+    return True, "이 PC 전용 폴더(AppData)로 되돌렸어요. 다시 시작하면 적용돼요."
+
+
+def heartbeat_loop():
+    """공유 폴더를 쓸 때: 지금 켜져 있는 PC를 기록 (다른 PC가 동시에 켜져 있으면 알려 주고, 자동 작업은 한 PC만)."""
+    while True:
+        try:
+            p = DATA / "running"
+            p.mkdir(exist_ok=True)
+            (p / f"{re.sub(r'[^\w.-]', '_', HOST)}.json").write_text(json.dumps({"host": HOST, "at": time.time()}), encoding="utf-8")
+        except Exception:
+            pass
+        time.sleep(60)
+
+
+def other_hosts():
+    out = []
+    try:
+        for f in (DATA / "running").glob("*.json"):
+            d = json.loads(f.read_text(encoding="utf-8"))
+            if d.get("host") != HOST and time.time() - float(d.get("at", 0)) < 180:
+                out.append(d["host"])
+    except Exception:
+        pass
+    return out
+
+
+def restart_self():
+    here = Path(__file__).parent
+    bat = here / "START_windows.bat"
+    if os.name == "nt" and bat.exists():
+        subprocess.Popen(["cmd", "/c", "start", "", str(bat), "--no-browser"], cwd=str(here), creationflags=0x08000000)
+    else:
+        subprocess.Popen([sys.executable, str(here / "app.py"), "--no-browser"], cwd=str(here),
+                         creationflags=0x00000010 if os.name == "nt" else 0, start_new_session=(os.name != "nt"))
+
+
 def startup_shortcut_path():
     appdata = os.environ.get("APPDATA")
     if os.name != "nt" or not appdata:
@@ -3545,7 +3659,7 @@ def auto_refresh_loop():
             cfg = load_config()
             hours = float(cfg.get("auto_refresh_hours", 4) or 0)
             now = datetime.now(KST)
-            if hours > 0 and 7 <= now.hour < 23 and cfg.get("topics") and not JOB["running"]:
+            if hours > 0 and 7 <= now.hour < 23 and cfg.get("topics") and not JOB["running"] and not other_hosts():
                 files = sorted(HISTORY.glob("*.json"), reverse=True) if HISTORY.exists() else []
                 last = None
                 if files:
@@ -3611,6 +3725,7 @@ def main():
     threading.Thread(target=draft_worker, daemon=True).start()
     threading.Thread(target=update_loop, daemon=True).start()
     threading.Thread(target=heal_missing_files, daemon=True).start()
+    threading.Thread(target=heartbeat_loop, daemon=True).start()
     if "--no-browser" not in sys.argv:
         threading.Timer(0.8, lambda: webbrowser.open(url)).start()
     try:

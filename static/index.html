@@ -246,6 +246,16 @@
       <div>
         <h1>설정</h1>
         <p class="muted">키와 기록은 이 PC의 사용자 설정 폴더(<code id="dataDir">…</code>)에만 저장되고 다른 곳으로 보내지 않습니다. 새 버전을 어디에 풀어도 그대로 유지돼요. 이미 저장된 칸은 비워 두면 그대로 유지됩니다.</p>
+        <div class="sync-box" id="syncBox">
+          <b>집·회사 PC 같이 쓰기</b> <span class="muted" id="syncState"></span>
+          <p class="muted" style="margin:4px 0 8px;font-size:12.5px">초안·지침·블로그 기억·설정·키를 OneDrive 같은 동기화 폴더에 두면, 다른 PC에서도 같은 폴더를 고르는 것만으로 똑같이 이어서 씁니다. 두 PC를 동시에 켜 두면 자동 분석·자동 초안은 먼저 켠 PC에서만 돌아요.</p>
+          <div class="row-start" style="gap:8px;flex-wrap:wrap">
+            <button class="btn dark" type="button" id="syncOneDrive">OneDrive 폴더 쓰기</button>
+            <input id="syncPath" placeholder="또는 폴더 경로 직접 입력 (예: E:\OneDrive\KeywordPlanner_data)" style="flex:1;min-width:260px">
+            <button class="btn" type="button" id="syncCustom">이 폴더 쓰기</button>
+            <button class="btn ghost" type="button" id="syncReset">이 PC 전용으로 되돌리기</button>
+          </div>
+        </div>
         <div class="row-start" style="margin:6px 0 4px"><button class="btn" type="button" id="updateCheck">새 버전 확인</button><span class="muted" style="font-size:12.5px">켜질 때와 6시간마다 자동으로 확인하고, 새 버전이 있으면 화면 위에 업데이트 버튼이 떠요.</span></div>
       </div>
       <div class="row-end">

@@ -1691,3 +1691,34 @@ document.addEventListener("click", e => {
   const d = e.target.closest("[data-ds]");
   if (d) { $$("#dStyle [data-ds]").forEach(x => x.setAttribute("aria-checked", String(x === d))); }
 });
+
+
+/* ---------- 집·회사 같이 쓰기 (데이터 폴더) ---------- */
+function renderSync() {
+  const s = STATE?.sync; if (!s || !$("#syncState")) return;
+  $("#syncState").textContent = s.local ? "· 지금은 이 PC 전용 폴더를 써요" : `· 공유 폴더 사용 중: ${s.data_dir}`;
+  $("#syncOneDrive").disabled = !s.onedrive;
+  $("#syncOneDrive").title = s.onedrive ? `${s.onedrive}\\KeywordPlanner_data` : "이 PC에서 OneDrive를 찾지 못했어요";
+  $("#syncReset").hidden = s.local;
+  let bar = $("#otherPcBar");
+  if (s.others?.length) {
+    if (!bar) { bar = document.createElement("div"); bar.id = "otherPcBar"; bar.className = "other-pc"; document.body.appendChild(bar); }
+    bar.textContent = `다른 PC(${s.others.join(", ")})에서도 키워드 플래너가 켜져 있어요 · 자동 분석·자동 초안은 그 PC에서만 돌아요`;
+  } else if (bar) bar.remove();
+}
+async function syncGo(body) {
+  if (!confirm("데이터 폴더를 바꾸고 프로그램을 다시 시작할까요?\n(이미 그 폴더에 데이터가 있으면 그 데이터로 이어서 씁니다)")) return;
+  try {
+    const r = await api("/api/datadir", body);
+    toast(r.message + " · 다시 시작하는 중…");
+    const old = STATE.version;
+    for (let i = 0; i < 25; i++) { await new Promise(r => setTimeout(r, 2000)); try { const v = await (await fetch("/api/version", { cache: "no-store" })).json(); if (v.version) { if (i > 1) { location.reload(); return; } } } catch {} }
+    toast("다시 시작이 늦어지면 검은 창을 닫고 START_windows.bat을 실행해 주세요");
+  } catch (err) { toast(err.message); }
+}
+if ($("#syncOneDrive")) {
+  $("#syncOneDrive").onclick = () => syncGo({ onedrive: true });
+  $("#syncCustom").onclick = () => { const p = $("#syncPath").value.trim(); if (!p) { toast("폴더 경로를 적어 주세요"); return; } syncGo({ path: p }); };
+  $("#syncReset").onclick = () => syncGo({ reset: true });
+}
+setInterval(() => { try { renderSync(); } catch {} }, 3000);

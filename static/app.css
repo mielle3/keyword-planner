@@ -1484,3 +1484,8 @@ dialog .mine-body, dialog .topic-picker { overflow-y: auto; min-height: 0; flex:
 }
 .ai-card, section.card { grid-template-columns: minmax(0, 1fr); }
 @media (max-width: 760px) { section.card { padding-left: 18px !important; padding-right: 18px !important; } }
+
+/* v64: 집·회사 같이 쓰기 */
+.sync-box { margin: 10px 0 12px; border: 2px solid var(--ink); background: #F3F8FF; padding: 12px 14px; }
+.sync-box input { border: 1.5px solid var(--rule); padding: 8px 10px; font: 13px/1.4 var(--sans); box-sizing: border-box; }
+.other-pc { position: fixed; left: 50%; transform: translateX(-50%); bottom: 14px; z-index: 65; background: #1F2937; color: #fff; padding: 8px 14px; font-size: 12.5px; max-width: calc(100vw - 32px); }
