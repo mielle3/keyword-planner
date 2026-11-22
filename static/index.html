@@ -12,8 +12,9 @@
   <div class="appbar-inner">
     <a class="brand" href="#today" aria-label="키워드 플래너 홈">
       <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect x="1" y="1" width="26" height="26" fill="#0e0e10"/><rect x="7" y="15" width="3.6" height="6.5" fill="#ffd400" opacity=".55"/><rect x="12.2" y="11" width="3.6" height="10.5" fill="#ffd400" opacity=".8"/><rect x="17.4" y="6.5" width="3.6" height="15" fill="#ffd400"/></svg>
-      <span>키워드 플래너</span><small class="brand-sub">AI 글쓰기</small><small class="ver" id="appVer"></small>
+      <span>키워드 플래너</span><small class="brand-sub">AI 글쓰기</small>
     </a>
+    <button type="button" class="ver" id="appVer" title="눌러서 새 버전 확인"></button>
     <nav class="tabs" role="tablist">
       <button type="button" class="tab-new" id="writeNew">✍ 새 글</button>
       <button role="tab" data-tab="drafts">초안 <span class="count" id="draftCount"></span></button>
@@ -245,6 +246,7 @@
         <h1>설정</h1>
         <p class="muted">글쓰기 AI, 자동으로 할 일, 검색 데이터 연결, 집·회사 같이 쓰기를 여기서 정합니다.</p>
       </div>
+      <div class="row-end"><span class="muted" id="verNow" style="font-size:13px"></span><button class="btn dark" type="button" id="updateCheck">업데이트 확인</button></div>
     </div>
 
     <section class="card keycard ai-card" data-key="ai">
@@ -464,10 +466,6 @@
             <button class="btn ghost" type="button" id="syncReset">이 PC 전용으로 되돌리기</button>
           </div>
         </div>
-      <div class="prog-row">
-        <div><b>업데이트</b><p class="muted">켜질 때와 6시간마다 새 버전을 확인하고, 있으면 화면 위에 업데이트 버튼이 떠요.</p></div>
-        <button class="btn" type="button" id="updateCheck">새 버전 확인</button>
-      </div>
       <div class="prog-row">
         <div><b>저장 위치</b><p class="muted"><code id="dataDir">…</code> · 키와 기록은 이 폴더에만 저장되고 다른 곳으로 보내지 않습니다.</p></div>
       </div>

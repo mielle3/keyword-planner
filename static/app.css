@@ -1574,3 +1574,9 @@ select { height: 40px; box-sizing: border-box; }
 .voice-card > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .usage-card { border: 1px solid var(--rule); padding: 14px 18px; margin: 0 0 20px; }
 .keystate:empty { display: none; }
+
+/* v70: 업데이트·본문 복사를 찾기 쉽게 */
+.appbar .ver { font: 700 11px/1 var(--sans); color: var(--faint); background: none; border: 1px solid transparent; padding: 5px 7px; cursor: pointer; align-self: center; white-space: nowrap; flex: none; }
+.appbar .ver:hover { border-color: var(--rule); color: var(--ink); }
+.appbar .ver.has-upd { background: var(--mark); color: #0e0e10; border-color: var(--ink); }
+.btn.copy-main { background: var(--mark) !important; color: #0e0e10 !important; border-color: var(--ink) !important; font-weight: 800; }

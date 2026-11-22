@@ -77,7 +77,8 @@ async function loadState() {
   if (STATE.auto_topics) setTimeout(() => toast("‘공연·여행 (떠나셈 맞춤)’ 주제로 시작했어요 · ‘내 주제’에서 바꿀 수 있어요"), 600);
 }
 function renderLevel() {
-  if ($("#appVer")) $("#appVer").textContent = STATE.version ? "v" + STATE.version.slice(5) : "";
+  if ($("#appVer") && !$("#appVer").classList.contains("has-upd")) $("#appVer").textContent = STATE.version ? "v" + STATE.version.slice(5) : "";
+  if ($("#verNow")) $("#verNow").textContent = STATE.version ? "지금 v" + STATE.version.slice(5) : "";
   const lv = STATE.level;
   const names = { 1: "기본 분석", 2: "검색량 분석", 3: "정밀 분석" };
   $("#levelBadge").innerHTML = `<button class="level-pill" id="levelPill" title="설정에서 키를 넣으면 분석 단계가 올라갑니다">
@@ -1350,7 +1351,7 @@ function renderDrafts() {
           <select id="dvStatus" aria-label="상태">${DRAFT_STATUSES.map(s => `<option ${s === d.status ? "selected" : ""}>${s}</option>`).join("")}</select>
         </div>
         <div class="dv-group">
-          <button class="btn" id="dvCopyBody" title="확인 일자부터 면책 문구까지 + 참고한 공식 자료 + 태그 (스마트에디터에 붙여넣기용)">본문 복사</button>
+          <button class="btn copy-main" id="dvCopyBody" title="글자 크기·굵게·표까지 서식째 복사 → 네이버 글쓰기 화면에 그대로 붙여 넣기">📋 블로그에 붙일 본문 복사</button>
           <a class="btn" href="/api/drafts/${encodeURIComponent(d.id)}/docx" download="${esc((d.created_at || "").slice(0, 10) + "_" + (d.keyword || "초안").replace(/[\\/:*?"<>|]+/g, " ").slice(0, 40) + ".docx")}">docx 저장</a>
         </div>
         <div class="dv-group dv-right">
@@ -1493,7 +1494,9 @@ async function checkUpdate(manual) {
   let u;
   try { u = await api("/api/update/check"); } catch (e) { if (manual) toast("새 버전을 확인하지 못했어요"); return; }
   let el = $("#updateBar");
-  if (!u.available) { if (el) el.remove(); if (manual) toast(u.error || `최신 버전이에요 (v${u.current})`); return; }
+  const av = $("#appVer");
+  if (!u.available) { if (el) el.remove(); if (av) { av.classList.remove("has-upd"); av.textContent = "v" + String(u.current || "").slice(5); } if (manual) toast(u.error || `최신 버전이에요 (v${u.current})`); return; }
+  if (av) { av.classList.add("has-upd"); av.textContent = "⬆ 새 버전"; }
   if (!el) { el = document.createElement("div"); el.id = "updateBar"; el.className = "update-bar"; document.body.prepend(el); }
   el.innerHTML = `<b>새 버전 v${esc(u.latest)}이 있어요</b>${u.notes ? `<span>${esc(u.notes)}</span>` : ""}<button class="btn dark sm" id="updateGo">지금 업데이트</button><button class="wd-x" id="updateLater" aria-label="나중에">✕</button>`;
   $("#updateLater").onclick = () => el.remove();
@@ -1514,6 +1517,7 @@ async function checkUpdate(manual) {
 }
 setTimeout(() => checkUpdate(false), 4000);
 if ($("#updateCheck")) $("#updateCheck").onclick = () => checkUpdate(true);
+if ($("#appVer")) $("#appVer").onclick = () => checkUpdate(true);
 setInterval(() => checkUpdate(false), 6 * 3600 * 1000);
 
 
