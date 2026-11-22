@@ -1841,15 +1841,19 @@ function smartHtml(md) {
 async function copySmart(md) {
   const html = smartHtml(md);
   const plain = bodyPart(md).replace(/\*\*(.+?)\*\*/g, "$1").replace(/^>\s?/gm, "") + (refsPart(md) ? "\n\n" + refsPart(md) : "") + "\n\n" + tagsPart(md);
+  // 복사 경로를 기록: A = 클립보드 API(만든 HTML 그대로), B = 대체 경로(브라우저가 서식을 다시 적음 → 결과가 다를 수 있음)
+  let path = "A", ok = true;
   try {
     await navigator.clipboard.write([new ClipboardItem({ "text/html": new Blob([html], { type: "text/html" }), "text/plain": new Blob([plain], { type: "text/plain" }) })]);
   } catch {
-    const box = document.createElement("div"); box.contentEditable = "true"; box.style.cssText = "position:fixed;left:-9999px;top:0;font-weight:normal;font-family:sans-serif;color:#000;letter-spacing:0"; box.innerHTML = html; document.body.appendChild(box);
+    path = "B";
+    const box = document.createElement("div"); box.contentEditable = "true"; box.style.cssText = "position:fixed;left:-9999px;top:0;color:#000"; box.innerHTML = html; document.body.appendChild(box);
     const r = document.createRange(); r.selectNodeContents(box); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
-    try { document.execCommand("copy"); } catch {} sel.removeAllRanges(); box.remove();
+    try { ok = document.execCommand("copy"); } catch { ok = false; } sel.removeAllRanges(); box.remove();
   }
-  const F2 = (STATE && STATE.editor_fs) || { body: 16, heading: 19, small: 13 };
-  toast(`서식째 복사했어요 · 스마트에디터 본문에 붙여 넣으세요 (소제목 ${F2.heading}·본문 ${F2.body}·참고 자료 ${F2.small})`);
+  window.LAST_COPY = { path, html, at: new Date().toLocaleTimeString("ko-KR") };
+  if (!ok) { toast("복사하지 못했어요 · 다시 눌러 주세요"); return; }
+  toast(path === "A" ? "서식째 복사했어요 (경로 A) · 스마트에디터 본문에 붙여 넣으세요" : "복사했어요 (경로 B: 대체 방식이라 서식이 다르게 들어갈 수 있어요)");
 }
 
 /* ---------- 내 문체 학습 ---------- */
