@@ -731,7 +731,7 @@ function renderAnalyze() {
 }
 
 /* ---------- 설정 ---------- */
-const AI_NAME = { antigravity: "Gemini 구독(Antigravity)", gemini_cli: "Gemini CLI", gemini: "Gemini API", manual: "붙여넣기", claude_code: "Claude Max", claude: "Claude API" };
+const AI_NAME = { antigravity: "Gemini 자동 작성", gemini_cli: "Gemini CLI", gemini: "Gemini API", manual: "직접 붙여넣기", claude_code: "Claude 자동 작성", claude: "Claude API" };
 function renderAI() {
   const ai = STATE.ai || {};
   $$("#aiProvider button").forEach(b => b.setAttribute("aria-checked", String(b.dataset.p === ai.provider)));
@@ -745,7 +745,7 @@ function renderAI() {
   const name = AI_NAME[ai.provider] || "";
   st.className = "keystate " + (ready ? "ok" : "");
   st.textContent = ai.provider === "antigravity"
-    ? (ai.antigravity ? "Gemini 구독(Antigravity) 사용 · 추가 비용 없음" : "Antigravity CLI 설치 필요 · 아래 안내")
+    ? (ai.antigravity ? "Gemini로 자동 작성 · 준비됨" : "Antigravity 설치 필요 · 아래 안내")
     : (ready ? `${name} 사용` : `${name} · 키 필요`) + (ai.provider === "gemini" ? " · 항상 최고 버전" : "");
   if ($("#draftCount")) $("#draftCount").textContent = ai.drafts || "";
 }
@@ -937,7 +937,10 @@ $("#saveSite").onclick = async () => {
   const offers = $$("#siteOffers .chip[aria-pressed=true]").map(c => c.dataset.offer);
   const name = $("#siteName").value.trim();
   if (name && !offers.length) { toast("사이트에서 할 수 있는 것을 하나 이상 골라 주세요"); return; }
-  STATE = await api("/api/prefs", { site: { name, url: $("#siteUrl").value.trim(), offers }, site_boost: $("#siteBoost").checked });
+  const tools = ($("#siteTools")?.value || "").split("\n").map(l => l.split("|").map(s => s.trim())).filter(p => p[0])
+    .map(([nm, url = "", kws = "", desc = ""]) => ({ name: nm, url, keywords: kws.split(/[,，]/).map(s => s.trim()).filter(Boolean), desc }));
+  if (tools.some(t => !t.keywords.length)) { toast("도구마다 연결할 검색어를 하나 이상 적어 주세요 (세 번째 칸)"); return; }
+  STATE = await api("/api/prefs", { site: { name, url: $("#siteUrl").value.trim(), offers }, site_boost: $("#siteBoost").checked, site_tools: tools });
   renderSite(); toast(name ? `${name} 연계를 저장했어요 · 다음 추천부터 반영돼요` : "연계를 껐어요");
 };
 
@@ -1803,12 +1806,13 @@ if ($("#voiceLoad")) {
   $("#voiceLoad").onclick = async () => {
     const b = $("#voiceLoad"); b.disabled = true; b.textContent = "불러오는 중…";
     try {
+      if ($("#blogId").value.trim() !== (STATE.learn?.blog_id || "")) STATE = await api("/api/prefs", { blog_id: $("#blogId").value.trim() });
       const r = await api("/api/myblog", {});
       const posts = (r.posts || []).slice(0, 20);
       $("#voiceList").innerHTML = posts.length ? posts.map((p, i) => `<label class="voice-item"><input type="checkbox" value="${esc(p.link)}" ${i < 5 ? "checked" : ""}><span>${esc(p.title)}</span><small>${esc(p.date || "")}</small></label>`).join("")
         : `<p class="muted" style="font-size:13px">${esc(r.error || "글을 찾지 못했어요. 블로그 ID를 확인해 주세요.")}</p>`;
     } catch (err) { toast(err.message); }
-    finally { b.disabled = false; b.textContent = "최근 글 불러오기"; }
+    finally { b.disabled = false; b.textContent = "내 글 불러오기"; }
   };
   $("#voiceLearn").onclick = async () => {
     const urls = [...$$("#voiceList input:checked").map(x => x.value), ...$("#voiceUrls").value.split("\n").map(s => s.trim()).filter(s => /blog\.naver\.com/.test(s))];

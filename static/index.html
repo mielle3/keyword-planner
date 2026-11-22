@@ -200,11 +200,11 @@
       <div class="eg-tools">
         <select id="egTopic" aria-label="분야"></select>
         <div class="seg" id="egVerdict" role="radiogroup" aria-label="판정">
-          <button role="radio" aria-checked="false" data-v="상시">상시만</button>
-          <button role="radio" aria-checked="false" data-v="계절형">계절형</button>
-          <button role="radio" aria-checked="false" data-v="고단가">고단가</button>
-          <button role="radio" aria-checked="false" data-v="생활해결">생활 해결</button>
           <button role="radio" aria-checked="true" data-v="전체">전체</button>
+          <button role="radio" aria-checked="false" data-v="상시">1년 내내 찾음</button>
+          <button role="radio" aria-checked="false" data-v="계절형">계절에만 찾음</button>
+          <button role="radio" aria-checked="false" data-v="고단가">광고 단가 높음</button>
+          <button role="radio" aria-checked="false" data-v="생활해결">생활 문제 해결</button>
         </div>
         <input type="search" id="egSearch" placeholder="사전에서 찾기" aria-label="사전에서 찾기">
       </div>
@@ -254,12 +254,12 @@
       </header>
       <p class="muted">기획안에서 <b>AI 초안 쓰기</b>를 누르면 아래 <b>작가 지침</b>과 <b>블로그 기억</b>을 바탕으로 네이버 블로그 초안을 씁니다. <b>기본은 Gemini</b>이고, 모델은 <b>항상 그때 쓸 수 있는 최고 버전</b>을 자동으로 고릅니다(Flash·Lite 안 씀).</p>
       <div class="seg ai-modes" id="aiProvider" role="radiogroup" aria-label="초안을 쓰는 방법">
-        <button role="radio" aria-checked="true" data-p="antigravity"><b>Gemini 구독 · 기본</b><small>Antigravity로 자동 · 추가 비용 없음</small></button>
-        <button role="radio" aria-checked="false" data-p="manual"><b>붙여넣기</b><small>Gemini·Claude 채팅에 붙여넣기</small></button>
-        <button role="radio" aria-checked="false" data-p="claude_code"><b>Claude Max</b><small>Max 구독 중일 때만 · 추가 비용 없음</small></button>
+        <button role="radio" aria-checked="true" data-p="antigravity"><b>Gemini로 자동 작성</b><small>프로그램이 바로 씀 · Antigravity 설치 필요 · 추가 비용 없음</small></button>
+        <button role="radio" aria-checked="false" data-p="manual"><b>직접 붙여넣기</b><small>요청문을 Gemini 앱에 붙여 넣고 결과를 가져옴 · 설치 없음</small></button>
+        <button role="radio" aria-checked="false" data-p="claude_code"><b>Claude로 자동 작성</b><small>프로그램이 바로 씀 · Claude Max 구독 필요</small></button>
       </div>
       <div class="ai-mode-box" data-mode="antigravity">
-        <h3>Gemini 구독 (Antigravity CLI) · 기본</h3>
+        <h3>Gemini로 자동 작성 (Antigravity CLI)</h3>
         <ol class="steps">
           <li>시작 메뉴에서 <b>PowerShell</b>을 열고 <code>irm https://antigravity.google/cli/install.ps1 | iex</code> 를 실행하세요.</li>
           <li>새 명령 창(cmd)에서 <code>agy</code> 를 한 번 실행해 Gemini 구독 계정으로 로그인하세요. 로그인 후 Ctrl+C로 나와도 돼요.</li>
@@ -270,7 +270,7 @@
         <label class="inline-label">모델 (비워 두면 기본 모델)<input id="agyModel" placeholder="기본 모델" autocomplete="off" spellcheck="false"></label>
       </div>
       <div class="ai-mode-box" data-mode="claude_code">
-        <h3>Claude Max (Claude Code) · Max 구독 중일 때만</h3>
+        <h3>Claude로 자동 작성 (Claude Code · Max 구독 필요)</h3>
         <ol class="steps">
           <li>이 PC에 Claude Code가 설치되어 있고 <b>Max 계정으로 로그인</b>되어 있으면 끝이에요. (명령 창에서 <code>claude</code>를 한 번 실행해 로그인)</li>
           <li><b>AI 연결 확인</b>을 눌러 Claude Code를 찾았는지 확인하세요.</li>
@@ -317,11 +317,14 @@
 
     <section class="card voice-card">
       <header><h2>내 문체 학습 <span class="tag rec">초안이 내가 쓴 것처럼</span></h2><span class="keystate" id="voiceState"></span></header>
-      <p class="muted">반응이 좋았던 내 블로그 글을 골라 학습시키면, 문장 길이·어미·도입과 마무리·소제목 짓는 법·자주 쓰는 표현을 프로필로 만들어 모든 초안에 적용합니다. 구성은 작가 지침, 문장은 내 문체로 씁니다.</p>
+      <p class="muted">블로그 ID를 넣고 반응이 좋았던 글을 골라 학습시키면, 문장 길이·어미·도입과 마무리·소제목 짓는 법·자주 쓰는 표현을 프로필로 만들어 모든 초안에 적용합니다. 구성은 작가 지침, 문장은 내 문체로 씁니다.</p>
       <div class="voice-grid">
         <div>
-          <div class="row-start" style="gap:8px;margin-bottom:8px"><b>내 블로그 글에서 고르기</b><button class="btn sm" type="button" id="voiceLoad">최근 글 불러오기</button></div>
-          <div class="voice-list" id="voiceList"><p class="muted" style="font-size:13px">설정 → 스스로 일하기의 블로그 ID를 넣고 "최근 글 불러오기"를 누르세요. 글 주소를 한 줄에 하나씩 붙여 넣어도 됩니다.</p></div>
+          <label class="inline-label"><span>내 네이버 블로그 ID (blog.naver.com/<b>여기</b>)</span><input id="blogId" placeholder="예) myblog123" autocomplete="off" spellcheck="false"></label>
+          <div class="row-start" style="gap:8px;margin:8px 0"><button class="btn sm" type="button" id="voiceLoad">내 글 불러오기</button><span class="muted" id="blogInfo" style="font-size:12.5px"></span></div>
+          <p class="muted" style="font-size:12px;margin:0 0 8px">불러온 글은 문체 학습에 쓰고, 이미 쓴 주제는 추천 순위를 낮추고 초안이 같은 주제를 반복하지 않게 합니다.</p>
+          <button type="button" id="blogLoad" hidden></button>
+          <div class="voice-list" id="voiceList"><p class="muted" style="font-size:13px">위에 블로그 ID를 넣고 "내 글 불러오기"를 누르면 최근 글이 여기 나와요. 학습할 글에 체크하세요.</p></div>
           <textarea id="voiceUrls" rows="2" placeholder="또는 글 주소를 한 줄에 하나씩 (예: https://blog.naver.com/아이디/글번호)"></textarea>
         </div>
         <div>
@@ -347,12 +350,7 @@
           </label>
           <p class="muted ai-note">오늘의 추천 상위 글감 중 아직 안 쓴 것으로, 작가 지침(Gems)대로 써서 <b>초안</b> 탭에 넣어 둬요. 관심 없음·내 블로그에 이미 있는 주제는 건너뜀.</p>
         </div>
-        <div>
-          <h3>내 블로그에서 배우기</h3>
-          <label class="inline-label"><span>내 네이버 블로그 ID (blog.naver.com/<b>여기</b>)</span><input id="blogId" placeholder="예) myblog123" autocomplete="off" spellcheck="false"></label>
-          <div class="row-start" style="margin-top:8px"><button class="btn" type="button" id="blogLoad">내 글 불러오기</button><span class="muted" id="blogInfo"></span></div>
-          <p class="muted ai-note">최근 글 제목을 읽어 <b>이미 쓴 주제는 순위를 낮추고</b>, AI 초안이 같은 제목·주제를 반복하지 않게 합니다. 공개 글 목록(RSS)만 읽어요.</p>
-        </div>
+
         <div>
           <h3>내 선택 반영</h3>
           <p class="muted ai-note" style="margin-top:0">저장·발행한 분야는 올리고, 기획안에서 <b>관심 없음</b>을 누른 글감은 다음부터 내립니다.</p>
@@ -370,6 +368,10 @@
         <div><h2>내 블로그 유입 검색어 <span class="muted" style="font-weight:600;font-size:13px">선택</span></h2><p class="muted">어제 내 블로그로 사람을 데려온 검색어를 넣으면 그 주제를 넓혀서 1순위로 추천합니다.</p></div>
         <button class="btn" type="button" id="mineBtn">유입 검색어 넣기<span class="count" id="mineCount"></span></button>
       </div>
+      <div class="pc-row pc-col">
+        <div><h2>추천에 포함할 것</h2></div>
+        <label class="switch"><input type="checkbox" id="optIssues"><span>오늘의 이슈(급상승 검색어)와 분야별 뉴스(사회·문화·경제·국제·IT·건강 등)도 추천에 포함</span></label>
+      </div>
     </section>
 
 
@@ -382,6 +384,7 @@
       </div>
     </div>
     <div class="levels" id="levels"></div>
+    <div class="usage usage-card" id="usageBox"></div>
 
     <div class="key-grid">
       <article class="card keycard" data-key="searchad">
@@ -444,16 +447,10 @@
         <div class="field-label">내 사이트 도구 목록 <span class="muted" id="toolsCount"></span></div>
         <p class="muted" style="font-size:12.5px;margin:2px 0 6px">한 줄에 도구 하나: <b>이름 | 주소 | 연결할 검색어(쉼표로) | 한 줄 설명</b>. 검색어가 들어간 글감에는 이 도구가 자동으로 붙고, 초안에 '이용 방법' 섹션과 정확한 링크가 들어가요.</p>
         <textarea id="siteTools" rows="4" spellcheck="false" placeholder="재산세 계산기 | https://내사이트주소/tools/property-tax | 재산세, 재산세 계산, 재산세 납부 | 공시가격과 주택 수를 넣으면 재산세를 계산"></textarea>
-        <div class="row-end" style="margin:6px 0 10px"><button class="btn" type="button" id="saveTools">도구 목록 저장</button></div>
         <label class="switch"><input type="checkbox" id="siteBoost"><span>연계되는 키워드를 순위에서 우대 (+6점)</span></label>
         <div class="row-end"><button class="btn dark" id="saveSite">연계 설정 저장</button></div>
       </article>
 
-      <article class="card keycard">
-        <header><h2>분석 옵션</h2></header>
-        <label class="switch"><input type="checkbox" id="optIssues"><span>오늘의 이슈(급상승 검색어)와 분야별 뉴스(사회·문화·경제·국제·IT·건강 등)도 추천에 포함</span></label>
-        <div class="usage" id="usageBox"></div>
-      </article>
     </div>
     <section class="card program-card">
       <header><h2>프로그램</h2></header>

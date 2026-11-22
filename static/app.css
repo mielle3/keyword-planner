@@ -1565,3 +1565,12 @@ select { height: 40px; box-sizing: border-box; }
 .voice-item small { color: var(--muted); flex: none; }
 .voice-card textarea { width: 100%; box-sizing: border-box; border: 1.5px solid var(--rule); padding: 8px 10px; font: 13px/1.5 var(--sans); margin: 6px 0 8px; }
 @media (max-width: 860px) { .voice-grid { grid-template-columns: 1fr; } }
+#aiProvider { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; width: 100%; }
+@media (max-width: 900px) { #aiProvider { grid-template-columns: 1fr !important; } }
+
+.pc-row.pc-col { display: block; }
+.pc-row.pc-col h2 { margin-bottom: 8px; }
+
+.voice-card > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.usage-card { border: 1px solid var(--rule); padding: 14px 18px; margin: 0 0 20px; }
+.keystate:empty { display: none; }
