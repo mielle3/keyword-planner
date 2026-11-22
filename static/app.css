@@ -1423,3 +1423,64 @@ dialog .mine-body, dialog .topic-picker { overflow-y: auto; min-height: 0; flex:
 /* v61: AI로 고치기 */
 .dv-revise { margin: 10px 0; border: 2px solid var(--ink); background: #FFFBE6; padding: 10px 12px; }
 .dv-revise textarea { width: 100%; box-sizing: border-box; margin: 8px 0; font: 14px/1.5 var(--sans); padding: 8px; border: 1.5px solid var(--rule); }
+
+/* v63: 글 종류 버튼 같은 폭 · 맨 위 검색창 넓게 */
+#wStyle, #dStyle { display: grid !important; grid-template-columns: repeat(4, 1fr); flex: 1; min-width: 0; }
+#wStyle button, #dStyle button { width: 100%; text-align: center; justify-content: center; white-space: nowrap; }
+#guideStyle { display: grid !important; grid-template-columns: repeat(3, 1fr); }
+#guideStyle button { width: 100%; text-align: center; justify-content: center; }
+.w-style > span { flex: none; min-width: 52px; }
+.appbar-inner .top-search { flex: 1 1 320px !important; min-width: 200px !important; max-width: 460px; }
+.appbar-inner .top-search input { font-size: 14px; }
+@media (max-width: 1300px) { .appbar-inner .top-search { flex-basis: 220px !important; min-width: 170px !important; } }
+@media (max-width: 760px) { .appbar-inner .top-search { flex: 1 1 100% !important; max-width: none; } }
+
+/* ---------- v63 디자인 검수: 일관 규칙 ---------- */
+/* 1) 모든 버튼 묶음(세그먼트)은 같은 폭 */
+.seg { display: inline-grid !important; grid-auto-flow: column; grid-auto-columns: 1fr; }
+.seg > button { display: flex; align-items: center; justify-content: center; text-align: center; white-space: nowrap; }
+.seg.ai-modes > button { flex-direction: column; align-items: flex-start; text-align: left; justify-content: center; }
+/* 2) 머리줄은 절대 화면 밖으로 넘치지 않게: 좁아지면 글자·여백부터 줄이고 단계 배지는 줄여서 표시 */
+.appbar-inner { min-width: 0; }
+.tabs { min-width: 0; flex: 0 1 auto; }
+.appbar-meta { flex: none; }
+@media (max-width: 1500px) {
+  .tabs button { padding: 0 10px; font-size: 14px; }
+  .tabs button[aria-selected="true"]::after { left: 10px; right: 10px; }
+  .tab-sep { margin: 0 3px; }
+  .level-pill .lp-text { display: none; }
+}
+@media (max-width: 1340px) {
+  .tabs button { padding: 0 8px; font-size: 13.5px; }
+  .tabs button[aria-selected="true"]::after { left: 8px; right: 8px; }
+  .tabs .tab-new { padding: 6px 9px !important; margin: 0 4px; }
+  .appbar-inner .top-search { flex-basis: 180px !important; min-width: 150px !important; }
+}
+/* 3) 휴대폰: 버튼 묶음은 2칸씩, 메뉴는 가로 스크롤 */
+@media (max-width: 760px) {
+  .seg { display: grid !important; grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
+  .seg > button + button { border-left: 0; }
+  .seg > button { border-top: 1px solid var(--rule); }
+  #wStyle, #dStyle, #guideStyle { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .w-style { align-items: stretch; }
+}
+/* v63 검수 2차 */
+.tabs { flex: none !important; }                                   /* 메뉴는 줄어들지 않고, 남는 폭은 검색창이 차지 */
+.appbar-inner .top-search { flex: 1 1 260px !important; min-width: 130px !important; }
+.inline-label b, .inline-label strong { display: inline !important; }  /* "blog.naver.com/여기" 한 줄로 */
+.dl-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
+.dl-meta > i { white-space: nowrap; margin: 0 !important; }
+.dl-meta { font-size: 12px; }
+.dv-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.seg.ai-modes > button { white-space: normal; min-width: 0; }
+@media (max-width: 760px) { .seg.ai-modes { grid-template-columns: 1fr !important; } }
+/* v63 검수 3차: 머리줄 폭을 모든 탭에서 같게 (탭을 바꿔도 메뉴가 움직이지 않게) */
+.appbar-inner, body[data-tab] .appbar-inner { max-width: 1600px !important; gap: 20px; }
+.tabs .tab-group { display: none !important; }
+@media (max-width: 760px) {
+  .card > header, .keycard > header { flex-wrap: wrap; gap: 6px; }
+  .keystate { white-space: normal !important; max-width: 100%; }
+  .ai-card, .keycard { min-width: 0; max-width: 100%; box-sizing: border-box; }
+}
+.ai-card, section.card { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 760px) { section.card { padding-left: 18px !important; padding-right: 18px !important; } }

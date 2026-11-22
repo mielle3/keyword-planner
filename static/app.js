@@ -81,7 +81,7 @@ function renderLevel() {
   const lv = STATE.level;
   const names = { 1: "기본 분석", 2: "검색량 분석", 3: "정밀 분석" };
   $("#levelBadge").innerHTML = `<button class="level-pill" id="levelPill" title="설정에서 키를 넣으면 분석 단계가 올라갑니다">
-    <span class="level-dots">${[1, 2, 3].map(i => `<i class="${i <= lv ? "on" : ""}"></i>`).join("")}</span>${lv}단계 · ${names[lv]}</button>`;
+    <span class="level-dots">${[1, 2, 3].map(i => `<i class="${i <= lv ? "on" : ""}"></i>`).join("")}</span><span class="lp-lv">${lv}단계</span><span class="lp-text"> · ${names[lv]}</span></button>`;
   $("#levelPill").onclick = () => showTab("settings");
   $("#levelPill").title = `설정에서 키를 넣으면 분석 단계가 올라갑니다 · 버전 ${STATE.version || ""}`;
 }

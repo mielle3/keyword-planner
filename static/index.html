@@ -29,7 +29,7 @@
       <button role="tab" data-tab="settings" class="tab-settings">설정</button>
     </nav>
     <form class="top-search" id="topSearch" role="search">
-      <input type="search" id="topSearchInput" placeholder="키워드 검색" aria-label="키워드 검색해서 분석하기" autocomplete="off">
+      <input type="search" id="topSearchInput" placeholder="키워드 검색 · 분석" aria-label="키워드 검색해서 분석하기" autocomplete="off">
       <button type="submit" aria-label="검색">🔍</button>
     </form>
     <div class="appbar-meta" id="levelBadge"></div>
@@ -109,7 +109,7 @@
             <div class="tv-head">
               <div class="topic-tabs" id="topicTabs" role="tablist"></div>
               <div class="block-tools">
-                <input type="search" id="tableSearch" placeholder="키워드 검색" aria-label="순위표에서 키워드 검색">
+                <input type="search" id="tableSearch" placeholder="키워드 검색 · 분석" aria-label="순위표에서 키워드 검색">
                 <button class="btn sm" id="csvBtn">CSV 저장</button>
               </div>
             </div>
@@ -282,7 +282,7 @@
         </div>
         <div>
           <h3>내 블로그에서 배우기</h3>
-          <label class="inline-label">내 네이버 블로그 ID (blog.naver.com/<b>여기</b>)<input id="blogId" placeholder="예) myblog123" autocomplete="off" spellcheck="false"></label>
+          <label class="inline-label"><span>내 네이버 블로그 ID (blog.naver.com/<b>여기</b>)</span><input id="blogId" placeholder="예) myblog123" autocomplete="off" spellcheck="false"></label>
           <div class="row-start" style="margin-top:8px"><button class="btn" type="button" id="blogLoad">내 글 불러오기</button><span class="muted" id="blogInfo"></span></div>
           <p class="muted ai-note">최근 글 제목을 읽어 <b>이미 쓴 주제는 순위를 낮추고</b>, AI 초안이 같은 제목·주제를 반복하지 않게 합니다. 공개 글 목록(RSS)만 읽어요.</p>
         </div>
