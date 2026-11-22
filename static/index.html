@@ -12,19 +12,17 @@
   <div class="appbar-inner">
     <a class="brand" href="#today" aria-label="키워드 플래너 홈">
       <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect x="1" y="1" width="26" height="26" fill="#0e0e10"/><rect x="7" y="15" width="3.6" height="6.5" fill="#ffd400" opacity=".55"/><rect x="12.2" y="11" width="3.6" height="10.5" fill="#ffd400" opacity=".8"/><rect x="17.4" y="6.5" width="3.6" height="15" fill="#ffd400"/></svg>
-      <span>키워드 플래너</span><small class="ver" id="appVer"></small>
+      <span>키워드 플래너</span><small class="brand-sub">AI 글쓰기</small><small class="ver" id="appVer"></small>
     </a>
     <nav class="tabs" role="tablist">
-      <span class="tab-group" aria-hidden="true">찾기</span>
+      <button type="button" class="tab-new" id="writeNew">✍ 새 글</button>
+      <button role="tab" data-tab="drafts">초안 <span class="count" id="draftCount"></span></button>
+      <button role="tab" data-tab="saved">저장함 <span class="count" id="savedCount"></span></button>
+      <span class="tab-sep" aria-hidden="true"></span>
       <button role="tab" data-tab="today" aria-selected="true">오늘의 추천</button>
       <button role="tab" data-tab="preempt">미리 쓸 글감 <span class="new-dot" aria-hidden="true"></span></button>
       <button role="tab" data-tab="analyze">상시 키워드</button>
       <button role="tab" data-tab="news">뉴스</button>
-      <span class="tab-sep" aria-hidden="true"></span>
-      <span class="tab-group" aria-hidden="true">쓰기</span>
-      <button type="button" class="tab-new" id="writeNew">✍ 새 글</button>
-      <button role="tab" data-tab="drafts">초안 <span class="count" id="draftCount"></span></button>
-      <button role="tab" data-tab="saved">저장함 <span class="count" id="savedCount"></span></button>
       <span class="tab-sep" aria-hidden="true"></span>
       <button role="tab" data-tab="settings" class="tab-settings">설정</button>
     </nav>
@@ -245,64 +243,9 @@
     <div class="page-head">
       <div>
         <h1>설정</h1>
-        <p class="muted">키와 기록은 이 PC의 사용자 설정 폴더(<code id="dataDir">…</code>)에만 저장되고 다른 곳으로 보내지 않습니다. 새 버전을 어디에 풀어도 그대로 유지돼요. 이미 저장된 칸은 비워 두면 그대로 유지됩니다.</p>
-        <div class="sync-box" id="syncBox">
-          <b>집·회사 PC 같이 쓰기</b> <span class="muted" id="syncState"></span>
-          <p class="muted" style="margin:4px 0 8px;font-size:12.5px">초안·지침·블로그 기억·설정·키를 OneDrive 같은 동기화 폴더에 두면, 다른 PC에서도 같은 폴더를 고르는 것만으로 똑같이 이어서 씁니다. 두 PC를 동시에 켜 두면 자동 분석·자동 초안은 먼저 켠 PC에서만 돌아요.</p>
-          <div class="row-start" style="gap:8px;flex-wrap:wrap">
-            <button class="btn dark" type="button" id="syncOneDrive">OneDrive 폴더 쓰기</button>
-            <input id="syncPath" placeholder="또는 폴더 경로 직접 입력 (예: E:\OneDrive\KeywordPlanner_data)" style="flex:1;min-width:260px">
-            <button class="btn" type="button" id="syncCustom">이 폴더 쓰기</button>
-            <button class="btn ghost" type="button" id="syncReset">이 PC 전용으로 되돌리기</button>
-          </div>
-        </div>
-        <div class="row-start" style="margin:6px 0 4px"><button class="btn" type="button" id="updateCheck">새 버전 확인</button><span class="muted" style="font-size:12.5px">켜질 때와 6시간마다 자동으로 확인하고, 새 버전이 있으면 화면 위에 업데이트 버튼이 떠요.</span></div>
-      </div>
-      <div class="row-end">
-        <button class="btn" id="checkKeys">연결 확인</button>
-        <button class="btn dark" id="saveKeys">저장</button>
+        <p class="muted">글쓰기 AI, 자동으로 할 일, 검색 데이터 연결, 집·회사 같이 쓰기를 여기서 정합니다.</p>
       </div>
     </div>
-
-    <section class="card prefs-card">
-      <div class="pc-row">
-        <div><h2>분석 속도</h2><p class="muted">느릴수록 후보를 더 많이 모아 정확해집니다. 평소엔 ‘빠름’이면 충분해요.</p></div>
-        <div class="seg" id="scaleSeg" role="radiogroup" aria-label="분석 속도"></div>
-      </div>
-      <div class="pc-row">
-        <div><h2>내 블로그 유입 검색어 <span class="muted" style="font-weight:600;font-size:13px">선택</span></h2><p class="muted">어제 내 블로그로 사람을 데려온 검색어를 넣으면 그 주제를 넓혀서 1순위로 추천합니다.</p></div>
-        <button class="btn" type="button" id="mineBtn">유입 검색어 넣기<span class="count" id="mineCount"></span></button>
-      </div>
-    </section>
-
-    <section class="card auto-card">
-      <header><h2>스스로 일하기 · 공부하기</h2></header>
-      <div class="auto-grid">
-        <div>
-          <h3>자동 실행</h3>
-          <label class="switch"><input type="checkbox" id="autoStartup"><span>컴퓨터를 켜면 키워드 플래너 자동 실행 (창은 최소화, 브라우저는 안 열림)</span></label>
-          <label class="inline-label">켜져 있는 동안 다시 분석하는 간격
-            <select id="autoHours"><option value="2">2시간마다</option><option value="3">3시간마다</option><option value="4">4시간마다 (기본)</option><option value="6">6시간마다</option><option value="0">자동 분석 끄기</option></select>
-          </label>
-          <p class="muted ai-note">오전 7시~밤 11시 사이에만 자동으로 분석해요. 결과는 열 때마다 최신으로 보여요.</p>
-          <label class="inline-label">분석이 끝나면 초안도 미리 쓰기
-            <select id="autoDrafts"><option value="1">하루 1편</option><option value="2">하루 2편 (기본)</option><option value="3">하루 3편</option><option value="5">하루 5편</option><option value="0">미리 쓰지 않기</option></select>
-          </label>
-          <p class="muted ai-note">오늘의 추천 상위 글감 중 아직 안 쓴 것으로, 작가 지침(Gems)대로 써서 <b>초안</b> 탭에 넣어 둬요. 관심 없음·내 블로그에 이미 있는 주제는 건너뜀.</p>
-        </div>
-        <div>
-          <h3>내 블로그에서 배우기</h3>
-          <label class="inline-label"><span>내 네이버 블로그 ID (blog.naver.com/<b>여기</b>)</span><input id="blogId" placeholder="예) myblog123" autocomplete="off" spellcheck="false"></label>
-          <div class="row-start" style="margin-top:8px"><button class="btn" type="button" id="blogLoad">내 글 불러오기</button><span class="muted" id="blogInfo"></span></div>
-          <p class="muted ai-note">최근 글 제목을 읽어 <b>이미 쓴 주제는 순위를 낮추고</b>, AI 초안이 같은 제목·주제를 반복하지 않게 합니다. 공개 글 목록(RSS)만 읽어요.</p>
-        </div>
-        <div>
-          <h3>내 선택 반영</h3>
-          <p class="muted ai-note" style="margin-top:0">저장·발행한 분야는 올리고, 기획안에서 <b>관심 없음</b>을 누른 글감은 다음부터 내립니다.</p>
-          <div class="dislike-chips" id="dislikeChips"></div>
-        </div>
-      </div>
-    </section>
 
     <section class="card keycard ai-card" data-key="ai">
       <header>
@@ -372,6 +315,55 @@
       </details>
     </section>
 
+    <section class="card auto-card">
+      <header><h2>스스로 일하기 · 공부하기</h2></header>
+      <div class="auto-grid">
+        <div>
+          <h3>자동 실행</h3>
+          <label class="switch"><input type="checkbox" id="autoStartup"><span>컴퓨터를 켜면 키워드 플래너 자동 실행 (창은 최소화, 브라우저는 안 열림)</span></label>
+          <label class="inline-label">켜져 있는 동안 다시 분석하는 간격
+            <select id="autoHours"><option value="2">2시간마다</option><option value="3">3시간마다</option><option value="4">4시간마다 (기본)</option><option value="6">6시간마다</option><option value="0">자동 분석 끄기</option></select>
+          </label>
+          <p class="muted ai-note">오전 7시~밤 11시 사이에만 자동으로 분석해요. 결과는 열 때마다 최신으로 보여요.</p>
+          <label class="inline-label">분석이 끝나면 초안도 미리 쓰기
+            <select id="autoDrafts"><option value="1">하루 1편</option><option value="2">하루 2편 (기본)</option><option value="3">하루 3편</option><option value="5">하루 5편</option><option value="0">미리 쓰지 않기</option></select>
+          </label>
+          <p class="muted ai-note">오늘의 추천 상위 글감 중 아직 안 쓴 것으로, 작가 지침(Gems)대로 써서 <b>초안</b> 탭에 넣어 둬요. 관심 없음·내 블로그에 이미 있는 주제는 건너뜀.</p>
+        </div>
+        <div>
+          <h3>내 블로그에서 배우기</h3>
+          <label class="inline-label"><span>내 네이버 블로그 ID (blog.naver.com/<b>여기</b>)</span><input id="blogId" placeholder="예) myblog123" autocomplete="off" spellcheck="false"></label>
+          <div class="row-start" style="margin-top:8px"><button class="btn" type="button" id="blogLoad">내 글 불러오기</button><span class="muted" id="blogInfo"></span></div>
+          <p class="muted ai-note">최근 글 제목을 읽어 <b>이미 쓴 주제는 순위를 낮추고</b>, AI 초안이 같은 제목·주제를 반복하지 않게 합니다. 공개 글 목록(RSS)만 읽어요.</p>
+        </div>
+        <div>
+          <h3>내 선택 반영</h3>
+          <p class="muted ai-note" style="margin-top:0">저장·발행한 분야는 올리고, 기획안에서 <b>관심 없음</b>을 누른 글감은 다음부터 내립니다.</p>
+          <div class="dislike-chips" id="dislikeChips"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card prefs-card">
+      <div class="pc-row">
+        <div><h2>분석 속도</h2><p class="muted">느릴수록 후보를 더 많이 모아 정확해집니다. 평소엔 ‘빠름’이면 충분해요.</p></div>
+        <div class="seg" id="scaleSeg" role="radiogroup" aria-label="분석 속도"></div>
+      </div>
+      <div class="pc-row">
+        <div><h2>내 블로그 유입 검색어 <span class="muted" style="font-weight:600;font-size:13px">선택</span></h2><p class="muted">어제 내 블로그로 사람을 데려온 검색어를 넣으면 그 주제를 넓혀서 1순위로 추천합니다.</p></div>
+        <button class="btn" type="button" id="mineBtn">유입 검색어 넣기<span class="count" id="mineCount"></span></button>
+      </div>
+    </section>
+
+
+
+    <div class="sec-head">
+      <div><h2>검색 데이터 연결 <span class="tag">선택</span></h2><p class="muted">키를 넣으면 실제 검색수·블로그 발행량으로 분석 단계가 올라가요. 이미 저장된 칸은 비워 두면 그대로 유지돼요.</p></div>
+      <div class="row-end">
+        <button class="btn" id="checkKeys">연결 확인</button>
+        <button class="btn dark" id="saveKeys">저장</button>
+      </div>
+    </div>
     <div class="levels" id="levels"></div>
 
     <div class="key-grid">
@@ -446,6 +438,26 @@
         <div class="usage" id="usageBox"></div>
       </article>
     </div>
+    <section class="card program-card">
+      <header><h2>프로그램</h2></header>
+      <div class="sync-box" id="syncBox">
+          <b>집·회사 PC 같이 쓰기</b> <span class="muted" id="syncState"></span>
+          <p class="muted" style="margin:4px 0 8px;font-size:12.5px">초안·지침·블로그 기억·설정·키를 OneDrive 같은 동기화 폴더에 두면, 다른 PC에서도 같은 폴더를 고르는 것만으로 똑같이 이어서 씁니다. 두 PC를 동시에 켜 두면 자동 분석·자동 초안은 먼저 켠 PC에서만 돌아요.</p>
+          <div class="row-start" style="gap:8px;flex-wrap:wrap">
+            <button class="btn dark" type="button" id="syncOneDrive">OneDrive 폴더 쓰기</button>
+            <input id="syncPath" placeholder="또는 폴더 경로 직접 입력 (예: E:\OneDrive\KeywordPlanner_data)" style="flex:1;min-width:260px">
+            <button class="btn" type="button" id="syncCustom">이 폴더 쓰기</button>
+            <button class="btn ghost" type="button" id="syncReset">이 PC 전용으로 되돌리기</button>
+          </div>
+        </div>
+      <div class="prog-row">
+        <div><b>업데이트</b><p class="muted">켜질 때와 6시간마다 새 버전을 확인하고, 있으면 화면 위에 업데이트 버튼이 떠요.</p></div>
+        <button class="btn" type="button" id="updateCheck">새 버전 확인</button>
+      </div>
+      <div class="prog-row">
+        <div><b>저장 위치</b><p class="muted"><code id="dataDir">…</code> · 키와 기록은 이 폴더에만 저장되고 다른 곳으로 보내지 않습니다.</p></div>
+      </div>
+    </section>
   </section>
 </main>
 

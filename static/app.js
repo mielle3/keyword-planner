@@ -1342,16 +1342,27 @@ function renderDrafts() {
       ${d.check ? `<details class="dv-check ${d.check.ok ? "ok" : "warn"}"><summary><b>Gems 양식 검사 ${d.check.passed}/${d.check.total}</b><span>${d.check.ok ? "작가 지침의 출력 양식을 모두 지켰어요" : d.intent ? "내 생각에 맞춰 형식을 바꾼 글이라 기본 틀과 다른 항목은 ✕로 보일 수 있어요 (자동으로 되돌리지 않음)" : "아래 ✕ 항목은 편집에서 손보거나 다시 쓰기를 눌러 주세요"}${d.fixed ? " · 첫 결과에서 빠진 곳을 자동으로 고쳐 썼어요" : ""}</span></summary>
         <ul>${d.check.items.map(x => `<li class="${x.ok ? "ok" : "no"}">${x.ok ? "✓" : "✕"} ${esc(x.name)}${x.note ? ` <small>${esc(x.note)}</small>` : ""}</li>`).join("")}</ul></details>` : ""}
       <div class="dv-actions">
-        <div class="seg" role="radiogroup" aria-label="보기"><button role="radio" aria-checked="${DRAFT_MODE === "preview"}" data-dm="preview">미리보기</button><button role="radio" aria-checked="${DRAFT_MODE === "edit"}" data-dm="edit">편집</button></div>
-        <select id="dvStatus" aria-label="상태">${DRAFT_STATUSES.map(s => `<option ${s === d.status ? "selected" : ""}>${s}</option>`).join("")}</select>
-        <button class="btn" id="dvCopyBody" title="확인 일자부터 면책 문구까지 + 참고한 공식 자료 + 태그 (스마트에디터에 붙여넣기용)">본문 복사</button>
-        <button class="btn" id="dvCopyAll">전체 복사</button>
-        <a class="btn dark" href="/api/drafts/${encodeURIComponent(d.id)}/docx" download="${esc((d.created_at || "").slice(0, 10) + "_" + (d.keyword || "초안").replace(/[\\/:*?"<>|]+/g, " ").slice(0, 40) + ".docx")}">docx 저장</a>
-        <button class="btn primary" id="dvRevise" title="고칠 내용을 적으면 이 초안을 그 자리에서 고쳐요">AI로 고치기</button>
-        <button class="btn" id="dvRedo" title="같은 글감으로 처음부터 다시 써서 이 초안을 덮어써요">다시 쓰기</button>
-        <button class="btn" id="dvRestyle" title="내용은 살리고 형식(정보형·읽을거리형·할인·구매형)만 바꿔 이 초안을 덮어써요">형식 바꾸기</button>
-        ${d.versions ? `<button class="btn ghost" id="dvUndo" title="덮어쓰기 전 내용으로 되돌려요">되돌리기 (${d.versions})</button>` : ""}
-        <button class="btn ghost" id="dvDelete">삭제</button>
+        <div class="dv-group">
+          <div class="seg" role="radiogroup" aria-label="보기"><button role="radio" aria-checked="${DRAFT_MODE === "preview"}" data-dm="preview">미리보기</button><button role="radio" aria-checked="${DRAFT_MODE === "edit"}" data-dm="edit">편집</button></div>
+          <select id="dvStatus" aria-label="상태">${DRAFT_STATUSES.map(s => `<option ${s === d.status ? "selected" : ""}>${s}</option>`).join("")}</select>
+        </div>
+        <div class="dv-group">
+          <button class="btn" id="dvCopyBody" title="확인 일자부터 면책 문구까지 + 참고한 공식 자료 + 태그 (스마트에디터에 붙여넣기용)">본문 복사</button>
+          <a class="btn" href="/api/drafts/${encodeURIComponent(d.id)}/docx" download="${esc((d.created_at || "").slice(0, 10) + "_" + (d.keyword || "초안").replace(/[\\/:*?"<>|]+/g, " ").slice(0, 40) + ".docx")}">docx 저장</a>
+        </div>
+        <div class="dv-group dv-right">
+          <button class="btn dark" id="dvRevise" title="고칠 내용을 적으면 이 초안을 그 자리에서 고쳐요">AI로 고치기</button>
+          <details class="dv-more">
+            <summary class="btn">더보기${d.versions ? ` <small>되돌리기 ${d.versions}</small>` : ""} ▾</summary>
+            <div class="dv-menu">
+              <button id="dvRedo" title="같은 글감으로 처음부터 다시 써서 이 초안을 덮어써요">다시 쓰기</button>
+              <button id="dvRestyle" title="내용은 살리고 형식만 바꿔 이 초안을 덮어써요">형식 바꾸기</button>
+              <button id="dvCopyAll">전체 복사 (기획·프롬프트 포함)</button>
+              ${d.versions ? `<button id="dvUndo">되돌리기 (이전 버전 ${d.versions}개)</button>` : ""}
+              <button id="dvDelete" class="danger">삭제</button>
+            </div>
+          </details>
+        </div>
       </div>
     </header>
     <div class="dv-revise" id="dvReviseBox" hidden>
@@ -1722,3 +1733,8 @@ if ($("#syncOneDrive")) {
   $("#syncReset").onclick = () => syncGo({ reset: true });
 }
 setInterval(() => { try { renderSync(); } catch {} }, 3000);
+
+document.addEventListener("click", e => {
+  const m = document.querySelector(".dv-more[open]");
+  if (m && (!m.contains(e.target) || e.target.closest(".dv-menu button"))) m.removeAttribute("open");
+});
