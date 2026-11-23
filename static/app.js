@@ -772,6 +772,14 @@ function renderAuto() {
   $("#autoStartup").checked = !!au.startup; $("#autoStartup").disabled = au.windows === false;
   $("#autoHours").value = String(au.hours ?? 4);
   $("#autoDrafts").value = String(au.drafts_per_day ?? 2);
+  if ($("#morningOn")) {
+    $("#morningOn").checked = au.morning !== false;
+    if (document.activeElement !== $("#morningTime")) $("#morningTime").value = au.morning_time || "07:30";
+    const ml = au.morning_last || {};
+    $("#morningInfo").innerHTML = au.morning_running ? "아침 글을 고르고 쓰는 중이에요…" : ml.date
+      ? `최근 실행: ${esc(ml.date)} ${esc(ml.at || "")} · 상시 <b>${esc(ml.evergreen || "없음")}</b> · 오늘 <b>${esc(ml.today || "없음")}</b>${(ml.errors || []).length ? " · " + esc(ml.errors.join(", ")) : ""}`
+      : "상시 주제는 상시 키워드 검증에서 '1년 내내 찾음'·검색량 큰 순, 오늘 최적 주제는 오늘의 글 계획(요일 코너·최근 7일 이슈)으로 골라요. 그 시각에 PC가 꺼져 있으면 켜진 뒤 그날 한 번 실행해요.";
+  }
   if (document.activeElement !== $("#blogId")) $("#blogId").value = le.blog_id || "";
   $("#blogInfo").textContent = le.error ? le.error : le.posts != null ? `최근 글 ${le.posts}개를 읽었어요` : (le.blog_id ? "아직 안 읽음" : "");
   const d = le.dislikes || [];
@@ -1991,5 +1999,17 @@ if ($("#planBtn")) {
     $("#planDialog").close();
     openPlan(null, { keyword: p.kw, style: p.style, from: "오늘의 글 계획",
       note: (p.title ? `제목: ${p.title}\n` : "") + "아래 '오늘의 글 계획'의 주제·목차·핵심 데이터(출처·기준일)를 따라 쓰세요. (미확인) 수치는 공식 출처로 다시 확인하고, 확인 못 하면 쓰지 마세요.\n\n" + PLAN_TEXT.slice(0, 6000) });
+  };
+}
+
+
+/* ---------- 매일 아침 글 2편 ---------- */
+if ($("#morningOn")) {
+  $("#morningOn").onchange = async e => { STATE = await api("/api/prefs", { morning_drafts: e.target.checked }); renderAuto(); toast(e.target.checked ? `매일 ${$("#morningTime").value}에 상시 1편 + 오늘 최적 1편을 써 둘게요` : "아침 글 쓰기를 껐어요"); };
+  $("#morningTime").onchange = async e => { STATE = await api("/api/prefs", { morning_time: e.target.value }); renderAuto(); toast(`매일 ${e.target.value}에 써 둘게요`); };
+  $("#morningRun").onclick = async () => {
+    try { await api("/api/morning/run", {}); toast("상시 1편 + 오늘 최적 1편을 고르는 중이에요 · 계획은 2~4분, 초안은 순서대로 써서 초안 탭에 넣어요"); }
+    catch (e) { toast(e.message); }
+    setTimeout(async () => { STATE = await api("/api/state"); renderAuto(); }, 4000);
   };
 }

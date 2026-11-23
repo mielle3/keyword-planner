@@ -88,7 +88,7 @@ EVERGREEN_CHECK_PATH = DATA / "evergreen_check.json"
 import writer as _writer  # AI 글쓰기 (작가 지침·블로그 기억·초안 보관·docx)
 WRITER = _writer.Store(DATA)
 KST = timezone(timedelta(hours=9))
-APP_VERSION = "2026.11.21-114"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
+APP_VERSION = "2026.11.21-115"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 DEFAULT_CONFIG = {
@@ -99,7 +99,7 @@ DEFAULT_CONFIG = {
     "watchlist": ["악동뮤지션", "아이유", "임영웅", "성시경", "데이식스"],
     "scale": "보통", "use_signal_bz": True, "port": 8765,
     "anthropic_api_key": "", "gemini_api_key": "", "ai_provider": "antigravity", "agy_path": "", "agy_model": "", "ai_web_check": True, "gemini_model": "", "claude_code_path": "", "gemini_cli_path": "",
-    "blog_id": "", "dislikes": [], "auto_refresh_hours": 4, "auto_draft_per_day": 2,
+    "blog_id": "", "dislikes": [], "auto_refresh_hours": 4, "auto_draft_per_day": 2, "morning_drafts": True, "morning_time": "07:30",
 }
 # 수집 규모: 씨앗당 2단계 확장 수, 분석할 키워드 총량
 SCALES = {"빠름": {"depth2": 1, "budget": 120}, "보통": {"depth2": 3, "budget": 240}, "정밀": {"depth2": 5, "budget": 420}}
@@ -3046,7 +3046,9 @@ def app_state():
                      "host": HOST, "others": other_hosts()},
             "auto": {"startup": bool(startup_shortcut_path() and startup_shortcut_path().exists()),
                      "windows": os.name == "nt", "hours": cfg.get("auto_refresh_hours", 4),
-                     "drafts_per_day": cfg.get("auto_draft_per_day", 2)},
+                     "drafts_per_day": cfg.get("auto_draft_per_day", 2),
+                     "morning": bool(cfg.get("morning_drafts", True)), "morning_time": cfg.get("morning_time", "07:30"),
+                     "morning_last": MORNING["last"] or _morning_state(), "morning_running": MORNING["running"]},
             "learn": {"blog_id": cfg.get("blog_id", ""), "dislikes": cfg.get("dislikes", [])[-30:],
                       "posts": len(_myblog_cache["posts"]) if _myblog_cache["id"] else None, "error": _myblog_cache["error"]},
             "ai": {"provider": cfg.get("ai_provider", "antigravity"), "agy_path": cfg.get("agy_path", ""), "agy_model": cfg.get("agy_model", ""),
@@ -3225,6 +3227,10 @@ class Handler(BaseHTTPRequestHandler):
             if "blog_id" in body:
                 cfg["blog_id"] = re.sub(r"[^\w\-./:]", "", str(body["blog_id"]))[:80]
                 _myblog_cache["at"] = 0
+            if "morning_drafts" in body:
+                cfg["morning_drafts"] = bool(body["morning_drafts"])
+            if "morning_time" in body and re.fullmatch(r"([01]\d|2[0-2]):[0-5]\d", str(body["morning_time"])):
+                cfg["morning_time"] = str(body["morning_time"])
             if "auto_draft_per_day" in body:
                 try:
                     cfg["auto_draft_per_day"] = max(0, min(5, int(body["auto_draft_per_day"])))
@@ -3380,6 +3386,11 @@ class Handler(BaseHTTPRequestHandler):
             if not ai_ready(load_config()):
                 return self._send(400, {"error": "AI 자동 작성이 연결되지 않았어요. 설정 → AI 글쓰기를 확인하거나 [요청문 복사]로 Gemini에 붙여 넣으세요."})
             start_daily_plan()
+            return self._send(200, {"ok": True})
+        if path == "/api/morning/run":
+            if not ai_ready(load_config()):
+                return self._send(400, {"error": "AI 자동 작성이 연결되지 않았어요"})
+            threading.Thread(target=run_morning, args=(True,), daemon=True).start()
             return self._send(200, {"ok": True})
         if path == "/api/agy/install":
             start_agy_install()
@@ -3707,6 +3718,121 @@ def auto_drafts(result):
             break
 
 
+# ---------- 매일 아침 글 2편: 상시 주제 1 + 오늘 최적 주제 1 (기본 07:30 · PC가 꺼져 있었으면 켜진 뒤 그날 한 번) ----------
+MORNING_PATH = DATA / "morning.json"
+MORNING = {"running": False, "last": {}}
+
+
+def _morning_state():
+    try:
+        return json.loads(MORNING_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def pick_evergreen_topic(cfg):
+    """상시 키워드 중 아직 안 쓴 것: 검증 결과 '상시'이면서 검색량 큰 순 → 없으면 목록 순."""
+    written = {norm(r.get("keyword", "")) for r in WRITER.index()}
+    mine = " ".join(norm(p.get("title", "")) for p in (cfg.get("_my_posts") or []))
+    dis = {norm(x) for x in cfg.get("dislikes", [])}
+    ok = lambda k: k and norm(k) not in written and norm(k) not in dis and norm(k) not in mine
+    res = (load_eg_check() or {}).get("results", {}) or {}
+    ranked = sorted(((k, r) for k, r in res.items() if (r.get("verdict") or "").startswith("상시")),
+                    key=lambda kr: -(kr[1].get("volume") or 0))
+    for k, r in ranked:
+        if ok(k):
+            return k, r
+    for t, ks in EVERGREEN.items():
+        for k in ks:
+            if ok(k):
+                return k, {}
+    return None, {}
+
+
+def run_morning(force=False):
+    if MORNING["running"]:
+        return {"ok": False, "error": "이미 진행 중이에요"}
+    MORNING["running"] = True
+    out = {"date": datetime.now(KST).date().isoformat(), "at": datetime.now(KST).strftime("%H:%M"), "evergreen": None, "today": None, "errors": []}
+    try:
+        cfg = cfg_with_posts()
+        if not ai_ready(cfg):
+            out["errors"].append("AI 자동 작성이 연결되지 않아 건너뜀")
+            return out
+        # 1) 상시 주제
+        kw, r = pick_evergreen_topic(cfg)
+        if kw:
+            note = "[아침 자동 · 상시 주제] 1년 내내 검색되는 주제입니다. 연도·기준이 바뀌어도 오래 읽히도록, 최신 공식 기준으로 확인해 쓰세요."
+            enqueue_draft({"id": f"am-eg-{int(time.time())}", "keyword": kw, "topic": "", "brief": {}, "metrics": {}, "src": {"evergreen": r},
+                           "user_note": note}, auto=True)
+            out["evergreen"] = kw
+        else:
+            out["errors"].append("쓸 상시 주제를 찾지 못함")
+        # 2) 오늘 최적 주제: 오늘의 글 계획(요일 코너·최근 7일·유효성) → 실패하면 오늘의 추천 1위
+        today_kw, style, plan = None, "", ""
+        try:
+            plan, _s, _u = _writer.make_daily_plan(WRITER, cfg, plan_context(cfg), datetime.now(KST))
+            PLAN_JOB.update(text=plan, at=datetime.now(KST).strftime("%Y-%m-%d %H:%M"))
+            try:
+                (WRITER.mem_dir / "오늘의_글_계획_최근.md").write_text(plan, encoding="utf-8")
+            except Exception:
+                pass
+            m = re.search(r"메인 키워드\s*[:：]\s*([^\n/]+)", plan) or re.search(r"주제\s*[:：]\s*([^\n]+)", plan)
+            today_kw = re.sub(r"[*()（）\[\]]", "", m.group(1)).strip()[:40] if m else None
+            f = re.search(r"포맷\s*[:：]\s*\[?\s*(\d)", plan)
+            style = {"1": "info", "2": "essay", "3": "deal"}.get(f.group(1) if f else "", "")
+        except Exception as e:
+            out["errors"].append(f"오늘의 글 계획 실패: {e}")
+        if not today_kw:
+            try:
+                files = sorted(HISTORY.glob("*.json"), reverse=True) if HISTORY.exists() else []
+                d = json.loads(files[0].read_text(encoding="utf-8")) if files else {}
+                items = {c["id"]: c for t in d.get("topics", []) for c in t.get("items", [])}
+                written = {norm(x.get("keyword", "")) for x in WRITER.index()}
+                for cid in d.get("top", []):
+                    c = items.get(cid)
+                    if c and norm(c["keyword"]) not in written and c.get("learned") not in ("dislike", "written"):
+                        today_kw, plan = c["keyword"], ""
+                        break
+            except Exception:
+                pass
+        if today_kw and norm(today_kw) != norm(kw or ""):
+            note = "[아침 자동 · 오늘 최적 주제]" + ("\n아래 '오늘의 글 계획'의 주제·제목·목차·핵심 데이터(출처·기준일)를 따라 쓰세요. (미확인) 수치는 공식 출처로 다시 확인하고, 확인 못 하면 쓰지 마세요.\n\n" + plan[:6000] if plan else "")
+            item = {"id": f"am-td-{int(time.time())}", "keyword": today_kw, "topic": "", "brief": {}, "metrics": {}, "src": {}, "user_note": note}
+            if style:
+                item["style"] = style
+            enqueue_draft(item, auto=True)
+            out["today"] = today_kw
+        elif not today_kw:
+            out["errors"].append("오늘 최적 주제를 찾지 못함")
+        return out
+    finally:
+        MORNING["running"] = False
+        MORNING["last"] = out
+        try:
+            MORNING_PATH.write_text(json.dumps(out, ensure_ascii=False), encoding="utf-8")
+        except Exception:
+            pass
+
+
+def morning_loop():
+    time.sleep(90)  # 켜진 직후 분석·업데이트와 겹치지 않게
+    while True:
+        try:
+            cfg = load_config()
+            now = datetime.now(KST)
+            hh, mm = (cfg.get("morning_time") or "07:30").split(":")
+            due = now.replace(hour=int(hh), minute=int(mm), second=0, microsecond=0)
+            st = _morning_state()
+            if (cfg.get("morning_drafts", True) and now >= due and now.hour < 23 and st.get("date") != now.date().isoformat()
+                    and not other_hosts() and ai_ready(cfg)):
+                print("  → 아침 글 2편 시작 (상시 1 · 오늘 최적 1)")
+                run_morning()
+        except Exception:
+            traceback.print_exc()
+        time.sleep(60)
+
+
 # ---------- 자동 업데이트: GitHub 공개 저장소에서 새 버전을 받아 스스로 교체 (키·초안·설정은 AppData에 있어 그대로) ----------
 UPDATE_REPO = "mielle3/keyword-planner"
 UPDATE_FILES = ("app.py", "writer.py", "writer_guide.md", "writer_guide_essay.md", "writer_guide_deal.md", "daily_plan_guide.md", "README.md", "실행_윈도우.bat",
@@ -3997,6 +4123,7 @@ def main():
     threading.Thread(target=update_loop, daemon=True).start()
     threading.Thread(target=heal_missing_files, daemon=True).start()
     threading.Thread(target=heartbeat_loop, daemon=True).start()
+    threading.Thread(target=morning_loop, daemon=True).start()
     if "--no-browser" not in sys.argv:
         threading.Timer(0.8, lambda: webbrowser.open(url)).start()
     try:
