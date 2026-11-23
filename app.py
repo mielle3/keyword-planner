@@ -88,7 +88,7 @@ EVERGREEN_CHECK_PATH = DATA / "evergreen_check.json"
 import writer as _writer  # AI 글쓰기 (작가 지침·블로그 기억·초안 보관·docx)
 WRITER = _writer.Store(DATA)
 KST = timezone(timedelta(hours=9))
-APP_VERSION = "2026.11.21-103"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
+APP_VERSION = "2026.11.21-104"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 DEFAULT_CONFIG = {
@@ -3709,7 +3709,7 @@ def auto_drafts(result):
 
 # ---------- 자동 업데이트: GitHub 공개 저장소에서 새 버전을 받아 스스로 교체 (키·초안·설정은 AppData에 있어 그대로) ----------
 UPDATE_REPO = "mielle3/keyword-planner"
-UPDATE_FILES = ("app.py", "writer.py", "writer_guide.md", "writer_guide_essay.md", "writer_guide_deal.md", "README.md", "실행_윈도우.bat",
+UPDATE_FILES = ("app.py", "writer.py", "writer_guide.md", "writer_guide_essay.md", "writer_guide_deal.md", "daily_plan_guide.md", "README.md", "실행_윈도우.bat",
                 "START_windows.bat", "실행_맥.command", "STOP_keywordplanner.bat")
 _update = {"checked": 0, "latest": "", "notes": "", "available": False, "error": "", "applying": False}
 
