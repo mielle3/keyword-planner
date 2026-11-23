@@ -1106,6 +1106,9 @@ def local_fix(text):
         body = re.sub(r"\s*\(?https?://[^\s)]+\)?", "", t[s:e])
         # 맨 위 카테고리 라벨·확인 일자 줄은 쓰지 않음 (사용자 요청)
         body = strip_top_labels(body)
+        # 소제목 모양 통일: ###·####, 굵게만 된 번호 줄 → ## (복사 때 모두 19 소제목으로)
+        body = re.sub(r"(?m)^#{3,4}[ \t]+", "## ", body)
+        body = re.sub(r"(?m)^\*\*(\d{1,2}[.)][ \t]*[^*\n]{2,40})\*\*[ \t]*$", r"## \1", body)
         # AI 이미지 안내 한 줄 (빠졌으면 본문 끝에 추가)
         if "AI로 만든 이미지" not in body and "AI로 생성" not in body:
             body = body.rstrip() + "\n\n※ 본문 이미지 중 일부는 AI로 만든 이미지로, 실제 모습과 다를 수 있습니다.\n\n"

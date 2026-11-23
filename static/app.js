@@ -1305,7 +1305,8 @@ function draftMd(md) {  // 간단한 마크다운 → 보기용 HTML
     if (!s) out.push("");
     else if (s.startsWith("```") || s.startsWith("~~~")) { /* 프롬프트 블록 표시 줄은 숨김 */ }
     else if (/^[-=]{3,}$/.test(s)) out.push("<hr>");
-    else if (s.startsWith("## ")) out.push(`<h3>${inline(s.slice(3))}</h3>`);
+    else if (/^#{2,4}\s/.test(s)) out.push(`<h3>${inline(s.replace(/^#{2,4}\s+/, ""))}</h3>`);
+    else if (/^\*\*\d{1,2}[.)]\s*[^*]{2,40}\*\*$/.test(s)) out.push(`<h3>${inline(s.replace(/^\*\*|\*\*$/g, ""))}</h3>`);
     else if (s.startsWith("# ")) out.push(`<h2>${inline(s.slice(2))}</h2>`);
     else if (s.startsWith("[📸")) out.push(`<p class="dv-img">${esc(s)}</p>`);
     else if (s.startsWith("[")) out.push(`<p class="dv-mark">${esc(s)}</p>`);
@@ -1808,7 +1809,7 @@ function smartHtml(md) {
   // 스마트에디터 ONE이 자기 글에서 쓰는 모양(se-fs-fs크기 클래스)을 같이 넣어야 붙여 넣을 때 글자 크기가 살아남음
   // 글꼴은 네이버 웹폰트 이름(se-nanummaruburi)을 그대로 적어야 함: 네이버 글을 복사하면 이 이름이 들어가고, 에디터는 이 이름을 보고 마루부리로 되돌림
   // (예전처럼 'NanumMaruBuri'로 적거나 비워 두면 표 안 글자가 기본 글꼴로 바뀜)
-  const P = (html, size = FS.body, extra = "") => `<p class="se-text-paragraph se-text-paragraph-align-" style="margin:0;line-height:1.9"><span class="se-fs-fs${size} se-ff-nanummaruburi" style="font-size:${size}px;${/font-weight/.test(extra) ? "" : "font-weight:normal;"}${extra}">${html}</span></p>`;
+  const P = (html, size = FS.body, extra = "") => `<p class="se-text-paragraph se-text-paragraph-align-" style="margin:0;line-height:1.9"><span class="se-fs-fs${size} se-ff-nanummaruburi" style="font-size:${size}px;${/font-weight/.test(extra) ? "" : "font-weight:normal;"}${/(^|;)\s*color:/.test(extra) ? "" : "color:#000000;"}${extra}">${html}</span></p>`;
   const lines = body.replace(/\r/g, "").replace(/([^\n]*\S[^\n]*)\n(\*\*Q[.．])/g, "$1\n\n$2").replace(/(^|\n)((?:[✔▪✅❌•①-⑩]|[-*] |\d{1,2}\. )[^\n]*)\n(?=(?:[✔▪✅❌•①-⑩]|[-*] |\d{1,2}\. ))/g, "$1$2\n\n").replace(/(^|\n)((?:[✔▪✅❌•①-⑩]|[-*] |\d{1,2}\. )[^\n]*)\n(?=(?:[✔▪✅❌•①-⑩]|[-*] |\d{1,2}\. ))/g, "$1$2\n\n").split("\n"); const out = []; let i = 0;
   while (i < lines.length) {
     const s = lines[i].trim();
@@ -1842,10 +1843,12 @@ function smartHtml(md) {
     if (!s) out.push(P("<br>"));
     else if (/^```|^~~~/.test(s)) {}
     else if (/^[-=]{3,}$/.test(s)) out.push("<hr>");
-    else if (s.startsWith("## ")) {
+    else if (/^#{2,4}\s/.test(s) || /^\*\*\d{1,2}[.)]\s*[^*]{2,40}\*\*$/.test(s)) {
       // 소제목: 번호는 진한 파랑 두 자리(02) + 제목은 먹색 굵게 + 아래 가는 구분선 (글자로 만들어 붙여 넣어도 남음)
-      const hm = s.slice(3).trim().match(/^(\d{1,2})[.)]\s*(.*)$/);
-      const head = hm ? `<span style="color:#184f84">${String(hm[1]).padStart(2, "0")}</span>&nbsp;&nbsp;${inl(hm[2])}` : inl(s.slice(3).trim());
+      // AI가 ###·**4. 제목**처럼 써도 모두 같은 19 소제목으로
+      const ht = s.replace(/^#{2,4}\s+/, "").replace(/^\*\*|\*\*$/g, "").trim();
+      const hm = ht.match(/^(\d{1,2})[.)]\s*(.*)$/);
+      const head = hm ? `<span style="color:#184f84;font-size:${FS.heading}px">${String(hm[1]).padStart(2, "0")}</span>&nbsp;&nbsp;${inl(hm[2])}` : inl(ht);
       out.push(P(head, FS.heading, "font-weight:bold;color:#1d2433"));
       out.push(P("─".repeat(28), 13, "color:#c9d3df;letter-spacing:-1px"));
     }
