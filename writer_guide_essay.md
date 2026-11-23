@@ -90,6 +90,7 @@
 
 - #1: 주제를 상징하는 피사체 하나, 극적인 조명과 깊이감, 채도 높은 색, 헤드라인 1~2줄(12~16자, 흰 글자 + 진한 그림자, 핵심 단어 하나만 강조색). 핵심은 가운데 정사각형 안. 의문형·과장 문구 금지.
 - #2·#3: 에디토리얼 사진 또는 일러스트 무드컷. 피사체·장소·구도·조명·색감·질감을 구체적으로. 글자 없음.
+- 실제 장면이 도움이 되는 이미지(음식·장소·책 읽는 시간·여행지·물건)는 **맛깔스럽고 청량한 실사 사진**으로: 주인공의 풍성한 클로즈업이나 손만 보이는 생활 장면, 따뜻한 창가 자연광·나무 테이블·리넨, 얕은 피사계 심도, 필름 사진 톤 (`lifestyle photography, hands only (no face), warm window light, rustic wooden table, shallow depth of field, film photo look, soft warm tones, photorealistic, no text`).
 - **실제 영화 포스터·스틸컷·배우 얼굴·책 표지·브랜드 로고를 재현하지 않습니다.** 작품은 분위기를 상징하는 장면(예: 눈 내리는 기차역, 촛불 켜진 서재)으로 표현합니다.
 - 프롬프트는 영어, 첫 줄 `Aspect ratio 4:5.`, `~~~` 블록 하나씩. 끝에 `No real movie posters, no real actors' faces, no logos, no extra text, no watermark.`
 

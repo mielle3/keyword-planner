@@ -283,19 +283,25 @@
 - 두 가지 비교 → **2열 비교 카드** (좌우 패널, VS 또는 화살표)
 - 6장 안에서 같은 형식을 3번 넘게 쓰지 않습니다. 연속한 두 장은 서로 다른 형식으로 합니다.
 
-**실사 사진형 (음식·식품·건강·의학·영양제·생활용품·제품 주제는 카드 대신 이 방식이 기본)**
-주제가 먹는 것·몸·제품이면 정보 카드보다 **맛깔스럽고 청량한 실사 사진**이 훨씬 눈길을 끕니다. 이때는 위 카드 세트 대신 아래 구성을 씁니다(숫자 비교가 꼭 필요한 섹션 1곳만 카드 허용).
+**이미지 방식 고르기 (장마다 스스로 판단 · 가장 먼저 적용)**
+이미지 한 장 한 장마다 "이 섹션은 실제 장면을 보여 주는 게 도움이 되나, 숫자·비교를 보여 주는 게 도움이 되나"를 판단해 둘 중 하나를 고릅니다.
+- **실사 사진형**이 도움이 되는 경우: 먹는 것·재료·요리, 몸·건강 습관, 제품·물건 사용법, 장소·계절·여행, 생활 행동(보관·손질·청소·운동 등), 사람의 일상 장면. → 아래 "실사 사진형" 규칙으로 맛깔스럽고 청량하게.
+- **정보 카드형**이 도움이 되는 경우: 금액·비율·순위·일정·절차·조건 비교처럼 숫자와 구조가 핵심인 섹션. → 아래 아트 디렉션·세트 디자인 틀로.
+- 한 글 안에서 섞어도 됩니다(예: 대표·생활 섹션은 실사, 금액 비교 섹션만 카드). 기획 칸에 장마다 고른 방식을 한 줄로 적습니다(예: `이미지 방식: #1 실사 · #2 실사 · #3 카드(금액 비교) · #4 실사 …`).
+
+**실사 사진형 (실제 장면이 도움이 되는 이미지에 적용)**
+실제 장면이 도움이 되는 이미지는 정보 카드보다 **맛깔스럽고 청량한 실사 사진**이 훨씬 눈길을 끕니다. 음식·식품·건강·의학·제품 글이면 대부분의 장을 이 방식으로 씁니다.
 
 | 번호 | 장면 | 프롬프트 핵심 |
 | :--- | :--- | :--- |
-| #1 대표 | **주인공 재료의 풍성한 클로즈업**: 화면을 꽉 채운 반복 패턴(예: 반으로 자른 골드키위 수십 개를 위에서), 단면·속살·과즙이 보이게 | `overhead full-frame macro food photography, abundant repeating pattern, glistening juicy cross-sections, ultra sharp detail, vibrant natural color, soft daylight` · 글자 없음 |
-| #2~#6 | **실제로 먹고·쓰는 생활 장면** (섹션마다 1장): 손만 보이게(얼굴 없음) 숟가락으로 떠먹기·접시에 담기·요거트에 넣기·보관하기 등 본문 섹션 내용과 같은 동작 | `lifestyle food photography, hands only (no face), rustic wooden kitchen table, linen napkin, ceramic bowl, cutting board, warm morning window light, potted herb by the window, shallow depth of field, film photo look, soft warm tones, natural and appetizing` |
+| 대표(#1) | **주인공(재료·물건·장소)의 풍성한 클로즈업**: 화면을 꽉 채운 반복 패턴(예: 반으로 자른 골드키위 수십 개를 위에서), 단면·속살·과즙이 보이게 | `overhead full-frame macro food photography, abundant repeating pattern, glistening juicy cross-sections, ultra sharp detail, vibrant natural color, soft daylight` · 글자 없음 |
+| 섹션 이미지 | **실제로 먹고·쓰고·하는 생활 장면** (그 섹션 내용과 같은 동작): 손만 보이게(얼굴 없음) 숟가락으로 떠먹기·접시에 담기·요거트에 넣기·보관하기 등 본문 섹션 내용과 같은 동작 | `lifestyle food photography, hands only (no face), rustic wooden kitchen table, linen napkin, ceramic bowl, cutting board, warm morning window light, potted herb by the window, shallow depth of field, film photo look, soft warm tones, natural and appetizing` |
 
 - 색감: 따뜻한 자연광 + 주인공 재료의 원색이 가장 선명하게(노랑·초록·빨강이 살아 있게). 회색·차가운 형광등 느낌 금지.
 - 소품: 나무 도마·리넨 행주·무광 도자기 그릇·창가 화분 정도로 최소화. 브랜드 포장·로고·라벨 글자 없음.
 - 의학·건강 주제도 병원·약·주사 이미지를 쓰지 않고, **본문이 권하는 생활 행동**(과일 한 접시, 따뜻한 물, 산책 등)을 같은 따뜻한 실사 톤으로 보여 줍니다. 효능을 과장하는 연출(빛나는 몸·의사 가운) 금지.
 - 이미지 안에 글자를 넣지 않습니다(대표 이미지도 기본은 글자 없음 · 필요하면 사용자가 네이버에서 제목을 얹음).
-- 비율: #1 `1:1`, #2~ `4:3`. 프롬프트 끝: `Photorealistic, no text, no logos, no brand packaging, no faces, no watermark.`
+- 비율: 대표 `1:1`, 섹션 실사 `4:3` (카드형은 `4:5`). 프롬프트 끝: `Photorealistic, no text, no logos, no brand packaging, no faces, no watermark.`
 
 **아트 디렉션 (세련되고 눈에 띄게 · 평범한 인포그래픽 금지)**
 흔한 "파스텔 배경 + 둥근 카드 + 부드러운 그림자 + 아이콘" 인포그래픽은 쓰지 않습니다(밋밋하고 어디서 본 듯함). 글마다 아래 넷 중 주제에 맞는 **아트 디렉션 하나**를 골라 #1~#6 모두에 적용하고, 기획 칸에 고른 이름을 한 줄로 적습니다.
