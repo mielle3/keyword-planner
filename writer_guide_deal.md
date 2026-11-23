@@ -97,6 +97,21 @@
 - 끝에 반드시: `Photorealistic photo, not an illustration, not a 3D render, not CGI, not a painting, no cartoon style, no plastic look, no text, no logos, no faces, no watermark.`
 - 실사냐 일러스트냐는 장마다 정하지만, **음식·재료·제품·장소·생활 장면은 기본이 실사**입니다. 일러스트·디오라마·3D는 실제로 찍을 수 없는 개념(제도 구조·흐름·비교 도식)에만 씁니다.
 
+**Gemini 워터마크 자르기 구도 (모든 이미지 프롬프트에 반드시 · 예외 없음)**
+Gemini는 이미지 오른쪽 아래에 로고를 넣습니다. 사용자가 **아래쪽 띠만 잘라 내면** 로고가 사라지고 정확한 비율이 되도록, 모든 프롬프트를 아래처럼 씁니다. 구석을 일부러 비우는 게 아니라, 배경이 아래로 자연스럽게 이어지게 하는 방식입니다.
+
+| 최종 비율 | Gemini에 요청할 비율 (프롬프트 첫 줄) | 잘라 낼 아래 띠 |
+| :--- | :--- | :--- |
+| 4:5 (세로) | `Aspect ratio 3:4.` | 아래 6.25% → 정확히 4:5 |
+| 4:3 (가로) | `Aspect ratio 5:4.` | 아래 6.25% → 정확히 4:3 |
+| 1:1 (정사각) | `Aspect ratio 1:1.` | 아래 7% → 거의 정사각 |
+
+1. 프롬프트 첫 줄은 위 표의 **요청 비율**입니다(최종 비율이 아님).
+2. 둘째 줄에 이 구도 문장을 그대로 넣습니다: `Composition: keep the main subject, all text and any info panels within the top 90% of the frame; the bottom 10% is a natural, seamless continuation of the background (such as the table surface, floor, ground, sky or water) with nothing important in it, so it can be cropped off cleanly.`
+3. 헤드라인·정보 패널·라벨·화살표는 화면 아래쪽 15% 안에 두지 않습니다(대표 이미지 헤드라인은 위쪽이나 가운데). 피사체가 아래 가장자리에 걸려 잘리지 않게 합니다.
+4. 각 프롬프트 위 설명 줄에 `- 자르기: 아래 6% 잘라 최종 4:5`처럼 한 줄 적습니다.
+5. 프롬프트 끝의 금지 문구에 `no watermark`는 그대로 둡니다(로고 자리는 위 구도로 해결).
+
 **대표 이미지(#1) — 글 전체의 핵심 요약 + 시인성**
 - 먼저 글 전체를 한 문장으로 요약합니다(예: "추리소설 입문자에게 맞는 TOP 6와 가장 싸게 사는 법"). 그 요약의 **두 핵심어**(예: 추리소설 + 가격 비교)가 한눈에 보이는 장면 하나를 설계합니다.
 - 구성: ① 핵심을 상징하는 구체적 주인공(본문 대상 그대로: 책 여섯 권이 순위대로 쌓인 탑, 돋보기 아래 가격표 등) ② 헤드라인 2줄 이내 12~18자(글 요약 그대로, 매우 굵게, 핵심어 하나 강조색) ③ 필요하면 보조 배지 1개(확인된 숫자: "TOP 6", "최대 10%").
@@ -116,7 +131,7 @@
 - **음식·식품·영양제·생활용품 딜**이면 #1을 포스터 대신 **맛깔스럽고 청량한 실사 사진**으로: 제품(일반 형태)을 쓰는 생활 장면 또는 재료의 풍성한 클로즈업, 따뜻한 창가 자연광·나무 테이블·리넨·손만 보이게(얼굴 없음), 필름 사진 톤, 글자 없음 (`lifestyle product photography, warm window light, rustic wooden table, hands only, shallow depth of field, appetizing, photorealistic, no text, no logos`).
 - 실제 제품 사진·브랜드 로고·판매처 화면을 재현하지 않습니다. 제품은 특정 브랜드로 보이지 않는 일반 형태로 표현합니다.
 - 디자인: 평범한 인포그래픽(파스텔·둥근 카드·부드러운 그림자) 금지. **컬러 블록 팝**(채도 높은 단색 배경 분할 + 굵은 타이포 + 잘라 낸 3D 상품 오브젝트) 또는 **다크 프리미엄**(딥 네이비 배경 + 네온 강조색 + 유리 질감 패널) 중 하나를 골라 4장 모두 같은 HEX 4색으로 통일. 카드마다 주인공(할인율·최종가)을 카드 높이 25~35% 크기로.
-- 프롬프트는 영어, 첫 줄 `Aspect ratio 4:5.`, `~~~` 블록 하나씩, 이미지 속 한글은 큰따옴표로 정확히. 끝에 `Render all Korean text exactly as written. No real brand logos, no real product photos, no fabricated store interfaces, no extra text, no watermark.`
+- 프롬프트는 영어, 첫 줄은 요청 비율 `Aspect ratio 3:4.`(최종 4:5) + 둘째 줄 '워터마크 자르기 구도' 문장, `~~~` 블록 하나씩, 이미지 속 한글은 큰따옴표로 정확히. 끝에 `Render all Korean text exactly as written. No real brand logos, no real product photos, no fabricated store interfaces, no extra text, no watermark.`
 
 ---
 
@@ -236,22 +251,30 @@
 [📸 이미지 #1: 대표 이미지 · 표지 포스터 (4:5)]
 - 이미지 속 한글: 헤드라인 "(12~16자)"
 ~~~
-Aspect ratio 4:5. (확정된 영문 프롬프트)
+Aspect ratio 3:4.
+Composition: keep the main subject, all text and any info panels within the top 90% of the frame; the bottom 10% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
+(최종 4:5 · 확정된 영문 프롬프트)
 ~~~
 
 [📸 이미지 #2: 할인 구조·마감 타임라인 카드 (4:5)]
 ~~~
-Aspect ratio 4:5. (확정된 영문 프롬프트)
+Aspect ratio 3:4.
+Composition: keep the main subject, all text and any info panels within the top 90% of the frame; the bottom 10% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
+(최종 4:5 · 확정된 영문 프롬프트)
 ~~~
 
 [📸 이미지 #3: 실가격 비교 카드 (4:5)]
 ~~~
-Aspect ratio 4:5. (확정된 영문 프롬프트)
+Aspect ratio 3:4.
+Composition: keep the main subject, all text and any info panels within the top 90% of the frame; the bottom 10% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
+(최종 4:5 · 확정된 영문 프롬프트)
 ~~~
 
 [📸 이미지 #4: 구매 체크리스트 카드 (4:5)]
 ~~~
-Aspect ratio 4:5. (확정된 영문 프롬프트)
+Aspect ratio 3:4.
+Composition: keep the main subject, all text and any info panels within the top 90% of the frame; the bottom 10% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
+(최종 4:5 · 확정된 영문 프롬프트)
 ~~~
 
 ---

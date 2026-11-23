@@ -289,6 +289,21 @@
 - 진짜 사진을 쓸 수 있으면 그게 더 좋습니다: 사용자가 직접 찍은 사진, 또는 한국관광공사 포토코리아(photo.visitkorea.or.kr)·지자체 관광 사이트의 공공누리 사진. 기획 칸에 "직접 사진·공공 사진으로 바꾸면 좋은 이미지 #N"을 적어 줍니다.
 - 가공 허용: 사진 위에 장소 이름표·이동 시간·입장료 같은 확인된 정보를 반투명 패널로 얹기, 두 장소 사진 좌우 비교.
 
+**Gemini 워터마크 자르기 구도 (모든 이미지 프롬프트에 반드시 · 예외 없음)**
+Gemini는 이미지 오른쪽 아래에 로고를 넣습니다. 사용자가 **아래쪽 띠만 잘라 내면** 로고가 사라지고 정확한 비율이 되도록, 모든 프롬프트를 아래처럼 씁니다. 구석을 일부러 비우는 게 아니라, 배경이 아래로 자연스럽게 이어지게 하는 방식입니다.
+
+| 최종 비율 | Gemini에 요청할 비율 (프롬프트 첫 줄) | 잘라 낼 아래 띠 |
+| :--- | :--- | :--- |
+| 4:5 (세로) | `Aspect ratio 3:4.` | 아래 6.25% → 정확히 4:5 |
+| 4:3 (가로) | `Aspect ratio 5:4.` | 아래 6.25% → 정확히 4:3 |
+| 1:1 (정사각) | `Aspect ratio 1:1.` | 아래 7% → 거의 정사각 |
+
+1. 프롬프트 첫 줄은 위 표의 **요청 비율**입니다(최종 비율이 아님).
+2. 둘째 줄에 이 구도 문장을 그대로 넣습니다: `Composition: keep the main subject, all text and any info panels within the top 90% of the frame; the bottom 10% is a natural, seamless continuation of the background (such as the table surface, floor, ground, sky or water) with nothing important in it, so it can be cropped off cleanly.`
+3. 헤드라인·정보 패널·라벨·화살표는 화면 아래쪽 15% 안에 두지 않습니다(대표 이미지 헤드라인은 위쪽이나 가운데). 피사체가 아래 가장자리에 걸려 잘리지 않게 합니다.
+4. 각 프롬프트 위 설명 줄에 `- 자르기: 아래 6% 잘라 최종 4:5`처럼 한 줄 적습니다.
+5. 프롬프트 끝의 금지 문구에 `no watermark`는 그대로 둡니다(로고 자리는 위 구도로 해결).
+
 **대표 이미지(#1) — 글 전체의 핵심 요약 + 시인성**
 - 먼저 글 전체를 한 문장으로 요약합니다(예: "추리소설 입문자에게 맞는 TOP 6와 가장 싸게 사는 법"). 그 요약의 **두 핵심어**(예: 추리소설 + 가격 비교)가 한눈에 보이는 장면 하나를 설계합니다.
 - 구성: ① 핵심을 상징하는 구체적 주인공(본문 대상 그대로: 책 여섯 권이 순위대로 쌓인 탑, 돋보기 아래 가격표 등) ② 헤드라인 2줄 이내 12~18자(글 요약 그대로, 매우 굵게, 핵심어 하나 강조색) ③ 필요하면 보조 배지 1개(확인된 숫자: "TOP 6", "최대 10%").
@@ -342,7 +357,7 @@
 - 소품: 나무 도마·리넨 행주·무광 도자기 그릇·창가 화분 정도로 최소화. 브랜드 포장·로고·라벨 글자 없음.
 - 의학·건강 주제도 병원·약·주사 이미지를 쓰지 않고, **본문이 권하는 생활 행동**(과일 한 접시, 따뜻한 물, 산책 등)을 같은 따뜻한 실사 톤으로 보여 줍니다. 효능을 과장하는 연출(빛나는 몸·의사 가운) 금지.
 - 이미지 안에 글자를 넣지 않습니다(대표 이미지도 기본은 글자 없음 · 필요하면 사용자가 네이버에서 제목을 얹음).
-- 비율: 대표 `1:1`, 섹션 실사 `4:3` (카드형은 `4:5`). 프롬프트 끝: `Photorealistic, no text, no logos, no brand packaging, no faces, no watermark.`
+- 비율(최종): 대표 `1:1`, 섹션 실사 `4:3` (카드형은 `4:5`) · 요청 비율과 구도 문장은 '워터마크 자르기 구도' 표대로. 프롬프트 끝: `Photorealistic, no text, no logos, no brand packaging, no faces, no watermark.`
 
 **아트 디렉션 (세련되고 눈에 띄게 · 평범한 인포그래픽 금지)**
 흔한 "파스텔 배경 + 둥근 카드 + 부드러운 그림자 + 아이콘" 인포그래픽은 쓰지 않습니다(밋밋하고 어디서 본 듯함). 글마다 아래 넷 중 주제에 맞는 **아트 디렉션 하나**를 골라 #1~#6 모두에 적용하고, 기획 칸에 고른 이름을 한 줄로 적습니다.
@@ -355,7 +370,7 @@
 | D. 데이터 저널리즘 | 통계·비교·순위·지역별 수치 | 신문 인포그래픽 느낌, 큰 숫자 + 정밀한 차트, 제한된 2색(먹색 + 강조 1색), 미세한 종이 질감 |
 
 **세트 디자인 틀 (#2~#6 공통 · 그 프롬프트들에 똑같이 적음)**
-- 비율: `4:5` 세로 (1080×1350). 고른 아트 디렉션의 배경·질감·타이포를 6장 모두 똑같이 반복해 적습니다.
+- 비율: 최종 `4:5` 세로 (1080×1350) · 요청은 `3:4` 후 아래 띠 자르기. 고른 아트 디렉션의 배경·질감·타이포를 6장 모두 똑같이 반복해 적습니다.
 - **시선을 잡는 위계:** 카드마다 주인공 하나 — 핵심 숫자(카드 높이의 25~35% 크기의 초대형 숫자) 또는 핵심 비교 한 쌍. 나머지 글자는 그 1/4 이하 크기.
 - **그림 요소 1개:** 카드마다 주제를 상징하는 사실적인 3D 오브젝트나 잘라 낸 사진 요소 하나를 데이터 옆에 둡니다(예: 등급컷 → 답안지, 집값 → 집 모형, 책 → 펼친 책). 글자와 차트만 있는 카드는 만들지 않습니다.
 - **구성:** 상단에 작은 시리즈 표시(`01 / 05`)와 카테고리 라벨 → 카드 제목(18자 이내) → 주인공 숫자·차트 → 하단 바닥줄(작게: "출처: ○○ · 2026.11.21 기준"). 좌우 비대칭 배치도 좋습니다.
@@ -380,7 +395,7 @@
 - 실제 브랜드·기관 로고, 실존 인물 얼굴, 실제 앱 화면을 지어낸 그림, 워터마크
 
 **Gemini 프롬프트 작성 규칙**
-- 프롬프트마다 첫 줄에 `Aspect ratio 4:5.`를 적습니다. 지시는 영어로, 이미지에 들어갈 한글은 큰따옴표로 정확히 적습니다.
+- 프롬프트마다 첫 줄에 '워터마크 자르기 구도' 표의 **요청 비율**(최종 4:5면 `Aspect ratio 3:4.`), 둘째 줄에 구도 문장을 적습니다. 지시는 영어로, 이미지에 들어갈 한글은 큰따옴표로 정확히 적습니다.
 - 각 프롬프트는 `~~~`로 감싼 블록 하나에 담습니다. **단독으로 실행되어야 하므로** 세트 디자인 틀(아트 디렉션·구성·HEX 4색·질감·타이포)을 6개 프롬프트 모두에 그대로 반복해 적습니다. "앞 이미지와 같게" 같은 참조를 쓰지 않습니다.
 - 데이터는 구체적으로: 막대그래프면 항목명·값·막대 순서·축 표시 여부, 표 카드면 열 이름과 행 값 전부, 큰 숫자면 숫자·단위·설명 문구를 적습니다.
 - 확정된 지시만 남깁니다. `only if`, `or`로 고르게 하는 선택지, 빈 괄호·빈 따옴표를 남기지 않습니다.
@@ -570,38 +585,50 @@
 - 메인 비주얼: (글 전체를 함축하는 상징 피사체 하나와 스타일: 하이엔드 3D 또는 시네마틱 실사)
 - 이미지 속 한글: 헤드라인 "(12~16자, 강조 단어 표시)" / 서브 카피 "(한 줄, 선택)" / 배지 "(확인된 사실, 선택)"
 ~~~
-Aspect ratio 4:5. (확정된 영문 프롬프트: striking cinematic poster-style cover image for a Korean blog post, NOT an infographic card. 메인 피사체 하나와 행동·재질을 구체적으로(예: a glossy 3D rendered answer sheet glowing with a red "1등급" stamp), 화면의 55~65% 크기로 중앙 하단 배치, dramatic rim lighting and soft glow, shallow depth of field, vivid high-contrast gradient background (HEX 2색), subtle light particles/bokeh only. 상단에 very bold Korean headline "…" in white with strong drop shadow, 강조 단어 "…" in (강조색 HEX), optional small subcopy "…" and one pill badge "…". Keep all key text and the subject inside the central square safe area, 10% empty margin, clean composition with a single focal point. Render all Korean text exactly as written, crisp and large. No infographic elements, no charts, no tables, no extra or random text, no logos, no real people's faces, no watermark.)
+Aspect ratio 3:4.
+Composition: keep the main subject, all text and any info panels within the top 90% of the frame; the bottom 10% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
+(최종 4:5 · 확정된 영문 프롬프트: striking cinematic poster-style cover image for a Korean blog post, NOT an infographic card. 메인 피사체 하나와 행동·재질을 구체적으로(예: a glossy 3D rendered answer sheet glowing with a red "1등급" stamp), 화면의 55~65% 크기로 중앙 하단 배치, dramatic rim lighting and soft glow, shallow depth of field, vivid high-contrast gradient background (HEX 2색), subtle light particles/bokeh only. 상단에 very bold Korean headline "…" in white with strong drop shadow, 강조 단어 "…" in (강조색 HEX), optional small subcopy "…" and one pill badge "…". Keep all key text and the subject inside the central square safe area, 10% empty margin, clean composition with a single focal point. Render all Korean text exactly as written, crisp and large. No infographic elements, no charts, no tables, no extra or random text, no logos, no real people's faces, no watermark.)
 ~~~
 - 한글이 깨지면: 같은 프롬프트 끝에 "no text at all, keep the top 30% empty for a headline"을 붙여 비주얼만 만들고, 헤드라인은 캔바·미리캔버스에서 입력
 
 [📸 이미지 #2: 섹션 1 카드 · (카드 형식) (4:5)]
 - 카드 문구: 머리띠 "(라벨)" / 제목 "(18자 이내)" / 데이터 "(항목: 값 …)" / 바닥줄 "(출처 · 기준일)"
 ~~~
-Aspect ratio 4:5. (확정된 영문 프롬프트: 세트 디자인 틀 전체 반복 + 카드 형식(예: horizontal bar chart with 4 bars) + 항목명·값·순서·강조할 값과 강조색 + 상징 3D 오브젝트 1개. Render all Korean text exactly as written, crisp and legible. No extra or random text, no logos, no real people's faces, no fabricated app interfaces, no watermark.)
+Aspect ratio 3:4.
+Composition: keep the main subject, all text and any info panels within the top 90% of the frame; the bottom 10% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
+(최종 4:5 · 확정된 영문 프롬프트: 세트 디자인 틀 전체 반복 + 카드 형식(예: horizontal bar chart with 4 bars) + 항목명·값·순서·강조할 값과 강조색 + 상징 3D 오브젝트 1개. Render all Korean text exactly as written, crisp and legible. No extra or random text, no logos, no real people's faces, no fabricated app interfaces, no watermark.)
 ~~~
 
 [📸 이미지 #3: 섹션 2 카드 · (카드 형식) (4:5)]
 - 카드 문구: (위와 같은 방식)
 ~~~
-Aspect ratio 4:5. (확정된 영문 프롬프트)
+Aspect ratio 3:4.
+Composition: keep the main subject, all text and any info panels within the top 90% of the frame; the bottom 10% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
+(최종 4:5 · 확정된 영문 프롬프트)
 ~~~
 
 [📸 이미지 #4: 섹션 3 카드 · (카드 형식) (4:5)]
 - 카드 문구: (…)
 ~~~
-Aspect ratio 4:5. (확정된 영문 프롬프트)
+Aspect ratio 3:4.
+Composition: keep the main subject, all text and any info panels within the top 90% of the frame; the bottom 10% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
+(최종 4:5 · 확정된 영문 프롬프트)
 ~~~
 
 [📸 이미지 #5: 섹션 4 카드 · (카드 형식) (4:5)]
 - 카드 문구: (…)
 ~~~
-Aspect ratio 4:5. (확정된 영문 프롬프트)
+Aspect ratio 3:4.
+Composition: keep the main subject, all text and any info panels within the top 90% of the frame; the bottom 10% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
+(최종 4:5 · 확정된 영문 프롬프트)
 ~~~
 
 [📸 이미지 #6: 섹션 5 카드 · 체크리스트 (4:5)]
 - 카드 문구: (…)
 ~~~
-Aspect ratio 4:5. (확정된 영문 프롬프트)
+Aspect ratio 3:4.
+Composition: keep the main subject, all text and any info panels within the top 90% of the frame; the bottom 10% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
+(최종 4:5 · 확정된 영문 프롬프트)
 ~~~
 
 - 한글이 깨지면: 같은 프롬프트 끝에 "Same design with no text at all, keep empty areas for text"를 붙여 다시 만들고, 위 카드 문구를 캔바·미리캔버스에서 입력
