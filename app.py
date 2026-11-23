@@ -88,7 +88,7 @@ EVERGREEN_CHECK_PATH = DATA / "evergreen_check.json"
 import writer as _writer  # AI 글쓰기 (작가 지침·블로그 기억·초안 보관·docx)
 WRITER = _writer.Store(DATA)
 KST = timezone(timedelta(hours=9))
-APP_VERSION = "2026.11.21-115"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
+APP_VERSION = "2026.11.21-116"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 DEFAULT_CONFIG = {
@@ -440,6 +440,31 @@ SCANDAL_WORDS = ["음주운전", "성폭력", "성폭행", "성추행", "불륜"
                  "추락", "충돌", "참변", "학대", "마약", "도박", "숨지", "치어", "치여", "흉기", "살해", "투신"]
 BLOCK_WORDS = list(dict.fromkeys(BLOCK_WORDS + POLITICS_WORDS + SCANDAL_WORDS))
 MEDIA_SUFFIX = ("일보", "신문", "뉴스", "방송", "TV", "tv")
+
+# 블로그 주제와 무관한 이슈 (사용자가 그 분야를 고르지 않았으면 이슈·선제 글감에서 뺌)
+OFFTOPIC = {
+    "게임": ["gta", "지티에이", "게임", " 롤 ", "리그오브레전드", "lck", "발로란트", "배그", "배틀그라운드", "메이플", "로스트아크", "로아",
+            "피파", "fc온라인", "fc 온라인", "스팀", "닌텐도", "스위치2", "플스", "ps5", "ps6", "엑스박스", "xbox", "포켓몬", "원신",
+            "블루아카", "니케", "던파", "던전앤파이터", "오버워치", "디아블로", "마인크래프트", "로블록스", "젤다", "e스포츠", "티원", "t1 ",
+            "페이커", "트레일러", "얼리액세스", "패치노트", "쿠폰번호", "리세마라", "티어"],
+    "스포츠": ["경기 일정", "경기 결과", "중계", "하이라이트", "라인업", "득점", "야구", "축구", "농구", "배구", "kbo", "epl",
+              "k리그", "mlb", "nba", "챔피언스리그", "월드컵", "올림픽", "손흥민", "이강인", "김민재", "오타니", "프리미어리그", " vs "],
+    "연예": ["아이돌", "컴백", "뮤비", "티저", "팬미팅", "열애", "결혼 발표", "데뷔", "시청률", "예능", "몇부작", " ost", "직캠", "소속사", "출연진"],
+}
+
+
+def offtopic(kw, topics=None):
+    """블로그 주제와 무관한 이슈인지 (사용자가 그 분야를 고르지 않았을 때만 True)."""
+    t = " " + (kw or "").lower() + " "
+    chosen = set(topics or [])
+    for cat, words in OFFTOPIC.items():
+        if cat == "연예" and chosen & {"방송", "드라마", "스타·연예인", "음악", "영화"}:
+            continue
+        if cat in chosen:
+            continue
+        if any(w in t for w in words):
+            return True
+    return False
 
 # ------------------------------------------------------------------ 공통
 
@@ -1276,7 +1301,7 @@ def build_seed_plan(cfg, today, trends, news=None):
             plan.append((MINE_TOPIC, MINE_TOPIC, kw, "mine", {}))
     if cfg.get("include_issues", True):
         for t in [t for t in trends if korean_trend(t) and len(norm(t["keyword"])) > 2]:
-            if trend_blocked(t):
+            if trend_blocked(t) or offtopic(t["keyword"], topics) or offtopic(t["news"][0]["title"] if t.get("news") else "", topics):
                 continue
             plan.append((ISSUE_TOPIC, ISSUE_TOPIC, t["keyword"], "trend",
                          {"traffic": t.get("traffic"), "news": t["news"][0]["title"] if t.get("news") else "",
@@ -1795,8 +1820,10 @@ def past_month(kw, today=None):
 def pick_for_measure(cands, budget, rng, per_topic_min=6, per_seed=3):
     """주제별 1차 점수로 고르게 뽑아 정밀 측정 대상 결정."""
     groups = {}
+    _tp = [t for t in load_config().get("topics", []) if t in TOPICS]
     cands = [c for c in cands if not any(w in c["keyword"] for w in TOPIC_EXCLUDE.get(c["cat"], []))
-             and not past_month(c["keyword"]) and not past_event(c["keyword"])]
+             and not past_month(c["keyword"]) and not past_event(c["keyword"])
+             and (c.get("cat") in _tp or not offtopic(c["keyword"], _tp))]
     for c in cands:
         c["intent"] = classify(c["keyword"])[0]
         c["_pre"] = c["ac_index"] + 0.5 * fit_score(c) + rng.random() * 6 - (30 if c["fresh_penalty"] else 0)
@@ -2894,8 +2921,9 @@ def run_preempt():
     sources = {}
     trends = []
     try:
+        _tp = [t for t in cfg.get("topics", []) if t in TOPICS]
         trends = [t for t in fetch_google_trends() if korean_trend(t) and not is_blocked(t["keyword"])
-                  and not trend_blocked(t)]
+                  and not trend_blocked(t) and not offtopic(t["keyword"], _tp)]
         sources["구글 트렌드"] = {"ok": True, "note": f"급상승 {len(trends)}개 확인"}
     except Exception:
         sources["구글 트렌드"] = {"ok": False, "note": "연결 실패"}
