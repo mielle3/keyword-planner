@@ -88,7 +88,7 @@ EVERGREEN_CHECK_PATH = DATA / "evergreen_check.json"
 import writer as _writer  # AI 글쓰기 (작가 지침·블로그 기억·초안 보관·docx)
 WRITER = _writer.Store(DATA)
 KST = timezone(timedelta(hours=9))
-APP_VERSION = "2026.11.21-116"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
+APP_VERSION = "2026.11.21-117"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 DEFAULT_CONFIG = {
@@ -1301,7 +1301,7 @@ def build_seed_plan(cfg, today, trends, news=None):
             plan.append((MINE_TOPIC, MINE_TOPIC, kw, "mine", {}))
     if cfg.get("include_issues", True):
         for t in [t for t in trends if korean_trend(t) and len(norm(t["keyword"])) > 2]:
-            if trend_blocked(t) or offtopic(t["keyword"], topics) or offtopic(t["news"][0]["title"] if t.get("news") else "", topics):
+            if trend_blocked(t):
                 continue
             plan.append((ISSUE_TOPIC, ISSUE_TOPIC, t["keyword"], "trend",
                          {"traffic": t.get("traffic"), "news": t["news"][0]["title"] if t.get("news") else "",
@@ -1820,10 +1820,8 @@ def past_month(kw, today=None):
 def pick_for_measure(cands, budget, rng, per_topic_min=6, per_seed=3):
     """주제별 1차 점수로 고르게 뽑아 정밀 측정 대상 결정."""
     groups = {}
-    _tp = [t for t in load_config().get("topics", []) if t in TOPICS]
     cands = [c for c in cands if not any(w in c["keyword"] for w in TOPIC_EXCLUDE.get(c["cat"], []))
-             and not past_month(c["keyword"]) and not past_event(c["keyword"])
-             and (c.get("cat") in _tp or not offtopic(c["keyword"], _tp))]
+             and not past_month(c["keyword"]) and not past_event(c["keyword"])]
     for c in cands:
         c["intent"] = classify(c["keyword"])[0]
         c["_pre"] = c["ac_index"] + 0.5 * fit_score(c) + rng.random() * 6 - (30 if c["fresh_penalty"] else 0)
@@ -1920,7 +1918,7 @@ def run_job():
     log(f"정밀 분석 대상 {len(items)}개")
     measure(cfg, items, today, rng, sources)
     progress("행사 날짜 확인", 91)
-    items, past = filter_past_events(items, today, limit=40)
+    items, past = filter_past_events(items, today, limit=80)
     sources["행사 날짜 확인"] = {"ok": True, "note": f"지난 행사 {len(past)}개 제외"}
     if past:
         log("지난 행사 제외: " + ", ".join(it["keyword"] for it in past[:8]))
@@ -2781,13 +2779,18 @@ def evergreen_seeds(topics, today, per_topic=4):
 
 # ------------------------------------------------------------------ 행사 날짜 확인 (지난 행사 거르기)
 
-EVENT_WORDS = re.compile(r"콘서트|공연|페스티벌|축제|팬미팅|내한|투어|뮤지컬|연극|전시|박람회|시상식|어워드|어워즈|MMA|MAMA|라인업|티켓|예매|불꽃")
+EVENT_WORDS = re.compile(r"콘서트|공연|페스티벌|축제|팬미팅|내한|투어|뮤지컬|연극|전시|박람회|시상식|어워드|어워즈|MMA|MAMA|라인업|티켓|예매|불꽃|"
+                         r"출시|발매|개봉|사전 ?예약|쇼케이스|공개일|출시일|발매일|개봉일|신청|접수|마감|모집|청약|세일|블프|블랙프라이데이|이벤트|프로모션|할인 ?행사|오픈일|개장|폐장")
 EVENT_STRIP = {"라인업", "티켓팅", "티켓", "예매", "일정", "가격", "좌석", "좌석배치도", "시간", "장소", "정보", "예약", "사전예약", "오픈",
+               "출시", "출시일", "발매", "발매일", "개봉", "개봉일", "공개일", "신청", "신청기간", "신청방법", "접수", "마감", "모집", "기간", "날짜",
                "방법", "후기", "출연진", "날짜", "시간표", "타임테이블", "셋리스트", "굿즈", "주차", "가는법", "위치", "할인", "취켓팅"}
 EVENT_GENERIC = {"콘서트", "공연", "페스티벌", "축제", "팬미팅", "내한", "투어", "뮤지컬", "연극", "전시", "연말", "연초", "겨울", "여름", "가을", "봄",
                  "영화", "드라마", "개봉", "공개", "출시", "예정", "국내", "해외", "서울", "부산", "추천", "무료", "단독", "아이돌", "클래식", "내년", "올해"}
-PAST_RE = re.compile(r"성료|폐막|막\s?내려|막내려|성황리|마무리|열렸다|개최됐|진행됐|끝났|마쳤|폐회|대장정|피날레|막 올렸다")
-FUTURE_RE = re.compile(r"열린다|연다|개최한다|개최 예정|예정|앞두고|티켓 ?오픈|예매 ?오픈|사전 ?예약|D-\d|내달|다음 달|라인업 공개|라인업 발표|첫 공개")
+PAST_RE = re.compile(r"성료|폐막|막\s?내려|막내려|성황리|마무리|열렸다|개최됐|진행됐|끝났|마쳤|폐회|대장정|피날레|막 올렸다|"
+                     r"출시됐|출시했|정식 출시|발매됐|발매했|개봉했|개봉한|흥행|누적 관객|판매량|마감됐|마감했|접수 마감|조기 마감|종료됐|종료했|"
+                     r"연기됐|연기했|출시 연기|발매 연기|무기한 연기|취소됐|취소했|중단됐|폐지|돌아온|출시 첫날|출시 첫 주|첫날 매출|하루 매출|판매 돌파|만장 돌파|관객 돌파|사용 후기|실사용")
+FUTURE_RE = re.compile(r"열린다|연다|개최한다|개최 예정|예정|앞두고|티켓 ?오픈|예매 ?오픈|사전 ?예약|D-\d|내달|다음 달|라인업 공개|라인업 발표|첫 공개|"
+                       r"출시한다|출시 예정|발매한다|발매 예정|개봉한다|개봉 예정|접수한다|접수 시작|신청 시작|모집한다|오픈한다")
 _event_cache = {}
 
 
@@ -2801,7 +2804,7 @@ def event_core(kw):
 def title_dates(title, pub):
     """제목 속 '10월 4일', '10.3~5' 같은 날짜 → date 목록 (기사 날짜의 해 기준)."""
     out = []
-    for mo, d in re.findall(r"(\d{1,2})월\s?(\d{1,2})일", title) + re.findall(r"(?<![\d.])(\d{1,2})\.(\d{1,2})(?![\d.])", title):
+    for mo, d in re.findall(r"(\d{1,2})월\s?(\d{1,2})일", title) + re.findall(r"(?<![\d.])(\d{1,2})\.(\d{1,2})(?![\d.])(?!\s?(?:배|km|%|조|억|만|점|kg|m|명|원|개|도|시간|년|위|세|g|cm|mm|ℓ|L|배럴|포인트|p|%p|bp|mm))", title):
         mo, d = int(mo), int(d)
         if 1 <= mo <= 12 and 1 <= d <= 31:
             try:
@@ -2923,7 +2926,7 @@ def run_preempt():
     try:
         _tp = [t for t in cfg.get("topics", []) if t in TOPICS]
         trends = [t for t in fetch_google_trends() if korean_trend(t) and not is_blocked(t["keyword"])
-                  and not trend_blocked(t) and not offtopic(t["keyword"], _tp)]
+                  and not trend_blocked(t)]
         sources["구글 트렌드"] = {"ok": True, "note": f"급상승 {len(trends)}개 확인"}
     except Exception:
         sources["구글 트렌드"] = {"ok": False, "note": "연결 실패"}
