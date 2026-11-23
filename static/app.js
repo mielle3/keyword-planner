@@ -647,12 +647,12 @@ function checkTitle(title, kw) {
 }
 
 /* ---------- 저장함 ---------- */
-async function loadSaved() { SAVED = await api("/api/saved"); $("#savedCount").textContent = SAVED.length || ""; }
+async function loadSaved() { SAVED = await api("/api/saved"); $("#savedCount").textContent = SAVED.length || 0; }
 async function toggleSave(it) {
   if (!it) return;
   const has = SAVED.some(s => s.item.keyword === it.keyword);
   SAVED = await api("/api/saved", has ? { action: "remove", keyword: it.keyword } : { action: "add", item: it });
-  $("#savedCount").textContent = SAVED.length || "";
+  $("#savedCount").textContent = SAVED.length || 0;
   toast(has ? "저장함에서 뺐어요" : "저장함에 담았어요");
   if (RESULT) renderTable();
   if (ANALYZE) renderAnalyze();
@@ -680,7 +680,7 @@ function renderSaved() {
       </div></article>`;
   }).join("")}</div>`;
   $$("[data-status]").forEach(sel => sel.onchange = async () => { SAVED = await api("/api/saved", { action: "status", keyword: sel.dataset.status, status: sel.value }); renderSaved(); toast(`‘${sel.value}’로 바꿨어요`); });
-  $$("[data-unsave]").forEach(b => b.onclick = async () => { SAVED = await api("/api/saved", { action: "remove", keyword: b.dataset.unsave }); $("#savedCount").textContent = SAVED.length || ""; renderSaved(); });
+  $$("[data-unsave]").forEach(b => b.onclick = async () => { SAVED = await api("/api/saved", { action: "remove", keyword: b.dataset.unsave }); $("#savedCount").textContent = SAVED.length || 0; renderSaved(); });
 }
 
 /* ---------- 키워드 분석 ---------- */
@@ -748,7 +748,7 @@ function renderAI() {
   st.textContent = ai.provider === "antigravity"
     ? (ai.antigravity ? "Gemini로 자동 작성 · 준비됨" : "Antigravity 설치 필요 · 아래 안내")
     : (ready ? `${name} 사용` : `${name} · 키 필요`) + (ai.provider === "gemini" ? " · 항상 최고 버전" : "");
-  if ($("#draftCount")) $("#draftCount").textContent = ai.drafts || "";
+  if ($("#draftCount")) $("#draftCount").textContent = ai.drafts || 0;
 }
 let GUIDE_STYLE = "info", MEM = null;
 document.addEventListener("click", e => {
@@ -1266,7 +1266,7 @@ document.addEventListener("click", async e => {
 /* ---------- 초안 보관함 ---------- */
 async function loadDrafts(openId) {
   DRAFTS = await api("/api/drafts");
-  if ($("#draftCount")) $("#draftCount").textContent = DRAFTS.length || "";
+  if ($("#draftCount")) $("#draftCount").textContent = DRAFTS.length || 0;
   const id = openId || DRAFT?.id || DRAFTS[0]?.id;
   if (id) DRAFT = await api("/api/drafts/" + id); else DRAFT = null;
   renderDrafts();
