@@ -1338,7 +1338,7 @@ function imagePrompts(md) {
 function promptCardsHTML(md) {
   const ps = imagePrompts(md);
   if (!ps.length) return "";
-  return `<section class="img-prompts"><div class="ip-head"><b>Gemini 이미지 프롬프트</b><span>복사해서 Gemini에 붙여 넣으면 이미지가 만들어져요</span><a class="btn sm" href="https://gemini.google.com/app" target="_blank" rel="noopener">Gemini 열기 ↗</a></div>
+  return `<section class="img-prompts"><div class="ip-head"><b>Gemini 이미지 프롬프트</b><span>복사해서 Gemini에 붙여 넣으면 이미지가 만들어져요</span><a class="btn sm" href="https://gemini.google.com/app" target="_blank" rel="noopener">Gemini 열기 ↗</a><button class="btn sm dark" type="button" data-crop-open>✂ 받은 이미지 워터마크 자르기</button></div>
     <div class="ip-grid">${ps.map((x, i) => `<article class="ip-card"><div class="ip-no">#${i + 1}</div><h4>${esc(x.head)}</h4>${x.what ? `<p class="ip-what">${esc(x.what)}</p>` : ""}${x.ko ? `<p class="ip-ko">${esc(x.ko)}</p>` : ""}
       <pre class="ip-pre">${esc(x.prompt)}</pre><button class="btn dark sm" data-copy="${esc(x.prompt)}">프롬프트 복사</button></article>`).join("")}</div></section>`;
 }
@@ -1990,3 +1990,77 @@ if ($("#planBtn")) {
       note: (p.title ? `제목: ${p.title}\n` : "") + "아래 '오늘의 글 계획'의 주제·목차·핵심 데이터(출처·기준일)를 따라 쓰세요. (미확인) 수치는 공식 출처로 다시 확인하고, 확인 못 하면 쓰지 마세요.\n\n" + PLAN_TEXT.slice(0, 6000) });
   };
 }
+
+
+/* ---------- Gemini 이미지 워터마크 자르기 (내 PC 안에서만 처리 · 서버로 보내지 않음) ---------- */
+const CROP_TARGETS = { auto: null, "4:5": 4 / 5, "4:3": 4 / 3, "1:1": 1 };
+function cropBox(w, h, mode) {
+  // 아래쪽 띠를 잘라 로고를 없앰. 자동: 요청 비율(3:4·5:4)을 보고 최종 비율(4:5·4:3)로, 그 외는 아래 7%
+  const r = w / h;
+  let target = CROP_TARGETS[mode];
+  if (!target) target = Math.abs(r - 0.75) < 0.03 ? 0.8 : Math.abs(r - 1.25) < 0.03 ? 4 / 3 : null;
+  let nh = target ? Math.round(w / target) : Math.round(h * 0.93);
+  if (nh > h * 0.95) nh = Math.round(h * 0.93);  // 최소 5~7%는 잘라야 로고가 확실히 빠짐
+  if (nh < h * 0.6) nh = Math.round(h * 0.6);
+  return { sw: w, sh: nh };
+}
+async function cropFile(file, mode) {
+  const url = URL.createObjectURL(file);
+  const img = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = url; });
+  const { sw, sh } = cropBox(img.naturalWidth, img.naturalHeight, mode);
+  const scale = Math.min(1, 1600 / sw);
+  const c = document.createElement("canvas"); c.width = Math.round(sw * scale); c.height = Math.round(sh * scale);
+  c.getContext("2d").drawImage(img, 0, 0, sw, sh, 0, 0, c.width, c.height);
+  URL.revokeObjectURL(url);
+  const blob = await new Promise(ok => c.toBlob(ok, "image/jpeg", 0.92));
+  return { blob, w: c.width, h: c.height, src: URL.createObjectURL(blob), name: (file.name.replace(/\.[^.]+$/, "").replace(/[^\w.-]+/g, "_").replace(/^_+|_+$/g, "") || "image") + "_crop.jpg", orig: `${img.naturalWidth}×${img.naturalHeight}` };
+}
+let CROPPED = [];
+function cropDialog() {
+  let d = $("#cropDialog");
+  if (!d) {
+    d = document.createElement("dialog"); d.id = "cropDialog";
+    d.innerHTML = `<form method="dialog" class="manual-form">
+      <div class="dlg-head"><div><h2>✂ 이미지 워터마크 자르기</h2><p class="muted">Gemini에서 받은 이미지를 넣으면 아래쪽 띠를 잘라 로고를 없애고 비율을 맞춰요. 이미지는 이 PC 안에서만 처리돼요.</p></div>
+        <button class="x-fixed" value="cancel" aria-label="닫기">✕</button></div>
+      <div class="crop-body">
+        <div class="seg" id="cropMode" role="radiogroup" aria-label="최종 비율">
+          <button type="button" role="radio" aria-checked="true" data-cm="auto">자동</button>
+          <button type="button" role="radio" aria-checked="false" data-cm="4:5">4:5 세로</button>
+          <button type="button" role="radio" aria-checked="false" data-cm="4:3">4:3 가로</button>
+          <button type="button" role="radio" aria-checked="false" data-cm="1:1">1:1</button>
+        </div>
+        <label class="crop-drop" id="cropDrop"><input type="file" id="cropFiles" accept="image/*" multiple hidden>
+          <b>여기에 이미지를 끌어다 놓거나 눌러서 고르세요 (Ctrl+V 붙여넣기도 돼요)</b><span>여러 장 한 번에 · 자동: 3:4 → 4:5, 5:4 → 4:3, 그 외는 아래 7% 자르기</span></label>
+        <div class="crop-grid" id="cropGrid"></div>
+      </div>
+      <div class="row-end" style="margin:12px 24px 20px"><button class="btn" type="button" id="cropClear">비우기</button><button class="btn primary" type="button" id="cropSave" disabled>모두 저장</button></div>
+    </form>`;
+    document.body.appendChild(d);
+    let mode = "auto"; const files = [];
+    const run = async () => {
+      CROPPED.forEach(x => URL.revokeObjectURL(x.src)); CROPPED = [];
+      for (const f of files) { try { CROPPED.push(await cropFile(f, mode)); } catch { toast(f.name + " 은(는) 이미지로 읽지 못했어요"); } }
+      $("#cropGrid").innerHTML = CROPPED.map((x, i) => `<figure><img src="${x.src}" alt=""><figcaption>${esc(x.name)}<br><small>${x.orig} → ${x.w}×${x.h}</small><br><button class="btn sm" type="button" data-crop-save="${i}">저장</button></figcaption></figure>`).join("");
+      $("#cropSave").disabled = !CROPPED.length;
+    };
+    const add = list => { for (const f of list) if (/^image\//.test(f.type)) files.push(f); run(); };
+    const save = x => { const a = document.createElement("a"); a.href = x.src; a.download = x.name; document.body.appendChild(a); a.click(); document.body.removeChild(a); };
+    d.addEventListener("click", e => {
+      const m = e.target.closest("[data-cm]");
+      if (m) { mode = m.dataset.cm; $$("#cropMode [data-cm]").forEach(b => b.setAttribute("aria-checked", b === m)); run(); }
+      const s = e.target.closest("[data-crop-save]");
+      if (s) save(CROPPED[+s.dataset.cropSave]);
+    });
+    $("#cropFiles").onchange = e => add(e.target.files);
+    const drop = $("#cropDrop");
+    drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("over"); });
+    drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+    drop.addEventListener("drop", e => { e.preventDefault(); drop.classList.remove("over"); add(e.dataTransfer.files); });
+    d.addEventListener("paste", e => add([...e.clipboardData.files]));
+    $("#cropClear").onclick = () => { files.length = 0; run(); };
+    $("#cropSave").onclick = async () => { for (const x of CROPPED) { save(x); await new Promise(r => setTimeout(r, 250)); } toast(`${CROPPED.length}장 저장했어요 (다운로드 폴더)`); };
+  }
+  openDialog(d);
+}
+document.addEventListener("click", e => { if (e.target.closest("[data-crop-open]")) cropDialog(); });
