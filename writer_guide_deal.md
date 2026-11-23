@@ -94,6 +94,16 @@
 - 여행지·장소 글이면 `※ 본문 이미지 중 일부는 AI로 만든 이미지로, 실제 장소 모습과 다를 수 있습니다.`로 씁니다.
 - 이미지 캡션마다 따로 붙이지 않고 이 한 줄로 안내합니다(본문 흐름을 끊지 않게).
 
+**즉석사진(폴라로이드) 프레임 — 모든 이미지 공통 · 반드시 (대표 이미지 포함)**
+모든 이미지는 즉석사진처럼 만듭니다: 바깥에 **얇은 하얀 테두리**, **아래 여백은 더 두껍게**, 그 아래 여백 안에 **이미지 설명 한 줄**.
+- 테두리: 위·왼쪽·오른쪽은 얇게(가로 폭의 약 4%), 아래는 두껍게(세로 높이의 약 15%). 따뜻한 흰색(#FAFAF7) 무광 종이 질감.
+- 캔버스 전체가 사진 한 장(프레임 포함)입니다: 바깥 배경·책상·그림자·기울임·손에 든 모습 없이, 정면에서 반듯하게 꽉 차게.
+- 아래 여백 글자(캡션): 그 이미지의 '전하는 핵심'을 **간명하게 한 줄 12~22자**(예: "동궁과 월지, 해 진 직후 30분이 가장 선명해요" 처럼 정보가 있는 문장). 짙은 회색(#333333) 깔끔한 한글 고딕체(또는 손글씨 느낌 펜체 중 글 분위기에 맞게 하나로 통일), 가운데 정렬, 여백 세로 가운데.
+- 사진 속 글자(대표 이미지 헤드라인, 정보 패널)는 기존 규칙대로 사진 안에 둡니다. 캡션은 그것과 겹치지 않게 아래 여백에만.
+- 각 프롬프트 위에 `- 캡션: "…"`을 따로 적습니다(한글이 깨지면 사용자가 직접 입력할 수 있게).
+- 프롬프트에 넣을 문장(영어, 비율 줄 바로 다음): `Present the whole image as a single instant-film print (Polaroid style) filling the entire canvas edge to edge: a thin warm-white matte border (about 4% of the width) on the top, left and right, and a thicker white bottom border (about 15% of the height). No background, table, shadow, tilt or hands around the print. Inside the bottom border, centered, write exactly this Korean caption in clean dark-gray (#333333) lettering on one line: "캡션". No other text in the border.`
+- 프롬프트 끝의 금지 문구는 `no text` 대신 `no extra text other than the caption in the bottom border (and the headline/info panel described above)`로 씁니다.
+
 **이미지 최우선 원칙 (아래 모든 이미지 규칙보다 먼저 · 쓸데없는 이미지 금지)**
 사용자가 가장 싫어하는 것은 **내용과 상관없는 그럴싸한 이미지**입니다. 이미지는 장식이 아니라 "본문을 안 읽고 이미지만 봐도 그 부분의 핵심이 짐작되는" 정보입니다.
 
