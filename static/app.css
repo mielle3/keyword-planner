@@ -1624,3 +1624,6 @@ html { overflow-y: scroll; scrollbar-gutter: stable; }
 .crop-grid img { width: 100%; display: block; }
 .crop-grid figcaption { font-size: 12px; margin-top: 6px; word-break: break-all; }
 .crop-grid figcaption .btn { margin-top: 6px; }
+.crop-amt { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; font-size: 13.5px; flex-wrap: wrap; }
+.crop-amt input { width: 220px; }
+.crop-amt span { font-size: 12px; }

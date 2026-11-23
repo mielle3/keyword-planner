@@ -111,18 +111,18 @@
 - 가공 허용: 사진 위에 장소 이름표·이동 시간·입장료 같은 확인된 정보를 반투명 패널로 얹기, 두 장소 사진 좌우 비교.
 
 **Gemini 워터마크 자르기 구도 (모든 이미지 프롬프트에 반드시 · 예외 없음)**
-Gemini는 이미지 오른쪽 아래에 로고를 넣습니다. 사용자가 **아래쪽 띠만 잘라 내면** 로고가 사라지고 정확한 비율이 되도록, 모든 프롬프트를 아래처럼 씁니다. 구석을 일부러 비우는 게 아니라, 배경이 아래로 자연스럽게 이어지게 하는 방식입니다.
+Gemini는 이미지 오른쪽 아래(아래 끝에서 약 10~20%, 오른쪽 끝에서 약 13% 지점)에 로고를 넣습니다. 프로그램의 [✂ 워터마크 자르기]가 아래 약 18%를 잘라 냅니다. 사용자가 **아래쪽 띠만 잘라 내면** 로고가 사라지고 정확한 비율이 되도록, 모든 프롬프트를 아래처럼 씁니다. 구석을 일부러 비우는 게 아니라, 배경이 아래로 자연스럽게 이어지게 하는 방식입니다.
 
 | 최종 비율 | Gemini에 요청할 비율 (프롬프트 첫 줄) | 잘라 낼 아래 띠 |
 | :--- | :--- | :--- |
-| 4:5 (세로) | `Aspect ratio 3:4.` | 아래 6.25% → 정확히 4:5 |
-| 4:3 (가로) | `Aspect ratio 5:4.` | 아래 6.25% → 정확히 4:3 |
-| 1:1 (정사각) | `Aspect ratio 1:1.` | 아래 7% → 거의 정사각 |
+| 4:5 (세로) | `Aspect ratio 2:3.` | 아래 약 18% → 4:5 |
+| 4:3 (가로) | `Aspect ratio 5:4.` | 아래 약 18% + 좌우 조금 → 4:3 |
+| 1:1 (정사각) | `Aspect ratio 4:5.` | 아래 약 20% → 1:1 |
 
 1. 프롬프트 첫 줄은 위 표의 **요청 비율**입니다(최종 비율이 아님).
-2. 둘째 줄에 이 구도 문장을 그대로 넣습니다: `Composition: keep the main subject, all text and any info panels within the top 90% of the frame; the bottom 10% is a natural, seamless continuation of the background (such as the table surface, floor, ground, sky or water) with nothing important in it, so it can be cropped off cleanly.`
-3. 헤드라인·정보 패널·라벨·화살표는 화면 아래쪽 15% 안에 두지 않습니다(대표 이미지 헤드라인은 위쪽이나 가운데). 피사체가 아래 가장자리에 걸려 잘리지 않게 합니다.
-4. 각 프롬프트 위 설명 줄에 `- 자르기: 아래 6% 잘라 최종 4:5`처럼 한 줄 적습니다.
+2. 둘째 줄에 이 구도 문장을 그대로 넣습니다: `Composition: keep the main subject, all text and any info panels within the top 78% of the frame and away from the right edge; the bottom 22% is a natural, seamless continuation of the background (such as the table surface, floor, ground, sky or water) with nothing important in it, so it can be cropped off cleanly.`
+3. 헤드라인·정보 패널·라벨·화살표는 화면 아래쪽 25% 안에 두지 않습니다(대표 이미지 헤드라인은 위쪽이나 가운데). 피사체가 아래 가장자리에 걸려 잘리지 않게 합니다.
+4. 각 프롬프트 위 설명 줄에 `- 자르기: 아래 18% 잘라 최종 4:5`처럼 한 줄 적습니다.
 5. 프롬프트 끝의 금지 문구에 `no watermark`는 그대로 둡니다(로고 자리는 위 구도로 해결).
 
 **대표 이미지(#1) — 글 전체의 핵심 요약 + 시인성**
@@ -140,7 +140,7 @@ Gemini는 이미지 오른쪽 아래에 로고를 넣습니다. 사용자가 **�
 - #2·#3 예: 작품 추천 글 → 작품마다의 상징 소품을 모은 플랫레이에 작품명 라벨 / 서점 비교 → 세 서점의 쇼핑백·영수증을 나란히 놓고 "10%·5%" 라벨 / 여행기 → 그 장소의 대표 풍경을 미니어처 디오라마로.
 - 실제 장면이 도움이 되면 맛깔스럽고 청량한 실사(따뜻한 자연광, 손만 보이게, 얕은 피사계 심도)도 좋지만, 그때도 **본문의 고유 대상**이 주인공이어야 합니다.
 - **실제 영화 포스터·스틸컷·배우 얼굴·책 표지·브랜드 로고를 재현하지 않습니다.** 작품은 작품 속 상징(예: 《용의자 X의 헌신》 → 수학 공식이 적힌 칠판과 도시락)으로 표현합니다.
-- 프롬프트는 영어, 첫 줄은 '워터마크 자르기 구도' 표의 요청 비율(최종 4:5 → `Aspect ratio 3:4.`, 4:3 → `5:4`, 1:1 → `1:1`) + 둘째 줄 구도 문장, `~~~` 블록 하나씩. 이미지 속 한글은 큰따옴표로 정확히. 끝에 `Render all Korean text exactly as written. No real movie posters, no real actors' faces, no logos, no extra text, no watermark.`
+- 프롬프트는 영어, 첫 줄은 '워터마크 자르기 구도' 표의 요청 비율(최종 4:5 → `Aspect ratio 2:3.`, 4:3 → `5:4`, 1:1 → `4:5`) + 둘째 줄 구도 문장, `~~~` 블록 하나씩. 이미지 속 한글은 큰따옴표로 정확히. 끝에 `Render all Korean text exactly as written. No real movie posters, no real actors' faces, no logos, no extra text, no watermark.`
 
 ---
 
@@ -231,8 +231,8 @@ Gemini는 이미지 오른쪽 아래에 로고를 넣습니다. 사용자가 **�
 - 글 전체 요약: (한 문장)
 - 이미지 속 한글: 헤드라인 "(12~18자)"
 ~~~
-Aspect ratio 3:4.
-Composition: keep the main subject, all text and any info panels within the top 90% of the frame; the bottom 10% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
+Aspect ratio 2:3.
+Composition: keep the main subject, all text and any info panels within the top 78% of the frame and away from the right edge; the bottom 22% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
 (최종 4:5 · 확정된 영문 프롬프트)
 ~~~
 
@@ -240,8 +240,8 @@ Composition: keep the main subject, all text and any info panels within the top 
 - 전하는 핵심: (본문 문장 하나)
 - 표현 방식: (예: 플랫레이 + 라벨)
 ~~~
-Aspect ratio 3:4.
-Composition: keep the main subject, all text and any info panels within the top 90% of the frame; the bottom 10% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
+Aspect ratio 2:3.
+Composition: keep the main subject, all text and any info panels within the top 78% of the frame and away from the right edge; the bottom 22% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
 (최종 4:5 · 확정된 영문 프롬프트)
 ~~~
 
@@ -249,8 +249,8 @@ Composition: keep the main subject, all text and any info panels within the top 
 - 전하는 핵심: (본문 문장 하나)
 - 표현 방식: (#2와 다른 방식)
 ~~~
-Aspect ratio 3:4.
-Composition: keep the main subject, all text and any info panels within the top 90% of the frame; the bottom 10% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
+Aspect ratio 2:3.
+Composition: keep the main subject, all text and any info panels within the top 78% of the frame and away from the right edge; the bottom 22% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
 (최종 4:5 · 확정된 영문 프롬프트)
 ~~~
 

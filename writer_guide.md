@@ -290,18 +290,18 @@
 - 가공 허용: 사진 위에 장소 이름표·이동 시간·입장료 같은 확인된 정보를 반투명 패널로 얹기, 두 장소 사진 좌우 비교.
 
 **Gemini 워터마크 자르기 구도 (모든 이미지 프롬프트에 반드시 · 예외 없음)**
-Gemini는 이미지 오른쪽 아래에 로고를 넣습니다. 사용자가 **아래쪽 띠만 잘라 내면** 로고가 사라지고 정확한 비율이 되도록, 모든 프롬프트를 아래처럼 씁니다. 구석을 일부러 비우는 게 아니라, 배경이 아래로 자연스럽게 이어지게 하는 방식입니다.
+Gemini는 이미지 오른쪽 아래(아래 끝에서 약 10~20%, 오른쪽 끝에서 약 13% 지점)에 로고를 넣습니다. 프로그램의 [✂ 워터마크 자르기]가 아래 약 18%를 잘라 냅니다. 사용자가 **아래쪽 띠만 잘라 내면** 로고가 사라지고 정확한 비율이 되도록, 모든 프롬프트를 아래처럼 씁니다. 구석을 일부러 비우는 게 아니라, 배경이 아래로 자연스럽게 이어지게 하는 방식입니다.
 
 | 최종 비율 | Gemini에 요청할 비율 (프롬프트 첫 줄) | 잘라 낼 아래 띠 |
 | :--- | :--- | :--- |
-| 4:5 (세로) | `Aspect ratio 3:4.` | 아래 6.25% → 정확히 4:5 |
-| 4:3 (가로) | `Aspect ratio 5:4.` | 아래 6.25% → 정확히 4:3 |
-| 1:1 (정사각) | `Aspect ratio 1:1.` | 아래 7% → 거의 정사각 |
+| 4:5 (세로) | `Aspect ratio 2:3.` | 아래 약 18% → 4:5 |
+| 4:3 (가로) | `Aspect ratio 5:4.` | 아래 약 18% + 좌우 조금 → 4:3 |
+| 1:1 (정사각) | `Aspect ratio 4:5.` | 아래 약 20% → 1:1 |
 
 1. 프롬프트 첫 줄은 위 표의 **요청 비율**입니다(최종 비율이 아님).
-2. 둘째 줄에 이 구도 문장을 그대로 넣습니다: `Composition: keep the main subject, all text and any info panels within the top 90% of the frame; the bottom 10% is a natural, seamless continuation of the background (such as the table surface, floor, ground, sky or water) with nothing important in it, so it can be cropped off cleanly.`
-3. 헤드라인·정보 패널·라벨·화살표는 화면 아래쪽 15% 안에 두지 않습니다(대표 이미지 헤드라인은 위쪽이나 가운데). 피사체가 아래 가장자리에 걸려 잘리지 않게 합니다.
-4. 각 프롬프트 위 설명 줄에 `- 자르기: 아래 6% 잘라 최종 4:5`처럼 한 줄 적습니다.
+2. 둘째 줄에 이 구도 문장을 그대로 넣습니다: `Composition: keep the main subject, all text and any info panels within the top 78% of the frame and away from the right edge; the bottom 22% is a natural, seamless continuation of the background (such as the table surface, floor, ground, sky or water) with nothing important in it, so it can be cropped off cleanly.`
+3. 헤드라인·정보 패널·라벨·화살표는 화면 아래쪽 25% 안에 두지 않습니다(대표 이미지 헤드라인은 위쪽이나 가운데). 피사체가 아래 가장자리에 걸려 잘리지 않게 합니다.
+4. 각 프롬프트 위 설명 줄에 `- 자르기: 아래 18% 잘라 최종 4:5`처럼 한 줄 적습니다.
 5. 프롬프트 끝의 금지 문구에 `no watermark`는 그대로 둡니다(로고 자리는 위 구도로 해결).
 
 **대표 이미지(#1) — 글 전체의 핵심 요약 + 시인성**
@@ -370,7 +370,7 @@ Gemini는 이미지 오른쪽 아래에 로고를 넣습니다. 사용자가 **�
 | D. 데이터 저널리즘 | 통계·비교·순위·지역별 수치 | 신문 인포그래픽 느낌, 큰 숫자 + 정밀한 차트, 제한된 2색(먹색 + 강조 1색), 미세한 종이 질감 |
 
 **세트 디자인 틀 (#2~#6 공통 · 그 프롬프트들에 똑같이 적음)**
-- 비율: 최종 `4:5` 세로 (1080×1350) · 요청은 `3:4` 후 아래 띠 자르기. 고른 아트 디렉션의 배경·질감·타이포를 6장 모두 똑같이 반복해 적습니다.
+- 비율: 최종 `4:5` 세로 (1080×1350) · 요청은 `2:3` 후 아래 띠 자르기. 고른 아트 디렉션의 배경·질감·타이포를 6장 모두 똑같이 반복해 적습니다.
 - **시선을 잡는 위계:** 카드마다 주인공 하나 — 핵심 숫자(카드 높이의 25~35% 크기의 초대형 숫자) 또는 핵심 비교 한 쌍. 나머지 글자는 그 1/4 이하 크기.
 - **그림 요소 1개:** 카드마다 주제를 상징하는 사실적인 3D 오브젝트나 잘라 낸 사진 요소 하나를 데이터 옆에 둡니다(예: 등급컷 → 답안지, 집값 → 집 모형, 책 → 펼친 책). 글자와 차트만 있는 카드는 만들지 않습니다.
 - **구성:** 상단에 작은 시리즈 표시(`01 / 05`)와 카테고리 라벨 → 카드 제목(18자 이내) → 주인공 숫자·차트 → 하단 바닥줄(작게: "출처: ○○ · 2026.11.21 기준"). 좌우 비대칭 배치도 좋습니다.
@@ -395,7 +395,7 @@ Gemini는 이미지 오른쪽 아래에 로고를 넣습니다. 사용자가 **�
 - 실제 브랜드·기관 로고, 실존 인물 얼굴, 실제 앱 화면을 지어낸 그림, 워터마크
 
 **Gemini 프롬프트 작성 규칙**
-- 프롬프트마다 첫 줄에 '워터마크 자르기 구도' 표의 **요청 비율**(최종 4:5면 `Aspect ratio 3:4.`), 둘째 줄에 구도 문장을 적습니다. 지시는 영어로, 이미지에 들어갈 한글은 큰따옴표로 정확히 적습니다.
+- 프롬프트마다 첫 줄에 '워터마크 자르기 구도' 표의 **요청 비율**(최종 4:5면 `Aspect ratio 2:3.`), 둘째 줄에 구도 문장을 적습니다. 지시는 영어로, 이미지에 들어갈 한글은 큰따옴표로 정확히 적습니다.
 - 각 프롬프트는 `~~~`로 감싼 블록 하나에 담습니다. **단독으로 실행되어야 하므로** 세트 디자인 틀(아트 디렉션·구성·HEX 4색·질감·타이포)을 6개 프롬프트 모두에 그대로 반복해 적습니다. "앞 이미지와 같게" 같은 참조를 쓰지 않습니다.
 - 데이터는 구체적으로: 막대그래프면 항목명·값·막대 순서·축 표시 여부, 표 카드면 열 이름과 행 값 전부, 큰 숫자면 숫자·단위·설명 문구를 적습니다.
 - 확정된 지시만 남깁니다. `only if`, `or`로 고르게 하는 선택지, 빈 괄호·빈 따옴표를 남기지 않습니다.
@@ -585,8 +585,8 @@ Gemini는 이미지 오른쪽 아래에 로고를 넣습니다. 사용자가 **�
 - 메인 비주얼: (글 전체를 함축하는 상징 피사체 하나와 스타일: 하이엔드 3D 또는 시네마틱 실사)
 - 이미지 속 한글: 헤드라인 "(12~16자, 강조 단어 표시)" / 서브 카피 "(한 줄, 선택)" / 배지 "(확인된 사실, 선택)"
 ~~~
-Aspect ratio 3:4.
-Composition: keep the main subject, all text and any info panels within the top 90% of the frame; the bottom 10% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
+Aspect ratio 2:3.
+Composition: keep the main subject, all text and any info panels within the top 78% of the frame and away from the right edge; the bottom 22% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
 (최종 4:5 · 확정된 영문 프롬프트: striking cinematic poster-style cover image for a Korean blog post, NOT an infographic card. 메인 피사체 하나와 행동·재질을 구체적으로(예: a glossy 3D rendered answer sheet glowing with a red "1등급" stamp), 화면의 55~65% 크기로 중앙 하단 배치, dramatic rim lighting and soft glow, shallow depth of field, vivid high-contrast gradient background (HEX 2색), subtle light particles/bokeh only. 상단에 very bold Korean headline "…" in white with strong drop shadow, 강조 단어 "…" in (강조색 HEX), optional small subcopy "…" and one pill badge "…". Keep all key text and the subject inside the central square safe area, 10% empty margin, clean composition with a single focal point. Render all Korean text exactly as written, crisp and large. No infographic elements, no charts, no tables, no extra or random text, no logos, no real people's faces, no watermark.)
 ~~~
 - 한글이 깨지면: 같은 프롬프트 끝에 "no text at all, keep the top 30% empty for a headline"을 붙여 비주얼만 만들고, 헤드라인은 캔바·미리캔버스에서 입력
@@ -594,40 +594,40 @@ Composition: keep the main subject, all text and any info panels within the top 
 [📸 이미지 #2: 섹션 1 카드 · (카드 형식) (4:5)]
 - 카드 문구: 머리띠 "(라벨)" / 제목 "(18자 이내)" / 데이터 "(항목: 값 …)" / 바닥줄 "(출처 · 기준일)"
 ~~~
-Aspect ratio 3:4.
-Composition: keep the main subject, all text and any info panels within the top 90% of the frame; the bottom 10% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
+Aspect ratio 2:3.
+Composition: keep the main subject, all text and any info panels within the top 78% of the frame and away from the right edge; the bottom 22% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
 (최종 4:5 · 확정된 영문 프롬프트: 세트 디자인 틀 전체 반복 + 카드 형식(예: horizontal bar chart with 4 bars) + 항목명·값·순서·강조할 값과 강조색 + 상징 3D 오브젝트 1개. Render all Korean text exactly as written, crisp and legible. No extra or random text, no logos, no real people's faces, no fabricated app interfaces, no watermark.)
 ~~~
 
 [📸 이미지 #3: 섹션 2 카드 · (카드 형식) (4:5)]
 - 카드 문구: (위와 같은 방식)
 ~~~
-Aspect ratio 3:4.
-Composition: keep the main subject, all text and any info panels within the top 90% of the frame; the bottom 10% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
+Aspect ratio 2:3.
+Composition: keep the main subject, all text and any info panels within the top 78% of the frame and away from the right edge; the bottom 22% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
 (최종 4:5 · 확정된 영문 프롬프트)
 ~~~
 
 [📸 이미지 #4: 섹션 3 카드 · (카드 형식) (4:5)]
 - 카드 문구: (…)
 ~~~
-Aspect ratio 3:4.
-Composition: keep the main subject, all text and any info panels within the top 90% of the frame; the bottom 10% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
+Aspect ratio 2:3.
+Composition: keep the main subject, all text and any info panels within the top 78% of the frame and away from the right edge; the bottom 22% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
 (최종 4:5 · 확정된 영문 프롬프트)
 ~~~
 
 [📸 이미지 #5: 섹션 4 카드 · (카드 형식) (4:5)]
 - 카드 문구: (…)
 ~~~
-Aspect ratio 3:4.
-Composition: keep the main subject, all text and any info panels within the top 90% of the frame; the bottom 10% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
+Aspect ratio 2:3.
+Composition: keep the main subject, all text and any info panels within the top 78% of the frame and away from the right edge; the bottom 22% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
 (최종 4:5 · 확정된 영문 프롬프트)
 ~~~
 
 [📸 이미지 #6: 섹션 5 카드 · 체크리스트 (4:5)]
 - 카드 문구: (…)
 ~~~
-Aspect ratio 3:4.
-Composition: keep the main subject, all text and any info panels within the top 90% of the frame; the bottom 10% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
+Aspect ratio 2:3.
+Composition: keep the main subject, all text and any info panels within the top 78% of the frame and away from the right edge; the bottom 22% is a natural, seamless continuation of the background ... so it can be cropped off cleanly.
 (최종 4:5 · 확정된 영문 프롬프트)
 ~~~
 

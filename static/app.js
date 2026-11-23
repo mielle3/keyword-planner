@@ -1994,23 +1994,26 @@ if ($("#planBtn")) {
 
 /* ---------- Gemini 이미지 워터마크 자르기 (내 PC 안에서만 처리 · 서버로 보내지 않음) ---------- */
 const CROP_TARGETS = { auto: null, "4:5": 4 / 5, "4:3": 4 / 3, "1:1": 1 };
+let CROP_BOTTOM = 0.18;  // Gemini 로고: 아래 끝에서 약 10~13% · 오른쪽 끝에서 약 13% → 기본 아래 18% 자름 (창에서 10~30% 조절)
 function cropBox(w, h, mode) {
-  // 아래쪽 띠를 잘라 로고를 없앰. 자동: 요청 비율(3:4·5:4)을 보고 최종 비율(4:5·4:3)로, 그 외는 아래 7%
+  // 1) 아래 16% 자르기(로고 제거) 2) 목표 비율이면: 너무 길쭉하면 아래를 더, 너무 넓으면 오른쪽(로고 쪽)을 잘라 맞춤
   const r = w / h;
   let target = CROP_TARGETS[mode];
-  if (!target) target = Math.abs(r - 0.75) < 0.03 ? 0.8 : Math.abs(r - 1.25) < 0.03 ? 4 / 3 : null;
-  let nh = target ? Math.round(w / target) : Math.round(h * 0.93);
-  if (nh > h * 0.95) nh = Math.round(h * 0.93);  // 최소 5~7%는 잘라야 로고가 확실히 빠짐
-  if (nh < h * 0.6) nh = Math.round(h * 0.6);
-  return { sw: w, sh: nh };
+  if (!target) target = Math.abs(r - 2 / 3) < 0.03 ? 0.8 : Math.abs(r - 0.75) < 0.03 ? 0.8 : Math.abs(r - 1.25) < 0.03 ? 4 / 3 : Math.abs(r - 0.8) < 0.03 ? 1 : null;
+  let sh = Math.round(h * (1 - CROP_BOTTOM)), sw = w;
+  if (target) {
+    if (sw / sh < target) sh = Math.round(sw / target);      // 아직 세로로 길면 아래를 더 자름
+    else if (sw / sh > target) sw = Math.round(sh * target); // 넓으면 좌우를 똑같이 잘라 비율 맞춤 (제목이 가운데 유지)
+  }
+  return { sx: Math.round((w - sw) / 2), sw, sh };
 }
 async function cropFile(file, mode) {
   const url = URL.createObjectURL(file);
   const img = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = url; });
-  const { sw, sh } = cropBox(img.naturalWidth, img.naturalHeight, mode);
+  const { sx, sw, sh } = cropBox(img.naturalWidth, img.naturalHeight, mode);
   const scale = Math.min(1, 1600 / sw);
   const c = document.createElement("canvas"); c.width = Math.round(sw * scale); c.height = Math.round(sh * scale);
-  c.getContext("2d").drawImage(img, 0, 0, sw, sh, 0, 0, c.width, c.height);
+  c.getContext("2d").drawImage(img, sx, 0, sw, sh, 0, 0, c.width, c.height);
   URL.revokeObjectURL(url);
   const blob = await new Promise(ok => c.toBlob(ok, "image/jpeg", 0.92));
   return { blob, w: c.width, h: c.height, src: URL.createObjectURL(blob), name: (file.name.replace(/\.[^.]+$/, "").replace(/[^\w.-]+/g, "_").replace(/^_+|_+$/g, "") || "image") + "_crop.jpg", orig: `${img.naturalWidth}×${img.naturalHeight}` };
@@ -2030,8 +2033,9 @@ function cropDialog() {
           <button type="button" role="radio" aria-checked="false" data-cm="4:3">4:3 가로</button>
           <button type="button" role="radio" aria-checked="false" data-cm="1:1">1:1</button>
         </div>
+        <label class="crop-amt">아래에서 자를 양 <input type="range" id="cropAmt" min="10" max="30" step="1" value="18"> <b id="cropAmtV">18%</b> <span class="muted">로고가 남으면 오른쪽으로 늘리세요</span></label>
         <label class="crop-drop" id="cropDrop"><input type="file" id="cropFiles" accept="image/*" multiple hidden>
-          <b>여기에 이미지를 끌어다 놓거나 눌러서 고르세요 (Ctrl+V 붙여넣기도 돼요)</b><span>여러 장 한 번에 · 자동: 3:4 → 4:5, 5:4 → 4:3, 그 외는 아래 7% 자르기</span></label>
+          <b>여기에 이미지를 끌어다 놓거나 눌러서 고르세요 (Ctrl+V 붙여넣기도 돼요)</b><span>여러 장 한 번에 · 아래를 잘라 로고를 없애고, 자동: 2:3·3:4 → 4:5, 5:4 → 4:3, 4:5 → 1:1 (넓으면 좌우를 똑같이 잘라 맞춤)</span></label>
         <div class="crop-grid" id="cropGrid"></div>
       </div>
       <div class="row-end" style="margin:12px 24px 20px"><button class="btn" type="button" id="cropClear">비우기</button><button class="btn primary" type="button" id="cropSave" disabled>모두 저장</button></div>
@@ -2053,6 +2057,7 @@ function cropDialog() {
       if (s) save(CROPPED[+s.dataset.cropSave]);
     });
     $("#cropFiles").onchange = e => add(e.target.files);
+    let amtT; $("#cropAmt").oninput = e => { CROP_BOTTOM = +e.target.value / 100; $("#cropAmtV").textContent = e.target.value + "%"; clearTimeout(amtT); amtT = setTimeout(run, 150); };
     const drop = $("#cropDrop");
     drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("over"); });
     drop.addEventListener("dragleave", () => drop.classList.remove("over"));
