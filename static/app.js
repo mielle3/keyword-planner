@@ -2033,7 +2033,7 @@ function cropDialog() {
           <button type="button" role="radio" aria-checked="false" data-cm="4:3">4:3 가로</button>
           <button type="button" role="radio" aria-checked="false" data-cm="1:1">1:1</button>
         </div>
-        <label class="crop-amt">아래에서 자를 양 <input type="range" id="cropAmt" min="10" max="30" step="1" value="18"> <b id="cropAmtV">18%</b> <span class="muted">로고가 남으면 오른쪽으로 늘리세요</span></label>
+        <label class="crop-amt">아래에서 자를 양 <input type="range" id="cropAmt" min="0" max="30" step="1" value="18"> <b id="cropAmtV">18%</b> <span class="muted">Gemini 로고가 남으면 늘리고, 로고 없는 이미지(ChatGPT 등)는 0%로 — 비율만 맞춰요</span></label>
         <label class="crop-drop" id="cropDrop"><input type="file" id="cropFiles" accept="image/*" multiple hidden>
           <b>여기에 이미지를 끌어다 놓거나 눌러서 고르세요 (Ctrl+V 붙여넣기도 돼요)</b><span>여러 장 한 번에 · 아래를 잘라 로고를 없애고, 자동: 2:3·3:4 → 4:5, 5:4 → 4:3, 4:5 → 1:1 (넓으면 좌우를 똑같이 잘라 맞춤)</span></label>
         <div class="crop-grid" id="cropGrid"></div>
