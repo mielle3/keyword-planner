@@ -54,6 +54,7 @@
             <button role="radio" aria-checked="true" data-view="front">순위별</button>
             <button role="radio" aria-checked="false" data-view="fields">분야별</button>
           </div>
+          <button class="btn" type="button" id="planBtn" title="요일 코너·최근 7일 이슈·유효성 검증으로 오늘 쓸 글 1건(+예비 1건)을 AI가 제안">📅 오늘의 글 계획</button>
           <button class="btn primary" id="runBtn">
             <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
             오늘 추천 받기<small class="run-est" id="runEst"></small>
@@ -563,6 +564,36 @@
       <span class="muted" id="pickCount">0개 선택</span>
       <div class="row-end"><button class="btn" type="button" id="pickNone">전체 해제</button><button class="btn primary" id="pickSave" value="save">저장</button></div>
     </div>
+  </form>
+</dialog>
+
+<dialog id="planDialog" aria-labelledby="planTitle">
+  <form method="dialog" class="manual-form">
+    <div class="dlg-head">
+      <div>
+        <h2 id="planTitle">📅 오늘의 글 계획</h2>
+        <p class="muted" id="planSub">요일 코너 · 최근 7일 이슈 · 유효성 검증으로 오늘 쓸 글 1건(+예비 1건)을 제안해요. 최근 발행 글·초안·유입 검색어는 프로그램이 자동으로 넣어요.</p>
+      </div>
+      <button class="x-fixed" value="cancel" aria-label="닫기 (ESC)" title="닫기 (ESC)">✕</button>
+    </div>
+    <div class="plan-actions">
+      <button class="btn dark" type="button" id="planRun">AI로 계획 세우기</button>
+      <button class="btn" type="button" id="planCopy">요청문 복사 (붙여넣기용)</button>
+      <a class="btn" href="https://gemini.google.com/app" target="_blank" rel="noopener">Gemini 열기 ↗</a>
+      <span class="muted" id="planState" style="font-size:13px"></span>
+    </div>
+    <div class="plan-body dv-body" id="planOut"><p class="muted">아직 만든 계획이 없어요. [AI로 계획 세우기]를 누르세요 (웹 검색 포함 2~4분).</p></div>
+    <details class="guide-box" id="planPasteBox">
+      <summary>붙여넣기 방식: Gemini가 쓴 계획 붙여 넣기</summary>
+      <textarea id="planPaste" rows="6" placeholder="Gemini 답변 전체를 붙여 넣고 [보기]를 누르세요"></textarea>
+      <div class="row-end"><button class="btn" type="button" id="planPasteGo">보기</button></div>
+    </details>
+    <details class="guide-box">
+      <summary>계획 지침 고치기 (요일 코너·블로그 주제·출력 형식)</summary>
+      <textarea id="planGuide" rows="16" spellcheck="false"></textarea>
+      <div class="row-end"><button class="btn" type="button" id="planGuideReset">기본으로 되돌리기</button><button class="btn dark" type="button" id="planGuideSave">지침 저장</button></div>
+    </details>
+    <div class="row-end" style="margin-top:12px"><button class="btn primary" type="button" id="planWrite" disabled>✍ 이 주제로 글 기획</button></div>
   </form>
 </dialog>
 

@@ -1943,3 +1943,50 @@ if ($("#agyInstall")) {
     catch (e) { st(e.message); }
   };
 }
+
+
+/* ---------- 오늘의 글 계획 ---------- */
+let PLAN_TEXT = "";
+function planShow(md) {
+  PLAN_TEXT = md || "";
+  $("#planOut").innerHTML = PLAN_TEXT ? draftMd(PLAN_TEXT.replace(/^#{3,}\s+/gm, "## ")) : `<p class="muted">아직 만든 계획이 없어요.</p>`;
+  $("#planWrite").disabled = !PLAN_TEXT;
+}
+function planPick(md) {  // 계획에서 메인 키워드·주제·포맷·추천 제목 뽑기
+  const g = re => ((md.match(re) || [])[1] || "").replace(/\*\*/g, "").trim();
+  const kw = g(/메인 키워드\s*[:：]\s*([^\n/]+)/) || g(/주제\s*[:：]\s*([^\n]+)/);
+  const fmt = g(/포맷\s*[:：]\s*\[?\s*(\d)/);
+  const star = g(/^[-*]\s*★\s*([^\n]+)/m) || g(/([^\n]*★[^\n]*)/);
+  return { kw: kw.replace(/[()（）]/g, "").slice(0, 40), style: { "1": "info", "2": "essay", "3": "deal" }[fmt] || "", title: star.replace("★", "").trim() };
+}
+async function planLoad() {
+  try {
+    const s = await api("/api/plan");
+    if (document.activeElement !== $("#planGuide")) $("#planGuide").value = s.guide || "";
+    $("#planState").textContent = s.running ? `만드는 중… ${s.seconds}초` : s.error ? s.error : s.at ? `${s.at} 만든 계획` : "";
+    if (!s.running && s.text && s.text !== PLAN_TEXT) planShow(s.text);
+    return s;
+  } catch (e) { $("#planState").textContent = e.message; }
+}
+if ($("#planBtn")) {
+  $("#planBtn").onclick = async () => { openDialog($("#planDialog")); await planLoad(); };
+  $("#planRun").onclick = async () => {
+    try { await api("/api/plan", {}); } catch (e) { $("#planState").textContent = e.message; return; }
+    $("#planRun").disabled = true;
+    for (let i = 0; i < 450; i++) {
+      await new Promise(r => setTimeout(r, 2000));
+      const s = await planLoad(); if (!s || !s.running) break;
+    }
+    $("#planRun").disabled = false;
+  };
+  $("#planCopy").onclick = async () => { const r = await api("/api/plan", { prompt: true }); copy(r.prompt); toast("요청문을 복사했어요 · Gemini에 붙여 넣고, 답변은 아래 '붙여넣기 방식' 칸에 넣으세요"); };
+  $("#planPasteGo").onclick = () => { const t = $("#planPaste").value.trim(); if (t) planShow(t); };
+  $("#planGuideSave").onclick = async () => { await api("/api/plan", { guide: $("#planGuide").value }); toast("계획 지침을 저장했어요"); };
+  $("#planGuideReset").onclick = async () => { if (!confirm("기본 계획 지침으로 되돌릴까요?")) return; const r = await api("/api/plan", { guide: "" }); $("#planGuide").value = r.guide; toast("기본 지침으로 되돌렸어요"); };
+  $("#planWrite").onclick = () => {
+    const p = planPick(PLAN_TEXT);
+    $("#planDialog").close();
+    openPlan(null, { keyword: p.kw, style: p.style, from: "오늘의 글 계획",
+      note: (p.title ? `제목: ${p.title}\n` : "") + "아래 '오늘의 글 계획'의 주제·목차·핵심 데이터(출처·기준일)를 따라 쓰세요. (미확인) 수치는 공식 출처로 다시 확인하고, 확인 못 하면 쓰지 마세요.\n\n" + PLAN_TEXT.slice(0, 6000) });
+  };
+}

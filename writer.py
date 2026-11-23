@@ -1258,6 +1258,64 @@ def learn_voice(store, cfg, samples):
     return profile
 
 
+# ---------- 오늘의 글 계획 (요일 코너 + 유효성 검증) ----------
+WEEKDAYS = "월화수목금토일"
+
+
+def plan_guide(store):
+    """오늘의 글 계획 지침: 사용자가 고친 memory/오늘의_글_계획_지침.md 가 있으면 그것, 없으면 기본."""
+    p = store.mem_dir / "오늘의_글_계획_지침.md"
+    try:
+        t = p.read_text(encoding="utf-8").strip()
+        if t:
+            return t
+    except Exception:
+        pass
+    try:
+        return (Path(__file__).resolve().parent / "daily_plan_guide.md").read_text(encoding="utf-8").strip()
+    except Exception:
+        return fetch_repo_file("daily_plan_guide.md") or ""
+
+
+def save_plan_guide(store, text):
+    p = store.mem_dir / "오늘의_글_계획_지침.md"
+    store.mem_dir.mkdir(parents=True, exist_ok=True)
+    if text.strip():
+        p.write_text(text.strip() + "\n", encoding="utf-8")
+    elif p.exists():
+        p.unlink()
+
+
+def make_daily_plan(store, cfg, ctx, now):
+    """오늘 쓸 글 1건(+예비 1건) 계획을 마크다운으로."""
+    provider = cfg.get("ai_provider", "antigravity")
+    system = plan_guide(store).replace("{블로그 이름}", cfg.get("blog_name") or cfg.get("blog_id") or "내 블로그")
+    lines = [f"# 실행 기준 시각 (프로그램이 확인)", f"{now.strftime('%Y-%m-%d')} ({WEEKDAYS[now.weekday()]}) {now.strftime('%H:%M')} KST", ""]
+    if ctx.get("my_posts"):
+        lines += ["# 최근 블로그 발행 글 (겹치지 않게)"] + [f"- {t}" for t in ctx["my_posts"][:30]] + [""]
+    if ctx.get("drafts"):
+        lines += ["# 최근 2주 초안 (겹치지 않게)"] + [f"- {t}" for t in ctx["drafts"][:20]] + [""]
+    if ctx.get("my_keywords"):
+        lines += ["# 블로그 유입 검색어 (사용자가 넣은 것 · 이 검색어 중심으로 고르기)", ", ".join(ctx["my_keywords"][:20]), ""]
+    if ctx.get("today"):
+        lines += ["# 프로그램이 오늘 모은 추천 글감 (검색 수치 기반 · 참고용)"] + [f"- {t}" for t in ctx["today"][:15]] + [""]
+    if ctx.get("news"):
+        lines += ["# 최근 뉴스 제목 (참고용)"] + [f"- {t}" for t in ctx["news"][:15]] + [""]
+    user = "\n".join(lines) + "\n위 지침의 '5. 출력 형식' 그대로, 오늘의 블로그 글 예정을 작성하세요."
+    note = "파일을 만들거나 고치지 말고, 출력 형식의 마크다운만 답변으로 출력하세요. 수치는 웹 검색으로 공식 출처를 확인하고, 확인하지 못한 것은 (미확인)으로 표시하세요."
+    if provider == "antigravity":
+        text, _s, _m = call_agy(system, user, True, cfg.get("agy_path", ""), store.data, cfg.get("agy_model", ""), note=note)
+    elif provider == "claude_code":
+        text, _s, _m = call_claude_code(system, user + "\n\n" + note, True, cfg.get("claude_code_path", ""), store.data,
+                                        cfg.get("claude_code_model", "opus"))
+    else:
+        raise WriterError("오늘의 글 계획은 Antigravity(Gemini 자동 작성) 또는 Claude Max 연결이 필요해요. 붙여넣기 방식이면 [요청문 복사]를 쓰세요.")
+    text = (text or "").strip()
+    if "선정 주제" not in text:
+        raise WriterError("AI 답변에서 글 계획을 읽지 못했어요. 다시 시도해 주세요.")
+    return text, system, user
+
+
 IDEAS_SYSTEM = """# 역할
 당신은 네이버 블로그 콘텐츠 기획자입니다. 키워드 플래너가 모은 기록(검색 수치, 연관 검색어 묶음, 사용자의 기존 글·초안·인기 검색어, 최근 뉴스)을 검토해,
 이 블로그가 이어서 쓰기 좋은 **글 아이디어 8~10개**를 제안합니다.

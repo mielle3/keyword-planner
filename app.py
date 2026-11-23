@@ -88,7 +88,7 @@ EVERGREEN_CHECK_PATH = DATA / "evergreen_check.json"
 import writer as _writer  # AI 글쓰기 (작가 지침·블로그 기억·초안 보관·docx)
 WRITER = _writer.Store(DATA)
 KST = timezone(timedelta(hours=9))
-APP_VERSION = "2026.11.21-102"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
+APP_VERSION = "2026.11.21-103"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 DEFAULT_CONFIG = {
@@ -2222,6 +2222,61 @@ def open_agy_login():
     return exe
 
 
+# ---------- 오늘의 글 계획 ----------
+PLAN_JOB = {"running": False, "error": "", "text": "", "at": "", "started": 0}
+
+
+def plan_context(cfg):
+    ctx = {"my_posts": [p["title"] for p in (cfg.get("_my_posts") or [])[:30]],
+           "my_keywords": cfg.get("my_keywords", [])[:20]}
+    try:
+        cut = (datetime.now(KST) - timedelta(days=14)).isoformat()
+        ctx["drafts"] = [d.get("title") or d.get("keyword") for d in WRITER.index() if (d.get("created_at") or "") >= cut][:20]
+    except Exception:
+        ctx["drafts"] = []
+    try:
+        files = sorted(HISTORY.glob("*.json"), reverse=True) if HISTORY.exists() else []
+        d = json.loads(files[0].read_text(encoding="utf-8")) if files else {}
+        kws = []
+        for t in d.get("topics", []):
+            kws += [it.get("keyword") for it in t.get("items", [])[:3] if it.get("keyword")]
+        ctx["today"] = kws[:15]
+    except Exception:
+        ctx["today"] = []
+    try:
+        news = []
+        for sec, arr in news_cached(False).items():
+            news += [n.get("title", "") for n in arr[:3]]
+        ctx["news"] = news[:15]
+    except Exception:
+        ctx["news"] = []
+    return ctx
+
+
+def start_daily_plan():
+    if PLAN_JOB["running"]:
+        return
+    PLAN_JOB.update(running=True, error="", started=time.time())
+
+    def work():
+        try:
+            cfg = cfg_with_posts()
+            text, _sys, _user = _writer.make_daily_plan(WRITER, cfg, plan_context(cfg), datetime.now(KST))
+            PLAN_JOB.update(text=text, at=datetime.now(KST).strftime("%Y-%m-%d %H:%M"))
+            try:
+                (WRITER.mem_dir / "오늘의_글_계획_최근.md").write_text(text, encoding="utf-8")
+            except Exception:
+                pass
+        except _writer.WriterError as e:
+            PLAN_JOB["error"] = str(e)
+        except Exception as e:
+            traceback.print_exc()
+            PLAN_JOB["error"] = f"글 계획을 만들지 못했어요: {e}"
+        finally:
+            PLAN_JOB["running"] = False
+    threading.Thread(target=work, daemon=True).start()
+
+
 # ---------- 내 문체 학습 ----------
 VOICE_JOB = {"running": False, "error": "", "started": 0, "done": 0}
 
@@ -3064,6 +3119,14 @@ class Handler(BaseHTTPRequestHandler):
                                     "seconds": round(time.time() - st["started"]) if st.get("started") else 0})
         if path == "/api/agy/install":
             return self._send(200, AGY_JOB)
+        if path == "/api/plan":
+            if not PLAN_JOB["text"]:
+                try:
+                    PLAN_JOB["text"] = (WRITER.mem_dir / "오늘의_글_계획_최근.md").read_text(encoding="utf-8")
+                except Exception:
+                    pass
+            return self._send(200, {**PLAN_JOB, "seconds": round(time.time() - PLAN_JOB["started"]) if PLAN_JOB["running"] else 0,
+                                    "guide": _writer.plan_guide(WRITER)})
         if path == "/api/voice":
             return self._send(200, {"profile": WRITER.voice(), "path": str(WRITER.voice_path), "job": {**VOICE_JOB,
                                     "seconds": round(time.time() - VOICE_JOB["started"]) if VOICE_JOB["running"] else 0}})
@@ -3302,6 +3365,22 @@ class Handler(BaseHTTPRequestHandler):
             except Exception as e:
                 traceback.print_exc()
                 return self._send(500, {"error": f"분석하지 못했어요: {e}"})
+        if path == "/api/plan":
+            if "guide" in body:
+                _writer.save_plan_guide(WRITER, str(body.get("guide") or "")[:30000])
+                return self._send(200, {"ok": True, "guide": _writer.plan_guide(WRITER)})
+            if body.get("prompt"):  # 붙여넣기 방식용 요청문
+                cfg = cfg_with_posts()
+                g = _writer.plan_guide(WRITER).replace("{블로그 이름}", cfg.get("blog_name") or cfg.get("blog_id") or "내 블로그")
+                now = datetime.now(KST); ctx = plan_context(cfg)
+                user = (f"# 실행 기준 시각\n{now.strftime('%Y-%m-%d')} ({_writer.WEEKDAYS[now.weekday()]}) {now.strftime('%H:%M')} KST\n\n"
+                        + ("# 최근 블로그 발행 글\n" + "\n".join("- " + t for t in ctx["my_posts"]) + "\n\n" if ctx["my_posts"] else "")
+                        + ("# 블로그 유입 검색어\n" + ", ".join(ctx["my_keywords"]) + "\n\n" if ctx["my_keywords"] else ""))
+                return self._send(200, {"prompt": g + "\n\n---\n\n" + user})
+            if not ai_ready(load_config()):
+                return self._send(400, {"error": "AI 자동 작성이 연결되지 않았어요. 설정 → AI 글쓰기를 확인하거나 [요청문 복사]로 Gemini에 붙여 넣으세요."})
+            start_daily_plan()
+            return self._send(200, {"ok": True})
         if path == "/api/agy/install":
             start_agy_install()
             return self._send(200, {"ok": True})
