@@ -1317,7 +1317,10 @@ function bodyPart(md) {
       if (/^확인 (일자|시각)\s*[:：]/.test(x) || (x.length <= 30 && /^[^.!?:：#\[\]|>]+ · [^.!?:：#\[\]|>]+$/.test(x))) ls[i] = null; }
     t = ls.filter(x => x !== null).join("\n").replace(/\n{3,}/g, "\n\n"); }
   const e = t.search(/\n(?:-{3,}\s*\n+\s*)?■\s*(?:네이버 블로그|참고한|Gemini 이미지)/);
-  return (e >= 0 ? t.slice(0, e) : t).trim();
+  let b = (e >= 0 ? t.slice(0, e) : t).trim();
+  // 예전 초안에도 AI 이미지 안내 한 줄을 붙여 복사
+  if (!/AI로 (만든|생성)/.test(b)) b = b.replace(/\n-{3,}\s*$/, "").trim() + "\n\n※ 본문 이미지 중 일부는 AI로 만든 이미지로, 실제 모습과 다를 수 있습니다.";
+  return b;
 }
 /* 하단의 Gemini 이미지 프롬프트 3개를 뽑아 복사 카드로 */
 function imagePrompts(md) {
