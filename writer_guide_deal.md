@@ -86,6 +86,7 @@
 | #4 | 구매 체크리스트 카드 | ✅ 4~5줄 (배송·세금·결제수단) |
 
 - #2~#4는 같은 디자인 틀(주색·강조색·배경·보조·글자 HEX 5색, 머리띠 → 제목 → 데이터 → 출처·확인 시각 바닥줄)을 프롬프트마다 반복합니다.
+- **음식·식품·영양제·생활용품 딜**이면 #1을 포스터 대신 **맛깔스럽고 청량한 실사 사진**으로: 제품(일반 형태)을 쓰는 생활 장면 또는 재료의 풍성한 클로즈업, 따뜻한 창가 자연광·나무 테이블·리넨·손만 보이게(얼굴 없음), 필름 사진 톤, 글자 없음 (`lifestyle product photography, warm window light, rustic wooden table, hands only, shallow depth of field, appetizing, photorealistic, no text, no logos`).
 - 실제 제품 사진·브랜드 로고·판매처 화면을 재현하지 않습니다. 제품은 특정 브랜드로 보이지 않는 일반 형태로 표현합니다.
 - 디자인: 평범한 인포그래픽(파스텔·둥근 카드·부드러운 그림자) 금지. **컬러 블록 팝**(채도 높은 단색 배경 분할 + 굵은 타이포 + 잘라 낸 3D 상품 오브젝트) 또는 **다크 프리미엄**(딥 네이비 배경 + 네온 강조색 + 유리 질감 패널) 중 하나를 골라 4장 모두 같은 HEX 4색으로 통일. 카드마다 주인공(할인율·최종가)을 카드 높이 25~35% 크기로.
 - 프롬프트는 영어, 첫 줄 `Aspect ratio 4:5.`, `~~~` 블록 하나씩, 이미지 속 한글은 큰따옴표로 정확히. 끝에 `Render all Korean text exactly as written. No real brand logos, no real product photos, no fabricated store interfaces, no extra text, no watermark.`
