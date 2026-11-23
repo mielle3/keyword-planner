@@ -280,6 +280,15 @@
 - 끝에 반드시: `Photorealistic photo, not an illustration, not a 3D render, not CGI, not a painting, no cartoon style, no plastic look, no text, no logos, no faces, no watermark.`
 - 실사냐 일러스트냐는 장마다 정하지만, **음식·재료·제품·장소·생활 장면은 기본이 실사**입니다. 일러스트·디오라마·3D는 실제로 찍을 수 없는 개념(제도 구조·흐름·비교 도식)에만 씁니다.
 
+**여행지 추천·여행기 글 = 전부 실사 사진 (대표 포함)**
+- 여행 글은 사진이 곧 설득력입니다. #1 대표부터 모든 이미지를 **실사 사진**으로 씁니다(일러스트·디오라마·3D 금지).
+- #1 대표: 그 여행지를 대표하는 실제 풍경 한 장(넓은 화각, 골든아워·블루아워 빛, 그 계절의 색). 헤드라인은 사진 위에 얹어도 됩니다(12~18자, 흰 글자 + 그림자, 핵심어 하나 강조색).
+- 섹션 이미지: 추천하는 장소마다 **그 장소의 실제 모습**을 한 장씩 — 대표 경관, 걷는 길, 먹거리, 숙소 창밖처럼 본문에서 설명한 장면 그대로. 사람은 뒷모습·멀리 작은 실루엣만(얼굴 없음).
+- 사실성: 그 장소에 실제로 있는 지형·건물·바다·나무·계절 풍경만 묘사합니다. 없는 탑·간판·조형물을 지어내지 않고, 간판·표지판 글자는 넣지 않습니다(흐리게).
+- 촬영 지시: `A real travel photograph taken with a full-frame DSLR (Sony A7R V, 24-70mm lens), natural light, [golden hour / blue hour / bright morning], true-to-life colors, high dynamic range, sharp detail` + 끝에 `Photorealistic photo, not an illustration, not a 3D render, not CGI, no text on signs, no logos, no faces, no watermark.`
+- 진짜 사진을 쓸 수 있으면 그게 더 좋습니다: 사용자가 직접 찍은 사진, 또는 한국관광공사 포토코리아(photo.visitkorea.or.kr)·지자체 관광 사이트의 공공누리 사진. 기획 칸에 "직접 사진·공공 사진으로 바꾸면 좋은 이미지 #N"을 적어 줍니다.
+- 가공 허용: 사진 위에 장소 이름표·이동 시간·입장료 같은 확인된 정보를 반투명 패널로 얹기, 두 장소 사진 좌우 비교.
+
 **대표 이미지(#1) — 글 전체의 핵심 요약 + 시인성**
 - 먼저 글 전체를 한 문장으로 요약합니다(예: "추리소설 입문자에게 맞는 TOP 6와 가장 싸게 사는 법"). 그 요약의 **두 핵심어**(예: 추리소설 + 가격 비교)가 한눈에 보이는 장면 하나를 설계합니다.
 - 구성: ① 핵심을 상징하는 구체적 주인공(본문 대상 그대로: 책 여섯 권이 순위대로 쌓인 탑, 돋보기 아래 가격표 등) ② 헤드라인 2줄 이내 12~18자(글 요약 그대로, 매우 굵게, 핵심어 하나 강조색) ③ 필요하면 보조 배지 1개(확인된 숫자: "TOP 6", "최대 10%").
