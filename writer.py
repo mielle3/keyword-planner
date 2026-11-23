@@ -19,7 +19,7 @@ KST = timezone(timedelta(hours=9))
 CLAUDE_MODEL = "claude-opus-5-5"
 APP_DIR = Path(__file__).parent
 # 예전 버전의 기본 작가 지침(sha256). 사용자가 손대지 않았으면 새 지침으로 올려 줌
-OLD_DEFAULT_GUIDES = {"f3cf4b8202540efe74128bd754e2e3ab40dc351799341b3f18a98d92c40f69f2", "289967fe17a69d557c55a39cdb15a4b784965003f49ae5682e961125aa806a4e", "5897740aa8f6dca0c354460c6362be80863616e86e4dd7f7cc1b6588df4d4560", "b894956ecb9089c3354c665cdf684da4e198659d502ce0f79c1f83437b579539", "4ae5dbab9cc26888f6b56281624ace2319763bd1248671eb0cd7cc1c78ead867", "2228d665832e96c6568394f82940539a100aae17576214723e59f3dfb5323c71", "0c961d7c537c2be1a0e7613886ae38f6dbe302a68f6cfb3d1784cdacade57787", "a6f083674fa6e12b47a94a308965a6162027a2bd6c5ab0eec813bb798a992e60", "0cd20f813afa36be043b94d94405eef301eddfbfe9765425ffc35de3592f490b", "f6bb50a3a4463a3fabab14ccb79c75b5bb4e123b0e34f863719e64c001a9dc42",
+OLD_DEFAULT_GUIDES = {"3519e01e9dac935f01e4b18077546724be432c950e4f249936862faa348b8447", "f3cf4b8202540efe74128bd754e2e3ab40dc351799341b3f18a98d92c40f69f2", "289967fe17a69d557c55a39cdb15a4b784965003f49ae5682e961125aa806a4e", "5897740aa8f6dca0c354460c6362be80863616e86e4dd7f7cc1b6588df4d4560", "b894956ecb9089c3354c665cdf684da4e198659d502ce0f79c1f83437b579539", "4ae5dbab9cc26888f6b56281624ace2319763bd1248671eb0cd7cc1c78ead867", "2228d665832e96c6568394f82940539a100aae17576214723e59f3dfb5323c71", "0c961d7c537c2be1a0e7613886ae38f6dbe302a68f6cfb3d1784cdacade57787", "a6f083674fa6e12b47a94a308965a6162027a2bd6c5ab0eec813bb798a992e60", "0cd20f813afa36be043b94d94405eef301eddfbfe9765425ffc35de3592f490b", "f6bb50a3a4463a3fabab14ccb79c75b5bb4e123b0e34f863719e64c001a9dc42",
                       "50ddd38bb2615fdda855534a003fe9f226bfb05e6d06d7f5b8072cdb3b332a68",
                       "737470eff321f4bf999e3a33d06e476814f40e558765752e63f81d31bd119726",
                       "88607b921186d719388360cffe4419d31c3bb103b8bee917379ceb3327609ba2",
@@ -51,10 +51,10 @@ def fetch_repo_file(name):
     return False
 
 
-OLD_ESSAY_GUIDES = {"ed1b71a6215fbd82305e1cea5165e40d0f7bef63321648b4c02495f976cd4816", "45cd7fcfeb57cb08bd66ff87fb7b328a78035e580592aeb545ee4a8003d49987", "8902f714050f13c941454680dea97257484de367d3a10fa6f64d403cd0df4ff5", "d4ab69ab3c7c45557d336d05a2171330b004b3c54aa6ced436f4be26879c312f", "18eac005a699b2a7cfa1ddd23e90f5ff9f9f2f70f07388daa608dda49c558a7f", "4daefb41ecf10b68cab44a5e092bf4756970d4e730128849c7af6229216fdd33"}  # 읽을거리형 기본 지침의 예전 판 (고치지 않았으면 자동 교체)
+OLD_ESSAY_GUIDES = {"ea28eea311b851a60e5774ae1b66ec0d446c7f31fd603973f78aea6ada0e6f63", "ed1b71a6215fbd82305e1cea5165e40d0f7bef63321648b4c02495f976cd4816", "45cd7fcfeb57cb08bd66ff87fb7b328a78035e580592aeb545ee4a8003d49987", "8902f714050f13c941454680dea97257484de367d3a10fa6f64d403cd0df4ff5", "d4ab69ab3c7c45557d336d05a2171330b004b3c54aa6ced436f4be26879c312f", "18eac005a699b2a7cfa1ddd23e90f5ff9f9f2f70f07388daa608dda49c558a7f", "4daefb41ecf10b68cab44a5e092bf4756970d4e730128849c7af6229216fdd33"}  # 읽을거리형 기본 지침의 예전 판 (고치지 않았으면 자동 교체)
 
 GUIDE_FILES = {"info": "writer_guide.md", "essay": "writer_guide_essay.md", "deal": "writer_guide_deal.md"}
-OLD_DEAL_GUIDES = {"de03160a2180a98424ce1b83490cac780822805ef5ef4d7b8524b5d9dd1b92bc", "630d625ce119fda6136d2b61fc362fd1ca864200af7c5506f24481ea0e3f1b42", "1236c80d084fa0ec1dbd9d1cc93e651f14c63ea8634875fe0f93b88004a83a1e", "b6f576099c0177811aaba58d82a0c054bbdcd661d8d73d92b7da92088360abf3", "ef714a4751cb6e8f163634329da698bc9733fb280c538a7c8056a624c0bb41c9", "e90e6b081db348c81e8a6db390e6dfc77f4fe2b2441d653cd72a29ca15b056f5", "eb6cf6538685a58580f804568b1244da811c1755c0ae7a3bcdb2182965a8a39d", "6bb7940776d446bcd5f7ecd7d6c4c0f76d8a391f7c009bb270b07f9ae8796a6a"}
+OLD_DEAL_GUIDES = {"2e89ca129de16b8d17b3cc2b6e9ff1f0ee1eced8cab0fb7933c7ba50eb90f607", "de03160a2180a98424ce1b83490cac780822805ef5ef4d7b8524b5d9dd1b92bc", "630d625ce119fda6136d2b61fc362fd1ca864200af7c5506f24481ea0e3f1b42", "1236c80d084fa0ec1dbd9d1cc93e651f14c63ea8634875fe0f93b88004a83a1e", "b6f576099c0177811aaba58d82a0c054bbdcd661d8d73d92b7da92088360abf3", "ef714a4751cb6e8f163634329da698bc9733fb280c538a7c8056a624c0bb41c9", "e90e6b081db348c81e8a6db390e6dfc77f4fe2b2441d653cd72a29ca15b056f5", "eb6cf6538685a58580f804568b1244da811c1755c0ae7a3bcdb2182965a8a39d", "6bb7940776d446bcd5f7ecd7d6c4c0f76d8a391f7c009bb270b07f9ae8796a6a"}
 DEAL_RE = re.compile(r"할인|블프|블랙프라이데이|사이버먼데이|직구|핫딜|특가|쿠폰|프로모션|캐시백|최저가|세일|타임딜|사전예약|사전 예약|"
                      r"얼리버드|예매 오픈|티켓 오픈|티켓팅|예매|요금제|통신사 혜택|카드 혜택|광군제|아마존|알리|테무|쿠팡 로켓|정가")
 ESSAY_RE = re.compile(r"영화|드라마|넷플릭스|티빙|디즈니\+|웨이브|쿠팡플레이|OTT|애니|웹툰|책|소설|에세이|도서|시집|음악|앨범|플레이리스트|노래|"
@@ -444,7 +444,7 @@ def draft_request(item, cfg, today):
 def system_prompt(guide, memory, web, style="info"):
     tail = ["", "---", "", "# 실행 환경 안내 (키워드 플래너)",
             "- 결과물은 위 지침의 출력 양식 그대로, 마크다운 텍스트로만 답합니다. 앞뒤 인사나 설명을 붙이지 않습니다.",
-            ("- 이미지는 사용자가 Gemini로 직접 만듭니다. 당신은 이미지를 만들지 않고, 참고 자료 아래·태그 바로 위의 '■ Gemini 이미지 프롬프트'에 #1 대표 이미지와 #2·#3 분위기 이미지(글자 없음) 프롬프트 3개를 ~~~ 블록 하나씩 씁니다. 실제 포스터·배우 얼굴·책 표지는 재현하지 않습니다." if style == "essay" else
+            ("- 이미지는 사용자가 Gemini로 직접 만듭니다. 당신은 이미지를 만들지 않고, 참고 자료 아래·태그 바로 위의 '■ Gemini 이미지 프롬프트'에 #1 대표 이미지(글 전체 요약이 보이는 표지)와 #2·#3 섹션 핵심 이미지(본문의 고유 대상이 주인공, 내용과 무관한 분위기 이미지 금지, 필요 없으면 생략) 프롬프트를 ~~~ 블록 하나씩 씁니다. 실제 포스터·배우 얼굴·책 표지는 재현하지 않습니다." if style == "essay" else
              "- 이미지는 사용자가 Gemini로 직접 만듭니다. 당신은 이미지를 만들지 않고, 참고 자료 아래·태그 바로 위의 '■ Gemini 이미지 프롬프트'에 4장(#1 표지 포스터, #2 할인 구조·마감 타임라인, #3 실가격 비교, #4 구매 체크리스트) 프롬프트를 ~~~ 블록 하나씩 씁니다. 실제 제품 사진·브랜드 로고·판매처 화면은 재현하지 않습니다." if style == "deal" else
              "- 이미지는 사용자가 Gemini로 직접 만듭니다. 당신은 이미지를 만들지 않고, 참고 자료 아래·태그 바로 위의 '■ Gemini 이미지 프롬프트'에 이미지 6장 프롬프트를 각각 ~~~ 블록 하나씩 단독 실행되는 완성형으로 씁니다. #1은 글 주제를 함축한 강렬한 표지 포스터(정보 카드 틀을 쓰지 않음), #2~#6은 지침의 아트 디렉션 하나로 통일한 세련된 섹션별 정보 카드(초대형 핵심 숫자 + 상징 3D 오브젝트, 같은 HEX 4색·질감·타이포를 매번 반복)입니다. 파스텔·둥근 카드·부드러운 그림자의 평범한 인포그래픽은 쓰지 않습니다. 이미지마다 실제 장면이 도움이 되면 지침의 '실사 사진형'(주인공 클로즈업 + 손만 보이는 따뜻한 생활 장면, 글자 없음), 숫자·비교가 핵심이면 카드형을 스스로 골라 씁니다."),
             "- '함께 읽으면 좋은 글'에는 아래 블로그 기억의 '내 네이버 블로그에 이미 올린 글' 목록에 있는 제목만 씁니다. 목록이 없거나 관련 글이 없으면 그 섹션을 뺍니다."]

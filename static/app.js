@@ -1378,6 +1378,7 @@ function renderDrafts() {
             <summary class="btn">더보기${d.versions ? ` <small>되돌리기 ${d.versions}</small>` : ""} ▾</summary>
             <div class="dv-menu">
               <button id="dvCopyBody2" class="menu-copy">📋 블로그에 붙일 본문 복사</button>
+              <button id="dvImgRedo" title="본문은 그대로 두고 Gemini 이미지 프롬프트만 새 이미지 원칙으로 다시 써요">🖼 이미지 프롬프트만 새로 쓰기</button>
               <button id="dvRedo" title="같은 글감으로 처음부터 다시 써서 이 초안을 덮어써요">다시 쓰기</button>
               <button id="dvRestyle" title="내용은 살리고 형식만 바꿔 이 초안을 덮어써요">형식 바꾸기</button>
               <button id="dvCopyPlain">본문 글자만 복사 (서식 없이)</button>
@@ -1407,6 +1408,12 @@ function renderDrafts() {
   $("#dvDelete").onclick = async () => { if (!confirm("이 초안을 삭제할까요?")) return; DRAFTS = await api("/api/drafts/" + d.id, { action: "delete" }); DRAFT = null; await loadDrafts(); toast("삭제했어요"); };
   $("#dvRevise").onclick = () => { $("#dvReviseBox").hidden = false; $("#dvReviseText").focus(); };
   $("#dvReviseCancel").onclick = () => { $("#dvReviseBox").hidden = true; };
+  $("#dvImgRedo").onclick = async () => {
+    $(".dv-more").open = false;
+    if (!confirm("본문은 그대로 두고 이미지 프롬프트만 새로 쓸까요? (이 초안을 덮어쓰고, 되돌리기 가능)")) return;
+    await writeDraft({ id: "rv-" + Date.now(), keyword: d.keyword, topic: d.topic || "", style: d.style || "info", brief: {}, metrics: {}, src: {}, target_id: d.id,
+      revise_instruction: "본문·참고한 공식 자료·태그는 한 글자도 바꾸지 말고 그대로 두세요. '■ Gemini 이미지 프롬프트' 부분만 작가 지침의 '이미지 최우선 원칙'과 대표 이미지 규칙에 따라 전면 다시 쓰세요: 이미지마다 '전하는 핵심'(본문 문장)을 먼저 정하고, 본문의 고유 대상이 주인공인 이미지로, 장마다 다른 표현 방식(일러스트·플랫레이·디오라마·분할 비교·콜라주 등)으로, 대표 이미지는 글 전체 요약의 두 핵심어가 보이는 잡지 표지급으로. 내용과 상관없는 분위기 이미지는 빼고, 보여 줄 핵심이 없으면 그 이미지는 생략하세요. 본문 속 [📸 이미지 #N …] 자리 표시도 새 프롬프트와 맞게 고치세요." });
+  };
   $("#dvReviseGo").onclick = async () => {
     const ins = $("#dvReviseText").value.trim();
     if (!ins) { toast("고칠 내용을 적어 주세요"); return; }
