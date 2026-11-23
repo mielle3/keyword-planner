@@ -1198,12 +1198,12 @@ async function writeDraft(it, btn) {
   } catch (err) { toast(err.message); }
 }
 
-/* ---------- 초안 작성 현황 (오른쪽 아래): 프로그램이 직접 쓰는 중인 글 ---------- */
+/* ---------- 초안 작성 현황 (위 메뉴 바로 아래 노란 띠): 프로그램이 직접 쓰는 중인 글 ---------- */
 let DQ = null, DQ_POLL = null, DQ_SEEN = 0;
 const WAIT_JOBS = new Set();
 function renderDock() {
   let el = $("#writeDock");
-  if (!el) { el = document.createElement("aside"); el.id = "writeDock"; el.className = "write-dock"; document.body.appendChild(el); }
+  if (!el) { el = document.createElement("aside"); el.id = "writeDock"; el.className = "write-dock"; const ab = $(".appbar"); ab ? ab.after(el) : document.body.appendChild(el); }
   const q = DQ || {}, cur = q.current, wait = q.queue || [];
   const today = new Date().toISOString().slice(0, 10);
   const seen = dockSeenIds();
@@ -1218,10 +1218,11 @@ function renderDock() {
   }
   const sec = cur ? Math.max(0, Math.round(Date.now() / 1000 - cur.started)) : 0;
   el.hidden = false;
-  el.innerHTML = `<div class="wd-row"><span class="wd-spin" aria-hidden="true"></span><b>${cur ? `${cur.auto ? "미리 쓰는 중" : "초안 쓰는 중"}: ${esc(cur.keyword)}` : "곧 시작"}</b>${cur ? `<button class="btn sm wd-cancel" data-dqcancel="${cur.job}">취소</button>` : ""}</div>
+  el.innerHTML = `<div class="wd-row"><span class="wd-spin" aria-hidden="true"></span><b>${cur ? `${cur.auto ? "미리 쓰는 중" : "초안 쓰는 중"}: ${esc(cur.keyword)}` : "곧 시작"}</b></div>
     ${cur ? `<span class="wd-sub">${esc(cur.stage || "")} · ${Math.floor(sec / 60)}분 ${sec % 60}초</span>` : ""}
     ${wait.length ? `<div class="wd-wait">다음: ${wait.map(w => `<span class="wchip">${esc(w.keyword)}${w.auto ? "(자동)" : ""}<button data-dqcancel="${w.job}" aria-label="${esc(w.keyword)} 빼기">✕</button></span>`).join("")}</div>` : ""}
-    <span class="wd-sub faint">${cur && /고쳐 쓰는/.test(cur.stage || "") ? "양식에서 크게 빠진 곳이 있어 한 번 더 쓰는 중 · 2~4분 더" : "Gemini(Antigravity)가 사실 확인하며 쓰는 중 · 보통 3~5분 · 다른 화면을 봐도 계속 써요 · 멈추려면 취소"}</span>`;
+    <span class="wd-sub faint">${cur && /고쳐 쓰는/.test(cur.stage || "") ? "양식에서 크게 빠진 곳이 있어 한 번 더 쓰는 중 · 2~4분 더" : "Gemini(Antigravity)가 사실 확인하며 쓰는 중 · 보통 3~5분 · 다른 화면을 봐도 계속 써요"}</span>
+    ${cur ? `<button class="btn sm wd-cancel" data-dqcancel="${cur.job}">취소</button>` : ""}`;
 }
 function dockSeenIds() { try { return JSON.parse(localStorage.getItem("dockSeenIds") || "[]"); } catch { return []; } }
 function markDockSeen() {  // 지금 있는 자동 초안을 모두 '봤음'으로 (브라우저를 껐다 켜도 기억)
@@ -2016,3 +2017,7 @@ if ($("#morningOn")) {
     setTimeout(async () => { STATE = await api("/api/state"); renderAuto(); }, 4000);
   };
 }
+
+/* 진행 알림 띠 위치: 위 메뉴 높이만큼 아래에 */
+function setAppbarH() { const h = $(".appbar")?.getBoundingClientRect().height || 64; document.documentElement.style.setProperty("--appbar-h", Math.round(h) + "px"); }
+setAppbarH(); addEventListener("resize", setAppbarH);

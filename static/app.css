@@ -1612,3 +1612,17 @@ html { overflow-y: scroll; scrollbar-gutter: stable; }
 .plan-body { max-height: 52vh; overflow: auto; border: 1px solid var(--rule); padding: 16px 20px; margin-bottom: 10px; max-width: none; }
 #planDialog .plan-actions, #planDialog .plan-body, #planDialog details, #planDialog > form > .row-end { margin-left: 24px; margin-right: 24px; }
 #planDialog > form > .row-end { margin-bottom: 20px; }
+
+/* v122: 초안 진행 알림 = 위 메뉴 바로 아래 노란 띠 (화면 흐름 안 · 스크롤해도 메뉴 밑에 붙어 있음 · 내용을 가리지 않음) */
+.write-dock { position: sticky !important; top: var(--appbar-h, 64px); bottom: auto !important; right: auto !important; left: auto !important; transform: none !important;
+  width: min(calc(var(--w, 1440px) - 48px), calc(100vw - 32px)); margin: 10px auto 0; box-sizing: border-box;
+  flex-direction: row !important; flex-wrap: wrap; align-items: center; column-gap: 14px; row-gap: 2px;
+  background: #fff4c2 !important; border: 2px solid var(--ink); box-shadow: none !important; padding: 10px 16px !important; z-index: 15; }
+.write-dock .wd-row { flex: 0 1 auto; min-width: 0; }
+.write-dock .wd-sub { color: #5a4a00; }
+.write-dock .wd-sub.faint { flex: 1 1 260px; }
+.write-dock .wd-cancel, .write-dock > .btn { margin-left: auto !important; }
+.write-dock .wd-x { position: static; margin-left: auto; order: 9; }
+.write-dock .btn { align-self: center !important; margin-top: 0 !important; }
+.write-dock .wd-spin { border-color: #e0c860; border-top-color: var(--ink); }
+@media (prefers-color-scheme: dark) { .write-dock { background: #3a3210 !important; } .write-dock .wd-sub { color: #e8d98a; } }
