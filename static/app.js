@@ -331,7 +331,15 @@ function renderResult() {
   const missing = Object.values(R.sources).some(v => v.missing);
   const n = $("#estimateNotice");
   n.hidden = !missing;
-  n.innerHTML = `<span>지금은 <b>추정치</b>로 매긴 순위예요. 무료 키를 넣으면 실제 검색수·발행량으로 바뀝니다.</span><button class="link-btn" data-goto="settings">키 넣기</button>`;
+  {  // 무엇이 빠졌는지, 키는 이미 넣었는지(그러면 다시 받기만 하면 됨) 구체적으로
+    const K = (STATE && STATE.keys) || {}, S = R.sources || {};
+    const needAd = S["월간 검색수"]?.missing, needHub = S["블로그 발행량"]?.missing || S["검색어 트렌드"]?.missing;
+    const lack = [needAd && !K.searchad ? "네이버 검색광고 키(월간 검색수)" : "", needHub && !K.naver ? "NAVER API HUB 키(블로그 발행량·검색 추이)" : ""].filter(Boolean);
+    const rerun = (needAd && K.searchad) || (needHub && K.naver);
+    n.innerHTML = lack.length
+      ? `<span>지금 순위 일부는 <b>추정치</b>예요. 빠진 키: ${lack.join(", ")}. 둘 다 무료예요.${rerun ? " 새로 넣은 키는 <b>오늘 추천 받기</b>를 다시 누르면 반영돼요." : ""}</span><button class="link-btn" data-goto="settings">키 넣기</button>`
+      : `<span>키가 들어왔어요. 이 결과는 키를 넣기 전에 만든 거라 추정치예요. <b>오늘 추천 받기</b>를 다시 누르면 실제 숫자로 바뀌어요.</span>`;
+  }
   const top = R.top.map(id => ITEMS[id]).filter(Boolean);
   $("#leadCol").innerHTML = leadHTML(top[0]);
   $("#rankList").innerHTML = top.slice(1).map((it, i) => rankRowHTML(it, i + 2)).join("");
