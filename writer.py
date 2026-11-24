@@ -19,7 +19,7 @@ KST = timezone(timedelta(hours=9))
 CLAUDE_MODEL = "claude-opus-5-5"
 APP_DIR = Path(__file__).parent
 # 예전 버전의 기본 작가 지침(sha256). 사용자가 손대지 않았으면 새 지침으로 올려 줌
-OLD_DEFAULT_GUIDES = {"9f69643c9b909c59c708675855d211c4dbaa19555b082282090021633011818a", "3527815c2cd4c785b55e069e81daac9a57cc531c3f8014b682221d27694dcc1c", "03573768b4428b8e01474bc547ce5cfcb86ce337d26f764850aba4405a23ca47", "e6c38ddee9c507a8971fedbfd3424c1f65683bfdb70867a86f0b091a54acf550", "ea8f79250e7225f1016f0a83eee1a017572f994577dda0dc5406d2995b59eafb", "f3ef8e3c463157786d318833e45976e5c00f1f736eb825f25d47d4961cd9f0b4", "7abafe3ba865daf70f5c87b5b19595dc21367b393547bb78d4d22b06993a4543", "51c825fa976ee556209596749dd7646504d980b1119f3ffd873c07ceac0a8a95", "201e6c46be11f3c6f03a4a7ebeca2b8087171be4fb4d68999fb15b37cce266bc", "d7968cfbd083a6600eb3401689c1f9fd44ad9108112322f54770fc22f4d00d35", "3519e01e9dac935f01e4b18077546724be432c950e4f249936862faa348b8447", "f3cf4b8202540efe74128bd754e2e3ab40dc351799341b3f18a98d92c40f69f2", "289967fe17a69d557c55a39cdb15a4b784965003f49ae5682e961125aa806a4e", "5897740aa8f6dca0c354460c6362be80863616e86e4dd7f7cc1b6588df4d4560", "b894956ecb9089c3354c665cdf684da4e198659d502ce0f79c1f83437b579539", "4ae5dbab9cc26888f6b56281624ace2319763bd1248671eb0cd7cc1c78ead867", "2228d665832e96c6568394f82940539a100aae17576214723e59f3dfb5323c71", "0c961d7c537c2be1a0e7613886ae38f6dbe302a68f6cfb3d1784cdacade57787", "a6f083674fa6e12b47a94a308965a6162027a2bd6c5ab0eec813bb798a992e60", "0cd20f813afa36be043b94d94405eef301eddfbfe9765425ffc35de3592f490b", "f6bb50a3a4463a3fabab14ccb79c75b5bb4e123b0e34f863719e64c001a9dc42",
+OLD_DEFAULT_GUIDES = {"2cfcba5baded7e680f93d58e6f43eb20664af5778cdc0097352692e793f492d8", "9f69643c9b909c59c708675855d211c4dbaa19555b082282090021633011818a", "3527815c2cd4c785b55e069e81daac9a57cc531c3f8014b682221d27694dcc1c", "03573768b4428b8e01474bc547ce5cfcb86ce337d26f764850aba4405a23ca47", "e6c38ddee9c507a8971fedbfd3424c1f65683bfdb70867a86f0b091a54acf550", "ea8f79250e7225f1016f0a83eee1a017572f994577dda0dc5406d2995b59eafb", "f3ef8e3c463157786d318833e45976e5c00f1f736eb825f25d47d4961cd9f0b4", "7abafe3ba865daf70f5c87b5b19595dc21367b393547bb78d4d22b06993a4543", "51c825fa976ee556209596749dd7646504d980b1119f3ffd873c07ceac0a8a95", "201e6c46be11f3c6f03a4a7ebeca2b8087171be4fb4d68999fb15b37cce266bc", "d7968cfbd083a6600eb3401689c1f9fd44ad9108112322f54770fc22f4d00d35", "3519e01e9dac935f01e4b18077546724be432c950e4f249936862faa348b8447", "f3cf4b8202540efe74128bd754e2e3ab40dc351799341b3f18a98d92c40f69f2", "289967fe17a69d557c55a39cdb15a4b784965003f49ae5682e961125aa806a4e", "5897740aa8f6dca0c354460c6362be80863616e86e4dd7f7cc1b6588df4d4560", "b894956ecb9089c3354c665cdf684da4e198659d502ce0f79c1f83437b579539", "4ae5dbab9cc26888f6b56281624ace2319763bd1248671eb0cd7cc1c78ead867", "2228d665832e96c6568394f82940539a100aae17576214723e59f3dfb5323c71", "0c961d7c537c2be1a0e7613886ae38f6dbe302a68f6cfb3d1784cdacade57787", "a6f083674fa6e12b47a94a308965a6162027a2bd6c5ab0eec813bb798a992e60", "0cd20f813afa36be043b94d94405eef301eddfbfe9765425ffc35de3592f490b", "f6bb50a3a4463a3fabab14ccb79c75b5bb4e123b0e34f863719e64c001a9dc42",
                       "50ddd38bb2615fdda855534a003fe9f226bfb05e6d06d7f5b8072cdb3b332a68",
                       "737470eff321f4bf999e3a33d06e476814f40e558765752e63f81d31bd119726",
                       "88607b921186d719388360cffe4419d31c3bb103b8bee917379ceb3327609ba2",
@@ -51,10 +51,10 @@ def fetch_repo_file(name):
     return False
 
 
-OLD_ESSAY_GUIDES = {"eb10b428f5c2376bb96b5dc3b531a9b698d3f25c218d798859c27609cb0054f9", "45c2e3dd597e5d4c3e96ec23d55a7ba9a04f1d2bff3ee76a028df3d657b8faeb", "db64537c3ca5dcd4d5d4da14bdb5b3bdcb33ead226152433ed30f4d8e1e738de", "81ec1b6d13a4f662295b631d823bef96b6760fe9d92d95fddf6f7220d41482d5", "d1135efb94d61aef886b86395aeeceaedf5fcbf53566db305cc3363c9cf6f482", "b958cc3dc2dba6cbd24392ad05cbd11e04be736a4746f69b15efa1d1aad8cadc", "79593cbf46c7380256b5c7f124ce684fb4976fc14d7709bffc942f0bf0b149c9", "19884d801b473ad4f995418beba2ddb35d9f6dac5360a31b510c713fe18b3402", "96b65eff47e4ec4ba812c4ca4b74ba4052397f84094b128f0f92968302c76a4e", "ea28eea311b851a60e5774ae1b66ec0d446c7f31fd603973f78aea6ada0e6f63", "ed1b71a6215fbd82305e1cea5165e40d0f7bef63321648b4c02495f976cd4816", "45cd7fcfeb57cb08bd66ff87fb7b328a78035e580592aeb545ee4a8003d49987", "8902f714050f13c941454680dea97257484de367d3a10fa6f64d403cd0df4ff5", "d4ab69ab3c7c45557d336d05a2171330b004b3c54aa6ced436f4be26879c312f", "18eac005a699b2a7cfa1ddd23e90f5ff9f9f2f70f07388daa608dda49c558a7f", "4daefb41ecf10b68cab44a5e092bf4756970d4e730128849c7af6229216fdd33"}  # 읽을거리형 기본 지침의 예전 판 (고치지 않았으면 자동 교체)
+OLD_ESSAY_GUIDES = {"c55c6e1eccf3f0c7699ffc1ec50a8387ff1431c23199fcce5a84b679e37d5beb", "eb10b428f5c2376bb96b5dc3b531a9b698d3f25c218d798859c27609cb0054f9", "45c2e3dd597e5d4c3e96ec23d55a7ba9a04f1d2bff3ee76a028df3d657b8faeb", "db64537c3ca5dcd4d5d4da14bdb5b3bdcb33ead226152433ed30f4d8e1e738de", "81ec1b6d13a4f662295b631d823bef96b6760fe9d92d95fddf6f7220d41482d5", "d1135efb94d61aef886b86395aeeceaedf5fcbf53566db305cc3363c9cf6f482", "b958cc3dc2dba6cbd24392ad05cbd11e04be736a4746f69b15efa1d1aad8cadc", "79593cbf46c7380256b5c7f124ce684fb4976fc14d7709bffc942f0bf0b149c9", "19884d801b473ad4f995418beba2ddb35d9f6dac5360a31b510c713fe18b3402", "96b65eff47e4ec4ba812c4ca4b74ba4052397f84094b128f0f92968302c76a4e", "ea28eea311b851a60e5774ae1b66ec0d446c7f31fd603973f78aea6ada0e6f63", "ed1b71a6215fbd82305e1cea5165e40d0f7bef63321648b4c02495f976cd4816", "45cd7fcfeb57cb08bd66ff87fb7b328a78035e580592aeb545ee4a8003d49987", "8902f714050f13c941454680dea97257484de367d3a10fa6f64d403cd0df4ff5", "d4ab69ab3c7c45557d336d05a2171330b004b3c54aa6ced436f4be26879c312f", "18eac005a699b2a7cfa1ddd23e90f5ff9f9f2f70f07388daa608dda49c558a7f", "4daefb41ecf10b68cab44a5e092bf4756970d4e730128849c7af6229216fdd33"}  # 읽을거리형 기본 지침의 예전 판 (고치지 않았으면 자동 교체)
 
 GUIDE_FILES = {"info": "writer_guide.md", "essay": "writer_guide_essay.md", "deal": "writer_guide_deal.md"}
-OLD_DEAL_GUIDES = {"a996b39232c6d3301ef2ed618c2429c0dcda5129b0087f3d70b8bb8cb5c07ec9", "7758d0aa1840332f1aa7c308ac3bfee931071444718c1ed37253de8c4e5ba856", "8fe2b2221d8409f51fded5316ecb1ee2ae158119bb56e7f3480d4e406492f6f5", "a78d39a4eca802c85321a5e58b8c9bf6aa682f3bc965aa7bd830271f62cd6c02", "1ea3bc54df202452108d94303693d97d2d03af217df979c6492bd50fff4abe89", "e3fcefc11d16df24aee487b5f9d0f91f1f812b0c661800cc80c3035373990114", "ee6dd3684b17c94ee03962a69eb5276a45d4c2481829f31bea9e1fb9cbe36f90", "6b55a9c9027df6edb6edb0e4e7a6a373a7dbc331ed5f7b4c7a18bda8a5093c76", "8d3a5790537d218a41286a849dfae061c8be637b331be44f416915ab33f13fa0", "2e89ca129de16b8d17b3cc2b6e9ff1f0ee1eced8cab0fb7933c7ba50eb90f607", "de03160a2180a98424ce1b83490cac780822805ef5ef4d7b8524b5d9dd1b92bc", "630d625ce119fda6136d2b61fc362fd1ca864200af7c5506f24481ea0e3f1b42", "1236c80d084fa0ec1dbd9d1cc93e651f14c63ea8634875fe0f93b88004a83a1e", "b6f576099c0177811aaba58d82a0c054bbdcd661d8d73d92b7da92088360abf3", "ef714a4751cb6e8f163634329da698bc9733fb280c538a7c8056a624c0bb41c9", "e90e6b081db348c81e8a6db390e6dfc77f4fe2b2441d653cd72a29ca15b056f5", "eb6cf6538685a58580f804568b1244da811c1755c0ae7a3bcdb2182965a8a39d", "6bb7940776d446bcd5f7ecd7d6c4c0f76d8a391f7c009bb270b07f9ae8796a6a"}
+OLD_DEAL_GUIDES = {"5125be05039330d329adf0248a5f737aec6bdfbcd78ea8c3d55cfd6305bb7898", "a996b39232c6d3301ef2ed618c2429c0dcda5129b0087f3d70b8bb8cb5c07ec9", "7758d0aa1840332f1aa7c308ac3bfee931071444718c1ed37253de8c4e5ba856", "8fe2b2221d8409f51fded5316ecb1ee2ae158119bb56e7f3480d4e406492f6f5", "a78d39a4eca802c85321a5e58b8c9bf6aa682f3bc965aa7bd830271f62cd6c02", "1ea3bc54df202452108d94303693d97d2d03af217df979c6492bd50fff4abe89", "e3fcefc11d16df24aee487b5f9d0f91f1f812b0c661800cc80c3035373990114", "ee6dd3684b17c94ee03962a69eb5276a45d4c2481829f31bea9e1fb9cbe36f90", "6b55a9c9027df6edb6edb0e4e7a6a373a7dbc331ed5f7b4c7a18bda8a5093c76", "8d3a5790537d218a41286a849dfae061c8be637b331be44f416915ab33f13fa0", "2e89ca129de16b8d17b3cc2b6e9ff1f0ee1eced8cab0fb7933c7ba50eb90f607", "de03160a2180a98424ce1b83490cac780822805ef5ef4d7b8524b5d9dd1b92bc", "630d625ce119fda6136d2b61fc362fd1ca864200af7c5506f24481ea0e3f1b42", "1236c80d084fa0ec1dbd9d1cc93e651f14c63ea8634875fe0f93b88004a83a1e", "b6f576099c0177811aaba58d82a0c054bbdcd661d8d73d92b7da92088360abf3", "ef714a4751cb6e8f163634329da698bc9733fb280c538a7c8056a624c0bb41c9", "e90e6b081db348c81e8a6db390e6dfc77f4fe2b2441d653cd72a29ca15b056f5", "eb6cf6538685a58580f804568b1244da811c1755c0ae7a3bcdb2182965a8a39d", "6bb7940776d446bcd5f7ecd7d6c4c0f76d8a391f7c009bb270b07f9ae8796a6a"}
 DEAL_RE = re.compile(r"할인|블프|블랙프라이데이|사이버먼데이|직구|핫딜|특가|쿠폰|프로모션|캐시백|최저가|세일|타임딜|사전예약|사전 예약|"
                      r"얼리버드|예매 오픈|티켓 오픈|티켓팅|예매|요금제|통신사 혜택|카드 혜택|광군제|아마존|알리|테무|쿠팡 로켓|정가")
 ESSAY_RE = re.compile(r"영화|드라마|넷플릭스|티빙|디즈니\+|웨이브|쿠팡플레이|OTT|애니|웹툰|책|소설|에세이|도서|시집|음악|앨범|플레이리스트|노래|"
@@ -449,6 +449,7 @@ def system_prompt(guide, memory, web, style="info"):
              "- 이미지는 사용자가 Gemini로 직접 만듭니다. 당신은 이미지를 만들지 않고, 참고 자료 아래·태그 바로 위의 '■ Gemini 이미지 프롬프트'에 이미지 6장 프롬프트를 각각 ~~~ 블록 하나씩 단독 실행되는 완성형으로 씁니다. #1은 글 주제를 함축한 강렬한 표지 포스터(정보 카드 틀을 쓰지 않음), #2~#6은 섹션마다 그 내용과 직접 관련된 실사 사진(진짜 사진 촬영 지시) 위에 핵심 숫자·라벨을 반투명 패널로 얹은 '실사 사진 + 가공' 이미지입니다(그래프만 있는 카드 단독 금지). 파스텔·둥근 카드·부드러운 그림자의 평범한 인포그래픽은 쓰지 않습니다. 이미지마다 실제 장면이 도움이 되면 지침의 '실사 사진형'(진짜 사진 촬영 지시로 시작하고 끝에 not an illustration/not a 3D render/not CGI를 붙인 사진, 주인공 클로즈업 + 손만 보이는 생활 장면, 글자 없음), 숫자·비교가 핵심이면 카드형을 스스로 골라 씁니다."),
             "- 실제 장소를 그리는 이미지 프롬프트는 웹 검색으로 그 장소의 실제 사진을 확인한 뒤, 정확한 장소명(한글+영문+도시)·대표 건물 개수와 배치·지붕/재료/색·주변 지형·실제 조명·대표 촬영 위치와 방향을 그대로 묘사해 실제 사진과 거의 구분되지 않게 씁니다. 없는 구조물을 더하거나 있는 것을 빼지 않습니다.",
             "- 모든 이미지 프롬프트(대표 포함)는 지침의 '즉석사진(폴라로이드) 프레임'으로 씁니다: 캔버스 전체가 사진 한 장, 위·좌·우 얇은 흰 테두리(폭 약 4%), 아래는 두꺼운 흰 여백(높이 약 15%) 안에 그 이미지의 핵심을 간명하게 담은 한글 캡션 한 줄(12~22자, 작은 글씨 — 글자 높이는 이미지 높이의 약 2.5%, 짙은 회색, 가운데). 배경·책상·그림자·기울임 없음. 프롬프트 위에 '- 캡션: \"…\"'을 적습니다.",
+            "- 글 전체는 지침의 'AI 티 빼기'를 최우선으로 지킵니다: 해요체(~해요·~예요·~거든요·~죠) 금지, '알아보겠습니다·살펴보겠습니다·결론적으로·요약하자면·여러분·다양한·효과적인' 같은 AI 상투 표현 금지, 느낌표·이모지·말줄임표 금지, 결론부터 짧고 구체적으로.",
             "- '함께 읽으면 좋은 글'에는 아래 블로그 기억의 '내 네이버 블로그에 이미 올린 글' 목록에 있는 제목만 씁니다. 목록이 없거나 관련 글이 없으면 그 섹션을 뺍니다."]
     if web is None:
         tail.append("- 웹 검색을 쓸 수 있으면 정부·기관·기업 공식 사이트를 우선 확인하고 확인한 자료만 ■ 참고한 공식 자료 칸에 적습니다. 쓸 수 없으면 바뀔 수 있는 수치·날짜·조건을 단정하지 말고, 참고 자료 칸에 '웹 검색 없이 작성됨 · 게시 전 공식 자료 확인 필요'라고 적습니다.")
@@ -460,7 +461,7 @@ def system_prompt(guide, memory, web, style="info"):
     if voice:
         tail += ["", "---", "", "# 내 문체 프로필 (사용자 본인의 글에서 학습한 문체)",
                  "글의 구성·출력 양식·편집 형식은 위 작가 지침을 따르고, **문장·말투·어미·도입과 마무리 방식·자주 쓰는 표현**은 이 프로필을 따릅니다. "
-                 "프로필과 지침의 문체 규칙이 다르면 프로필을 따릅니다(사용자 메모가 있으면 메모가 가장 우선). 프로필의 예시 문장을 그대로 복사하지 말고, 같은 결로 새로 씁니다.",
+                 "프로필과 지침의 문체 규칙이 다르면 프로필을 따릅니다(사용자 메모가 있으면 메모가 가장 우선). 단, 어미는 프로필과 상관없이 항상 서술형(~입니다/~합니다)이고 해요체는 쓰지 않습니다(지침의 'AI 티 빼기'). 프로필의 예시 문장을 그대로 복사하지 말고, 같은 결로 새로 씁니다.",
                  "", voice]
     return guide.strip() + "\n\n---\n\n" + memory.strip() + "\n" + "\n".join(tail)
 
@@ -995,6 +996,9 @@ def check_draft(text, style="info"):
         ("태그는 글 맨 마지막", tags_last, ""),
     ]
     out = [{"name": n, "ok": bool(ok), "note": note} for n, ok, note in items]
+    _left, _phr = ai_tone_issues(body)
+    out.append({"name": "AI 말투 없음 (해요체·상투 표현)", "ok": _left == 0 and not _phr,
+                "note": ", ".join(([f"해요체 {_left}곳"] if _left else []) + _phr[:4])})
     return {"ok": all(x["ok"] for x in out), "passed": sum(x["ok"] for x in out), "total": len(out), "items": out, "chars": chars}
 
 
@@ -1035,6 +1039,9 @@ def check_deal(text):
         ("태그는 글 맨 마지막", bool(tags_sec) and t.rfind("■") == i and "~~~" not in tags_sec, ""),
     ]
     out = [{"name": n, "ok": bool(ok), "note": note} for n, ok, note in items]
+    _left, _phr = ai_tone_issues(body)
+    out.append({"name": "AI 말투 없음 (해요체·상투 표현)", "ok": _left == 0 and not _phr,
+                "note": ", ".join(([f"해요체 {_left}곳"] if _left else []) + _phr[:4])})
     return {"ok": all(x["ok"] for x in out), "passed": sum(x["ok"] for x in out), "total": len(out), "items": out, "chars": chars}
 
 
@@ -1066,6 +1073,9 @@ def check_essay(text):
         ("태그는 글 맨 마지막", bool(tags_sec) and t.rfind("■") == i and "~~~" not in tags_sec, ""),
     ]
     out = [{"name": n, "ok": bool(ok), "note": note} for n, ok, note in items]
+    _left, _phr = ai_tone_issues(body)
+    out.append({"name": "AI 말투 없음 (해요체·상투 표현)", "ok": _left == 0 and not _phr,
+                "note": ", ".join(([f"해요체 {_left}곳"] if _left else []) + _phr[:4])})
     return {"ok": all(x["ok"] for x in out), "passed": sum(x["ok"] for x in out), "total": len(out), "items": out, "chars": chars}
 
 
@@ -1084,6 +1094,61 @@ def strip_top_labels(body):
             lines[i] = None
     out = "\n".join(l for l in lines if l is not None)
     return re.sub(r"\n{3,}", "\n\n", out)
+
+
+# AI 티 나는 구어체 어미 → 건조한 서술형 (문장 끝에서만, 확실한 것만)
+_HAEYO = [("거예요", "것입니다"), ("이에요", "입니다"), ("예요", "입니다"), ("해요", "합니다"), ("돼요", "됩니다"), ("되요", "됩니다"),
+          ("있어요", "있습니다"), ("없어요", "없습니다"), ("같아요", "같습니다"), ("드려요", "드립니다"), ("봐요", "봅니다"),
+          ("줘요", "줍니다"), ("져요", "집니다"), ("나요", "납니다"), ("가요", "갑니다"), ("와요", "옵니다"), ("써요", "씁니다"),
+          ("많아요", "많습니다"), ("적어요", "적습니다"), ("높아요", "높습니다"), ("낮아요", "낮습니다"), ("좋아요", "좋습니다"),
+          ("커요", "큽니다"), ("작아요", "작습니다"), ("빨라요", "빠릅니다"), ("달라요", "다릅니다"), ("몰라요", "모릅니다"),
+          ("거든요", "습니다"), ("답니다", "습니다"), ("랍니다", "입니다")]
+_AI_PHRASES = ["알아보겠습니다", "살펴보겠습니다", "정리해 보았습니다", "알아볼까요", "결론적으로", "요약하자면", "종합해 보면",
+               "많은 분들이 궁금해", "여러분", "도움이 되셨길", "도움이 되었길"]
+
+
+def dry_endings(body):
+    """본문 문장 끝의 해요체를 서술형으로 (이미지 프롬프트 블록·URL은 건드리지 않음)."""
+    out = []
+    for line in body.split("\n"):
+        s = line.strip()
+        if s.startswith(("~~~", "```", "Aspect ratio", "|")) or "http" in s:
+            out.append(line); continue
+        for a, b in _HAEYO:
+            if a == "나요":  # 의문형 '~나요?'는 건드리지 않음(아래 검사에서 표시)
+                line = re.sub(r"나요(?=[.。]\s*$|[.。]\s)", "납니다", line)
+                continue
+            line = re.sub(a + r"(?=[.。]\s*$|[.。]\s|\s*$)", b, line)
+        out.append(dry_generic(line))
+    return "\n".join(out)
+
+
+def _add_final(ch, jong):
+    """한글 음절에 받침 추가 (예: 쉬 + ㅂ → 쉽)."""
+    code = ord(ch) - 0xAC00
+    if not (0 <= code < 11172) or code % 28:
+        return None
+    return chr(ord(ch) + jong)
+
+
+def _has_final(ch):
+    code = ord(ch) - 0xAC00
+    return 0 <= code < 11172 and code % 28 != 0
+
+
+def dry_generic(line):
+    """남은 해요체 일반 활용형 처리 (문장 끝에서만)."""
+    END = r"(?=[.。]\s*$|[.。]\s|\s*$)"
+    line = re.sub(r"([가-힣])여요" + END, r"\1입니다", line)                 # 쌓여요 → 쌓입니다
+    line = re.sub(r"([가-힣])워요" + END, lambda m: (_add_final(m.group(1), 17) + "습니다") if _add_final(m.group(1), 17) else m.group(0), line)  # 쉬워요 → 쉽니다? (아래에서 보정)
+    line = re.sub(r"([가-힣])(어요|아요)" + END, lambda m: m.group(1) + "습니다" if _has_final(m.group(1)) else m.group(0), line)  # 붙어요 → 붙습니다
+    return line
+
+
+def ai_tone_issues(body):
+    left = len(re.findall(r"[가-힣](어요|아요|여요|워요|해요|예요|에요|죠|네요|는데요|거든요)(?=[.?!。]|\s*$)", body, flags=re.M))
+    phr = [p for p in _AI_PHRASES if p in body]
+    return left, phr
 
 
 def local_fix(text):
@@ -1106,6 +1171,7 @@ def local_fix(text):
         body = re.sub(r"\s*\(?https?://[^\s)]+\)?", "", t[s:e])
         # 맨 위 카테고리 라벨·확인 일자 줄은 쓰지 않음 (사용자 요청)
         body = strip_top_labels(body)
+        body = dry_endings(body)  # 해요체 → 서술형 (AI 티 빼기)
         # 소제목 모양 통일: ###·####, 굵게만 된 번호 줄 → ## (복사 때 모두 19 소제목으로)
         body = re.sub(r"(?m)^#{3,4}[ \t]+", "## ", body)
         body = re.sub(r"(?m)^\*\*(\d{1,2}[.)][ \t]*[^*\n]{2,40})\*\*[ \t]*$", r"## \1", body)
