@@ -51,7 +51,7 @@ def fetch_repo_file(name):
     return False
 
 
-OLD_ESSAY_GUIDES = {"c55c6e1eccf3f0c7699ffc1ec50a8387ff1431c23199fcce5a84b679e37d5beb", "eb10b428f5c2376bb96b5dc3b531a9b698d3f25c218d798859c27609cb0054f9", "45c2e3dd597e5d4c3e96ec23d55a7ba9a04f1d2bff3ee76a028df3d657b8faeb", "db64537c3ca5dcd4d5d4da14bdb5b3bdcb33ead226152433ed30f4d8e1e738de", "81ec1b6d13a4f662295b631d823bef96b6760fe9d92d95fddf6f7220d41482d5", "d1135efb94d61aef886b86395aeeceaedf5fcbf53566db305cc3363c9cf6f482", "b958cc3dc2dba6cbd24392ad05cbd11e04be736a4746f69b15efa1d1aad8cadc", "79593cbf46c7380256b5c7f124ce684fb4976fc14d7709bffc942f0bf0b149c9", "19884d801b473ad4f995418beba2ddb35d9f6dac5360a31b510c713fe18b3402", "96b65eff47e4ec4ba812c4ca4b74ba4052397f84094b128f0f92968302c76a4e", "ea28eea311b851a60e5774ae1b66ec0d446c7f31fd603973f78aea6ada0e6f63", "ed1b71a6215fbd82305e1cea5165e40d0f7bef63321648b4c02495f976cd4816", "45cd7fcfeb57cb08bd66ff87fb7b328a78035e580592aeb545ee4a8003d49987", "8902f714050f13c941454680dea97257484de367d3a10fa6f64d403cd0df4ff5", "d4ab69ab3c7c45557d336d05a2171330b004b3c54aa6ced436f4be26879c312f", "18eac005a699b2a7cfa1ddd23e90f5ff9f9f2f70f07388daa608dda49c558a7f", "4daefb41ecf10b68cab44a5e092bf4756970d4e730128849c7af6229216fdd33"}  # 읽을거리형 기본 지침의 예전 판 (고치지 않았으면 자동 교체)
+OLD_ESSAY_GUIDES = {"e4a5e2c065f405d6d0039a31bc685226e15ca09df1b3d6239af934dedfd4776c", "10ee5e3feecfaf04250be40cc611efbd6cc606b0be5756dd5116473863a1f87d", "c55c6e1eccf3f0c7699ffc1ec50a8387ff1431c23199fcce5a84b679e37d5beb", "eb10b428f5c2376bb96b5dc3b531a9b698d3f25c218d798859c27609cb0054f9", "45c2e3dd597e5d4c3e96ec23d55a7ba9a04f1d2bff3ee76a028df3d657b8faeb", "db64537c3ca5dcd4d5d4da14bdb5b3bdcb33ead226152433ed30f4d8e1e738de", "81ec1b6d13a4f662295b631d823bef96b6760fe9d92d95fddf6f7220d41482d5", "d1135efb94d61aef886b86395aeeceaedf5fcbf53566db305cc3363c9cf6f482", "b958cc3dc2dba6cbd24392ad05cbd11e04be736a4746f69b15efa1d1aad8cadc", "79593cbf46c7380256b5c7f124ce684fb4976fc14d7709bffc942f0bf0b149c9", "19884d801b473ad4f995418beba2ddb35d9f6dac5360a31b510c713fe18b3402", "96b65eff47e4ec4ba812c4ca4b74ba4052397f84094b128f0f92968302c76a4e", "ea28eea311b851a60e5774ae1b66ec0d446c7f31fd603973f78aea6ada0e6f63", "ed1b71a6215fbd82305e1cea5165e40d0f7bef63321648b4c02495f976cd4816", "45cd7fcfeb57cb08bd66ff87fb7b328a78035e580592aeb545ee4a8003d49987", "8902f714050f13c941454680dea97257484de367d3a10fa6f64d403cd0df4ff5", "d4ab69ab3c7c45557d336d05a2171330b004b3c54aa6ced436f4be26879c312f", "18eac005a699b2a7cfa1ddd23e90f5ff9f9f2f70f07388daa608dda49c558a7f", "4daefb41ecf10b68cab44a5e092bf4756970d4e730128849c7af6229216fdd33"}  # 읽을거리형 기본 지침의 예전 판 (고치지 않았으면 자동 교체)
 
 GUIDE_FILES = {"info": "writer_guide.md", "essay": "writer_guide_essay.md", "deal": "writer_guide_deal.md"}
 OLD_DEAL_GUIDES = {"5125be05039330d329adf0248a5f737aec6bdfbcd78ea8c3d55cfd6305bb7898", "a996b39232c6d3301ef2ed618c2429c0dcda5129b0087f3d70b8bb8cb5c07ec9", "7758d0aa1840332f1aa7c308ac3bfee931071444718c1ed37253de8c4e5ba856", "8fe2b2221d8409f51fded5316ecb1ee2ae158119bb56e7f3480d4e406492f6f5", "a78d39a4eca802c85321a5e58b8c9bf6aa682f3bc965aa7bd830271f62cd6c02", "1ea3bc54df202452108d94303693d97d2d03af217df979c6492bd50fff4abe89", "e3fcefc11d16df24aee487b5f9d0f91f1f812b0c661800cc80c3035373990114", "ee6dd3684b17c94ee03962a69eb5276a45d4c2481829f31bea9e1fb9cbe36f90", "6b55a9c9027df6edb6edb0e4e7a6a373a7dbc331ed5f7b4c7a18bda8a5093c76", "8d3a5790537d218a41286a849dfae061c8be637b331be44f416915ab33f13fa0", "2e89ca129de16b8d17b3cc2b6e9ff1f0ee1eced8cab0fb7933c7ba50eb90f607", "de03160a2180a98424ce1b83490cac780822805ef5ef4d7b8524b5d9dd1b92bc", "630d625ce119fda6136d2b61fc362fd1ca864200af7c5506f24481ea0e3f1b42", "1236c80d084fa0ec1dbd9d1cc93e651f14c63ea8634875fe0f93b88004a83a1e", "b6f576099c0177811aaba58d82a0c054bbdcd661d8d73d92b7da92088360abf3", "ef714a4751cb6e8f163634329da698bc9733fb280c538a7c8056a624c0bb41c9", "e90e6b081db348c81e8a6db390e6dfc77f4fe2b2441d653cd72a29ca15b056f5", "eb6cf6538685a58580f804568b1244da811c1755c0ae7a3bcdb2182965a8a39d", "6bb7940776d446bcd5f7ecd7d6c4c0f76d8a391f7c009bb270b07f9ae8796a6a"}
@@ -444,7 +444,7 @@ def draft_request(item, cfg, today):
 def system_prompt(guide, memory, web, style="info"):
     tail = ["", "---", "", "# 실행 환경 안내 (키워드 플래너)",
             "- 결과물은 위 지침의 출력 양식 그대로, 마크다운 텍스트로만 답합니다. 앞뒤 인사나 설명을 붙이지 않습니다.",
-            ("- 이미지는 사용자가 Gemini로 직접 만듭니다. 당신은 이미지를 만들지 않고, 참고 자료 아래·태그 바로 위의 '■ Gemini 이미지 프롬프트'에 #1 대표 이미지(글 전체 요약이 보이는 표지)와 #2·#3 섹션 핵심 이미지(본문의 고유 대상이 주인공, 내용과 무관한 분위기 이미지 금지, 필요 없으면 생략) 프롬프트를 ~~~ 블록 하나씩 씁니다. 실제 포스터·배우 얼굴·책 표지는 재현하지 않습니다." if style == "essay" else
+            ("- 이미지는 사용자가 Gemini로 직접 만듭니다. 당신은 이미지를 만들지 않고, 참고 자료 아래·태그 바로 위의 '■ Gemini 이미지 프롬프트'에 #1 대표 이미지(글 전체 요약이 보이는 표지)와 섹션 핵심 이미지(기본 #2·#3, 여러 개를 추천하는 글은 추천 항목마다 1장씩 — 추천 6개면 #2~#7, 여행·숙박·장소 추천은 최소 5곳)(본문의 고유 대상이 주인공, 내용과 무관한 분위기 이미지 금지, 필요 없으면 생략) 프롬프트를 ~~~ 블록 하나씩 씁니다. 실제 포스터·배우 얼굴·책 표지는 재현하지 않습니다." if style == "essay" else
              "- 이미지는 사용자가 Gemini로 직접 만듭니다. 당신은 이미지를 만들지 않고, 참고 자료 아래·태그 바로 위의 '■ Gemini 이미지 프롬프트'에 4장(#1 표지 포스터, #2 할인 구조·마감 타임라인, #3 실가격 비교, #4 구매 체크리스트) 프롬프트를 ~~~ 블록 하나씩 씁니다. 실제 제품 사진·브랜드 로고·판매처 화면은 재현하지 않습니다." if style == "deal" else
              "- 이미지는 사용자가 Gemini로 직접 만듭니다. 당신은 이미지를 만들지 않고, 참고 자료 아래·태그 바로 위의 '■ Gemini 이미지 프롬프트'에 이미지 6장 프롬프트를 각각 ~~~ 블록 하나씩 단독 실행되는 완성형으로 씁니다. #1은 글 주제를 함축한 강렬한 표지 포스터(정보 카드 틀을 쓰지 않음), #2~#6은 섹션마다 그 내용과 직접 관련된 실사 사진(진짜 사진 촬영 지시) 위에 핵심 숫자·라벨을 반투명 패널로 얹은 '실사 사진 + 가공' 이미지입니다(그래프만 있는 카드 단독 금지). 파스텔·둥근 카드·부드러운 그림자의 평범한 인포그래픽은 쓰지 않습니다. 이미지마다 실제 장면이 도움이 되면 지침의 '실사 사진형'(진짜 사진 촬영 지시로 시작하고 끝에 not an illustration/not a 3D render/not CGI를 붙인 사진, 주인공 클로즈업 + 손만 보이는 생활 장면, 글자 없음), 숫자·비교가 핵심이면 카드형을 스스로 골라 씁니다."),
             "- 실제 장소를 그리는 이미지 프롬프트는 웹 검색으로 그 장소의 실제 사진을 확인한 뒤, 정확한 장소명(한글+영문+도시)·대표 건물 개수와 배치·지붕/재료/색·주변 지형·실제 조명·대표 촬영 위치와 방향을 그대로 묘사해 실제 사진과 거의 구분되지 않게 씁니다. 없는 구조물을 더하거나 있는 것을 빼지 않습니다.",
@@ -1056,19 +1056,22 @@ def check_essay(text):
     ref = t[j:t.find("■", j + 1)] if j >= 0 else ""
     nums = [int(n) for n in re.findall(r"(?m)^##\s*(\d+)\.", body)]
     prompts = len(re.findall(r"(?m)^(?:~~~|```)[^\n]*\n\s*Aspect ratio", t))
-    imgs = sum(1 for k in range(1, 4) if re.search(rf"이미지\s*#{k}\b", body))
+    imgs = len(set(re.findall(r"이미지\s*#(\d+)", body)))
+    travel = bool(re.search(r"추천|여행|숙소|숙박|호텔|펜션|리조트|가볼만한|가볼 곳|명소|관광|코스|BEST|TOP|베스트", t[:3000]))
+    nsec = len(re.findall(r"(?m)^##\s*\d{1,2}[.)]", body))  # 추천 항목(번호 소제목) 수
+    need = max(3, nsec + 1) if travel else 3
     q = len(re.findall(r"[가-힣](?:나요|까요|을까|ㄹ까|니까요)\?", body))
     chars = body_chars(t)
     items = [
         ("기획: 메인 키워드·추천 제목 3개", bool(re.search(r"메인 키워드", t) and re.search(r"추천 제목[^\n]*\n+\s*1\..+\n+\s*2\..+\n+\s*3\.", t)), ""),
         ("소제목 3~5개 (번호 순서대로)", 3 <= len(nums) <= 5 and nums == list(range(1, len(nums) + 1)), f"{len(nums)}개"),
         ("마무리", bool(re.search(r"(?m)^##\s*마무리", body)), ""),
-        ("이미지 삽입 위치 3곳", imgs == 3, f"{imgs}곳"),
+        (f"이미지 삽입 위치 {need}곳 이상" if travel else "이미지 삽입 위치 3곳", imgs >= need if travel else imgs == 3, f"{imgs}곳"),
         ("분량 2,000자 이상 (권장 2,500~3,500)", chars >= 2000, f"{chars:,}자"),
         ("의문형 문장 없음", q == 0, f"{q}개" if q else ""),
         ("본문에 URL 없음", not re.search(r"https?://", body), ""),
         ("참고한 공식 자료", bool(ref.strip()), ""),
-        ("Gemini 이미지 프롬프트 3개", prompts >= 3, f"{prompts}개"),
+        (f"Gemini 이미지 프롬프트 {need}개 이상" if travel else "Gemini 이미지 프롬프트 3개", prompts >= need, f"{prompts}개"),
         ("네이버 태그 10~15개", 10 <= n_tags <= 15, f"{n_tags}개"),
         ("태그는 글 맨 마지막", bool(tags_sec) and t.rfind("■") == i and "~~~" not in tags_sec, ""),
     ]
