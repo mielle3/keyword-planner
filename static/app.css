@@ -1635,3 +1635,17 @@ html { overflow-y: scroll; scrollbar-gutter: stable; }
 /* 뉴스 표시가 없는 칸도 같은 자리를 비워 두어 글자 시작점을 맞춤 (전체 제외) */
 #topicTabs button::before { content: ""; display: inline-block; box-sizing: border-box; width: 30px; flex: none; margin-right: 0 !important; text-align: center; }
 #topicTabs .tt-news::before { content: "뉴스"; padding: 2px 0 !important; vertical-align: 0 !important; }
+
+/* v128: 초안 도구 막대 = 같은 크기 칸의 격자 (폭이 줄면 칸 단위로 줄바꿈 · 오와 열 유지) */
+.dv-actions { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 8px !important; align-items: stretch; flex-wrap: initial !important; }
+.dv-actions .dv-group { display: contents !important; }
+.dv-actions .dv-group + .dv-group { padding-left: 0 !important; border-left: 0 !important; }
+.dv-actions .seg, .dv-actions select, .dv-actions .btn, .dv-actions .dv-more, .dv-actions .dv-more > summary { width: 100%; height: 40px; box-sizing: border-box; margin: 0 !important; min-width: 0; }
+.dv-actions .seg { display: grid; grid-template-columns: 1fr 1fr; }
+.dv-actions .seg button { height: 100%; }
+.dv-actions .btn, .dv-actions .dv-more > summary { display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dv-actions select { padding: 0 12px; }
+.dv-actions .dv-more > summary small { display: none; }  /* 되돌리기 개수는 메뉴 안에서만 */
+.dv-actions .dv-more .dv-menu { right: 0; left: auto; min-width: 240px; }
+.dv-actions { grid-template-columns: repeat(auto-fill, minmax(max(196px, calc((100% - 16px) / 3)), 1fr)) !important; }  /* 3칸×2줄, 좁으면 2칸×3줄 */
+.dv-actions select { max-width: none !important; width: 100% !important; }
