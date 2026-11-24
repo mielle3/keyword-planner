@@ -1626,3 +1626,12 @@ html { overflow-y: scroll; scrollbar-gutter: stable; }
 .write-dock .btn { align-self: center !important; margin-top: 0 !important; }
 .write-dock .wd-spin { border-color: #e0c860; border-top-color: var(--ink); }
 @media (prefers-color-scheme: dark) { .write-dock { background: #3a3210 !important; } .write-dock .wd-sub { color: #e8d98a; } }
+
+/* v124: 분야 탭을 오와 열이 맞는 격자로 (화면 폭이 줄어도 같은 칸 너비로 줄바꿈) */
+.topic-tabs, .tv-head .topic-tabs { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); column-gap: 8px !important; row-gap: 2px !important; overflow: visible !important; flex-wrap: initial; }
+.topic-tabs button { width: 100%; text-align: left; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; padding: 0 6px !important; }
+.topic-tabs button small { margin-left: auto !important; }
+.topic-tabs button[aria-selected="true"]::after { left: 0; right: 0; }
+/* 뉴스 표시가 없는 칸도 같은 자리를 비워 두어 글자 시작점을 맞춤 (전체 제외) */
+#topicTabs button::before { content: ""; display: inline-block; box-sizing: border-box; width: 30px; flex: none; margin-right: 0 !important; text-align: center; }
+#topicTabs .tt-news::before { content: "뉴스"; padding: 2px 0 !important; vertical-align: 0 !important; }
