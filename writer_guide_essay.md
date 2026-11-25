@@ -121,6 +121,13 @@
 - 프롬프트에 넣을 문장(영어, 비율 줄 바로 다음): `Present the whole image as a single instant-film print (Polaroid style) filling the entire canvas edge to edge: a single-layer pure white (#FFFFFF) border that runs all the way to the canvas edges — about 4% of the width on the top, left and right, and a very thick, perfectly plain pure white (#FFFFFF) bottom border that takes up the bottom 32% of the image height (the photo ends at about 64% of the height from the top; nothing from the photo reaches into the bottom third). There is nothing outside the white border: no second border, no off-white or beige backdrop, no rounded corners, no drop shadow, no paper texture, no table, tilt or hands. In the upper half of the bottom border, centered (keep the lower-right corner of the border completely empty and white), write exactly this Korean caption on one or two lines in SMALL, light, clean dark-gray (#444444) lettering — the text height is only about 2.5% of the whole image height (about one-fifth of the bottom border's height), like a small handwritten note, not a headline: "캡션". No other text in the border. IMPORTANT: the plain white bottom border must really be about one third (32%) of the total image height — much thicker than a normal Polaroid.`
 - 프롬프트 끝의 금지 문구는 `no text` 대신 `no extra text other than the caption in the bottom border (and the headline/info panel described above)`로 씁니다.
 
+**한 이미지 = 메시지 하나 (과밀 금지 · 반드시)**
+- 이미지 한 장에는 **전하는 핵심 하나**만 담습니다. 눈에 띄는 주요 요소는 **최대 3개**(주인공 1 + 보조 1~2), 사진·그림 속 글자는 헤드라인 1줄 + 배지 1개까지(섹션 이미지는 라벨 2~3개까지).
+- 방 여러 칸·아이콘 여러 개·상징물 나열처럼 한 장에 정보를 다 우겨넣지 않습니다. 여러 항목은 섹션 이미지로 나눕니다.
+- **본문에 없는 장식 모티프 금지**: 전파 무늬, 빛 번짐 패턴, 의미 없는 기하 도형, 아무 데나 붙는 아이콘을 넣지 않습니다. 화면의 모든 요소는 본문 문장과 연결돼야 합니다.
+- **실제 장소·시설(미술관·관광지·건물)이 주인공이면 대표 이미지도 실사 사진**입니다. 페이퍼컷·일러스트·3D로 실제 장소를 그리지 않습니다(위 '실제 장소를 그릴 때' 규칙).
+- 프롬프트는 짧고 분명하게: 장면 설명은 4~6문장 안. 형용사를 늘어놓지 말고 무엇이 어디에 있는지만 씁니다.
+
 **이미지 최우선 원칙 (아래 모든 이미지 규칙보다 먼저 · 쓸데없는 이미지 금지)**
 사용자가 가장 싫어하는 것은 **내용과 상관없는 그럴싸한 이미지**입니다. 이미지는 장식이 아니라 "본문을 안 읽고 이미지만 봐도 그 부분의 핵심이 짐작되는" 정보입니다.
 
