@@ -88,7 +88,7 @@ EVERGREEN_CHECK_PATH = DATA / "evergreen_check.json"
 import writer as _writer  # AI 글쓰기 (작가 지침·블로그 기억·초안 보관·docx)
 WRITER = _writer.Store(DATA)
 KST = timezone(timedelta(hours=9))
-APP_VERSION = "2026.11.21-134"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
+APP_VERSION = "2026.11.21-135"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 DEFAULT_CONFIG = {
@@ -3790,15 +3790,34 @@ def run_morning(force=False):
         if not ai_ready(cfg):
             out["errors"].append("AI 자동 작성이 연결되지 않아 건너뜀")
             return out
-        # 1) 상시 주제
-        kw, r = pick_evergreen_topic(cfg)
-        if kw:
-            note = "[아침 자동 · 상시 주제] 1년 내내 검색되는 주제입니다. 연도·기준이 바뀌어도 오래 읽히도록, 최신 공식 기준으로 확인해 쓰세요."
-            enqueue_draft({"id": f"am-eg-{int(time.time())}", "keyword": kw, "topic": "", "brief": {}, "metrics": {}, "src": {"evergreen": r},
-                           "user_note": note}, auto=True)
-            out["evergreen"] = kw
+        # 1) 두 번째 글: 오늘 크게 터진 이슈가 있으면 이슈 글, 없으면 상시 주제
+        kw, r, issue = None, {}, None
+        try:
+            files = sorted(HISTORY.glob("*.json"), reverse=True) if HISTORY.exists() else []
+            d = json.loads(files[0].read_text(encoding="utf-8")) if files else {}
+            if d.get("date") == datetime.now(KST).date().isoformat() or (d.get("generated_at") or "")[:10] == datetime.now(KST).date().isoformat():
+                written = {norm(x.get("keyword", "")) for x in WRITER.index()}
+                for t in d.get("topics", []):
+                    for c in t.get("items", []):
+                        if c.get("kind") in ("trend", "news") and (c.get("score") or 0) >= 70 and norm(c["keyword"]) not in written \
+                                and c.get("learned") not in ("dislike", "written") and (not issue or c["score"] > issue["score"]):
+                            issue = c
+        except Exception:
+            issue = None
+        if issue:
+            kw = issue["keyword"]
+            enqueue_draft({**issue, "id": f"am-is-{int(time.time())}",
+                           "user_note": "[아침 자동 · 오늘의 이슈] 오늘 검색이 크게 오른 이슈입니다. 최신 보도와 공식 발표로 사실을 확인하고, 확인 시점을 밝혀 쓰세요."}, auto=True)
+            out["evergreen"] = f"(이슈) {kw}"
         else:
-            out["errors"].append("쓸 상시 주제를 찾지 못함")
+            kw, r = pick_evergreen_topic(cfg)
+            if kw:
+                note = "[아침 자동 · 상시 주제] 1년 내내 검색되는 주제입니다. 연도·기준이 바뀌어도 오래 읽히도록, 최신 공식 기준으로 확인해 쓰세요."
+                enqueue_draft({"id": f"am-eg-{int(time.time())}", "keyword": kw, "topic": "", "brief": {}, "metrics": {}, "src": {"evergreen": r},
+                               "user_note": note}, auto=True)
+                out["evergreen"] = kw
+            else:
+                out["errors"].append("쓸 상시 주제를 찾지 못함")
         # 2) 오늘 최적 주제: 오늘의 글 계획(요일 코너·최근 7일·유효성) → 실패하면 오늘의 추천 1위
         today_kw, style, plan = None, "", ""
         try:

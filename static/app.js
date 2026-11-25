@@ -786,7 +786,7 @@ function renderAuto() {
     const ml = au.morning_last || {};
     $("#morningInfo").innerHTML = au.morning_running ? "아침 글을 고르고 쓰는 중이에요…" : ml.date
       ? `최근 실행: ${esc(ml.date)} ${esc(ml.at || "")} · 상시 <b>${esc(ml.evergreen || "없음")}</b> · 오늘 <b>${esc(ml.today || "없음")}</b>${(ml.errors || []).length ? " · " + esc(ml.errors.join(", ")) : ""}`
-      : "상시 주제는 상시 키워드 검증에서 '1년 내내 찾음'·검색량 큰 순, 오늘 최적 주제는 오늘의 글 계획(요일 코너·최근 7일 이슈)으로 골라요. 그 시각에 PC가 꺼져 있으면 켜진 뒤 그날 한 번 실행해요.";
+      : "1편은 오늘의 글 계획의 요일 코너(월 돈 일정·화 금리·대출·수 계산·목 알뜰 딜·금 직접 해봤다·토 핫플 집중 보도·일 업데이트)로, 1편은 오늘 크게 오른 이슈가 있으면 이슈 글, 없으면 상시 주제로 골라요. 그 시각에 PC가 꺼져 있으면 켜진 뒤 그날 한 번 실행해요.";
   }
   if (document.activeElement !== $("#blogId")) $("#blogId").value = le.blog_id || "";
   $("#blogInfo").textContent = le.error ? le.error : le.posts != null ? `최근 글 ${le.posts}개를 읽었어요` : (le.blog_id ? "아직 안 읽음" : "");
