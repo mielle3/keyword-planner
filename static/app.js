@@ -1399,7 +1399,7 @@ function renderDrafts() {
             <summary class="btn">더보기${d.versions ? ` <small>되돌리기 ${d.versions}</small>` : ""} ▾</summary>
             <div class="dv-menu">
               <button id="dvCopyBody2" class="menu-copy">📋 블로그에 붙일 본문 복사</button>
-              <button id="dvImgRedo" title="본문은 그대로 두고 Gemini 이미지 프롬프트만 새 이미지 원칙으로 다시 써요">🖼 이미지 프롬프트만 새로 쓰기</button>
+              <button id="dvImgRedo" title="본문은 그대로 두고 Gemini 이미지 프롬프트만 새 이미지 원칙으로 다시 써요">이미지 프롬프트만 새로 쓰기</button>
               <button id="dvRedo" title="같은 글감으로 처음부터 다시 써서 이 초안을 덮어써요">다시 쓰기</button>
               <button id="dvRestyle" title="내용은 살리고 형식만 바꿔 이 초안을 덮어써요">형식 바꾸기</button>
               <button id="dvCopyPlain">본문 글자만 복사 (서식 없이)</button>
