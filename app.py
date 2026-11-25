@@ -88,7 +88,7 @@ EVERGREEN_CHECK_PATH = DATA / "evergreen_check.json"
 import writer as _writer  # AI 글쓰기 (작가 지침·블로그 기억·초안 보관·docx)
 WRITER = _writer.Store(DATA)
 KST = timezone(timedelta(hours=9))
-APP_VERSION = "2026.11.21-141"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
+APP_VERSION = "2026.11.21-142"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 DEFAULT_CONFIG = {
@@ -4124,6 +4124,9 @@ def set_autostart(on):
             else "바로가기를 만들지 못했어요. 이 폴더를 옮겼다면 다시 켜 주세요.")
 
 
+_PREEMPT_AUTO = {"running": False, "day": ""}
+
+
 def auto_refresh_loop():
     """프로그램이 켜져 있는 동안 스스로 다시 분석: 마지막 분석 후 N시간(기본 4)이 지나면, 오전 7시~밤 11시 사이에."""
     time.sleep(20)
@@ -4143,6 +4146,23 @@ def auto_refresh_loop():
                 if last is None or (now - last).total_seconds() > hours * 3600:
                     print(f"[{now:%H:%M}] 자동 업데이트: 마지막 분석 후 {hours:g}시간이 지나 새로 분석합니다.")
                     start_job()
+            # 미리 쓸 글감도 하루 한 번(오전 7시 이후 처음) 새로 고침
+            if 7 <= now.hour < 23 and not other_hosts() and not _PREEMPT_AUTO["running"]:
+                try:
+                    pg = json.loads(PREEMPT_PATH.read_text(encoding="utf-8")).get("generated_at", "")[:10]
+                except Exception:
+                    pg = ""
+                if pg != now.date().isoformat() and _PREEMPT_AUTO["day"] != now.date().isoformat():
+                    _PREEMPT_AUTO.update(running=True, day=now.date().isoformat())
+                    def _pre():
+                        try:
+                            print(f"[{datetime.now(KST):%H:%M}] 자동 업데이트: 미리 쓸 글감을 오늘 기준으로 새로 찾습니다.")
+                            run_preempt()
+                        except Exception:
+                            traceback.print_exc()
+                        finally:
+                            _PREEMPT_AUTO["running"] = False
+                    threading.Thread(target=_pre, daemon=True).start()
         except Exception:
             traceback.print_exc()
         time.sleep(600)
