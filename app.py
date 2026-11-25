@@ -88,7 +88,7 @@ EVERGREEN_CHECK_PATH = DATA / "evergreen_check.json"
 import writer as _writer  # AI 글쓰기 (작가 지침·블로그 기억·초안 보관·docx)
 WRITER = _writer.Store(DATA)
 KST = timezone(timedelta(hours=9))
-APP_VERSION = "2026.11.21-142"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
+APP_VERSION = "2026.11.21-143"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 DEFAULT_CONFIG = {
@@ -3752,7 +3752,7 @@ def auto_drafts(result):
         per_day = int(float(cfg.get("auto_draft_per_day", 2) or 0))
     except Exception:
         per_day = 0
-    if per_day <= 0 or not ai_ready(cfg) or not result or other_hosts():
+    if per_day <= 0 or not ai_ready(cfg) or not result or not i_lead(need_ai=True):
         return
     today = datetime.now(KST).date().isoformat()
     idx = WRITER.index()
@@ -3901,7 +3901,7 @@ def morning_loop():
             due = now.replace(hour=int(hh), minute=int(mm), second=0, microsecond=0)
             st = _morning_state()
             if (cfg.get("morning_drafts", True) and now >= due and now.hour < 23 and st.get("date") != now.date().isoformat()
-                    and not other_hosts() and ai_ready(cfg)):
+                    and i_lead(need_ai=True) and ai_ready(cfg)):
                 print("  → 아침 글 2편 시작 (상시 1 · 오늘 최적 1)")
                 run_morning()
         except Exception:
@@ -4062,10 +4062,34 @@ def heartbeat_loop():
         try:
             p = DATA / "running"
             p.mkdir(exist_ok=True)
-            (p / f"{re.sub(r'[^\w.-]', '_', HOST)}.json").write_text(json.dumps({"host": HOST, "at": time.time()}), encoding="utf-8")
+            try:
+                ai = bool(ai_ready(load_config()))
+            except Exception:
+                ai = False
+            (p / f"{re.sub(r'[^\w.-]', '_', HOST)}.json").write_text(json.dumps({"host": HOST, "at": time.time(), "ai": ai}), encoding="utf-8")
         except Exception:
             pass
         time.sleep(60)
+
+
+def i_lead(need_ai=False):
+    """집·회사 PC가 같은 폴더를 쓸 때 자동 작업을 맡을 PC 한 대 고르기.
+    켜져 있는 PC 중(AI 작업이면 AI가 연결된 PC 중) 이름순 첫 PC가 맡음 → 둘 다 켜져 있어도 한 대는 반드시 실행."""
+    alive = []
+    try:
+        for f in (DATA / "running").glob("*.json"):
+            d = json.loads(f.read_text(encoding="utf-8"))
+            if time.time() - float(d.get("at", 0)) < 180 and d.get("host"):
+                alive.append((d["host"], bool(d.get("ai"))))
+    except Exception:
+        pass
+    me_ai = bool(ai_ready(load_config())) if need_ai else True
+    if need_ai and not me_ai:
+        return False
+    cands = sorted(h for h, ai in alive if (ai or not need_ai)) or [HOST]
+    if HOST not in cands:
+        cands = sorted(cands + [HOST])
+    return cands[0] == HOST
 
 
 def other_hosts():
@@ -4135,7 +4159,7 @@ def auto_refresh_loop():
             cfg = load_config()
             hours = float(cfg.get("auto_refresh_hours", 4) or 0)
             now = datetime.now(KST)
-            if hours > 0 and 7 <= now.hour < 23 and cfg.get("topics") and not JOB["running"] and not other_hosts():
+            if hours > 0 and 7 <= now.hour < 23 and cfg.get("topics") and not JOB["running"] and i_lead():
                 files = sorted(HISTORY.glob("*.json"), reverse=True) if HISTORY.exists() else []
                 last = None
                 if files:
@@ -4147,7 +4171,7 @@ def auto_refresh_loop():
                     print(f"[{now:%H:%M}] 자동 업데이트: 마지막 분석 후 {hours:g}시간이 지나 새로 분석합니다.")
                     start_job()
             # 미리 쓸 글감도 하루 한 번(오전 7시 이후 처음) 새로 고침
-            if 7 <= now.hour < 23 and not other_hosts() and not _PREEMPT_AUTO["running"]:
+            if 7 <= now.hour < 23 and i_lead() and not _PREEMPT_AUTO["running"]:
                 try:
                     pg = json.loads(PREEMPT_PATH.read_text(encoding="utf-8")).get("generated_at", "")[:10]
                 except Exception:
