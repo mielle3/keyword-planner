@@ -88,7 +88,7 @@ EVERGREEN_CHECK_PATH = DATA / "evergreen_check.json"
 import writer as _writer  # AI 글쓰기 (작가 지침·블로그 기억·초안 보관·docx)
 WRITER = _writer.Store(DATA)
 KST = timezone(timedelta(hours=9))
-APP_VERSION = "2026.11.21-140"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
+APP_VERSION = "2026.11.21-141"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 DEFAULT_CONFIG = {
@@ -1813,8 +1813,11 @@ def past_month(kw, today=None):
     mm = re.search(r"(?<!\d)(\d{1,2})월", kw)
     if not mm or not 1 <= int(mm.group(1)) <= 12:
         return False
-    cur = (today or datetime.now(KST).date()).month
-    return 1 <= (cur - int(mm.group(1))) % 12 <= 4
+    td = today or datetime.now(KST).date()
+    cur, m = td.month, int(mm.group(1))
+    if m == cur and td.day >= 20:  # 이번 달도 막바지 → '11월 공모주 일정' 같은 글은 이미 늦음 (다음 달 글이 유리)
+        return True
+    return 1 <= (cur - m) % 12 <= 4
 
 
 def pick_for_measure(cands, budget, rng, per_topic_min=6, per_seed=3):
@@ -2378,6 +2381,26 @@ def guess_topic(kw):
     return "일상·생각"
 
 
+def freshen(result, today=None):
+    """저장된 분석 결과를 보여 줄 때 오늘 기준으로 철 지난 글감을 빼고 발행 시기를 다시 계산."""
+    td = today or datetime.now(KST).date()
+    def ok(it):
+        kw = it.get("keyword", "")
+        return not past_month(kw, td) and not past_event(kw, td) and (it.get("event") or {}).get("status") != "past"
+    if isinstance(result.get("items"), list):
+        result["items"] = [it for it in result["items"] if not isinstance(it, dict) or ok(it)]
+        for it in result["items"]:
+            if isinstance(it, dict) and "timing" in it:
+                it["timing"] = publish_timing(it, td)
+    for t in result.get("topics", []) or []:
+        if isinstance(t.get("items"), list):
+            t["items"] = [it for it in t["items"] if ok(it)]
+    if isinstance(result.get("top"), list) and result.get("topics"):
+        alive = {it.get("id") for t in result["topics"] for it in t.get("items", [])}
+        result["top"] = [i for i in result["top"] if i in alive]
+    return result
+
+
 def publish_timing(it, today):
     kw = it["keyword"]
     mm = re.search(r"(\d{1,2})월", kw)
@@ -2385,6 +2408,9 @@ def publish_timing(it, today):
         mo = int(mm.group(1))
         yy = today.year + (1 if mo < today.month else 0)
         start = date(yy, mo, 1)
+        if start <= today:
+            nxt = mo % 12 + 1
+            return f"{mo}월이 이미 시작됐어요. 지금 바로 발행하고, 다음 글은 '{nxt}월' 버전으로 준비하세요."
         best = max(today, start - timedelta(days=21))
         return f"{mo}월 시작 2~3주 전({best.month}월 {best.day}일 무렵)까지 발행하면 좋습니다."
     if TICKET_RE.search(kw):
@@ -3142,7 +3168,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(404, {"error": "not found"})
             d = json.loads(p.read_text(encoding="utf-8"))
             d["id"] = rid
-            return self._send(200, d)
+            return self._send(200, freshen(d))
         if path == "/api/saved":
             return self._send(200, load_saved())
         if path == "/api/ideas":
@@ -3207,7 +3233,7 @@ class Handler(BaseHTTPRequestHandler):
                                     "fetched_at": datetime.fromtimestamp(_news_cache["at"], KST).isoformat(timespec="seconds")})
         if path == "/api/preempt":
             try:
-                return self._send(200, json.loads(PREEMPT_PATH.read_text(encoding="utf-8")))
+                return self._send(200, freshen(json.loads(PREEMPT_PATH.read_text(encoding="utf-8"))))
             except Exception:
                 return self._send(200, {"items": None, "calendar": upcoming_calendar(datetime.now(KST).date())})
         self._send(404, {"error": "not found"})
