@@ -111,13 +111,14 @@
 - 이미지 캡션마다 따로 붙이지 않고 이 한 줄로 안내합니다(본문 흐름을 끊지 않게).
 
 **즉석사진(폴라로이드) 프레임 — 모든 이미지 공통 · 반드시 (대표 이미지 포함)**
-모든 이미지는 즉석사진처럼 만듭니다: 바깥에 **얇은 하얀 테두리**, **아래 여백은 더 두껍게**, 그 아래 여백 안에 **이미지 설명 한 줄**.
-- 테두리: 위·왼쪽·오른쪽은 얇게(가로 폭의 약 4%), 아래는 두껍게(세로 높이의 약 15%). 따뜻한 흰색(#FAFAF7) 무광 종이 질감.
+모든 이미지는 즉석사진처럼 만듭니다: 바깥에 **얇은 하얀 테두리**, **아래 여백은 훨씬 두껍게**, 그 아래 여백 안에 **이미지 설명 1~2줄**.
+- **왜 아래 여백이 두꺼운가:** Gemini 로고(반짝이 표시)는 이미지 오른쪽 아래(아래 끝에서 약 10~13%)에 찍힙니다. 아래 흰 여백을 **세로 높이의 약 25%**로 두껍게 하면 로고가 사진이 아니라 흰 여백 위에 떨어져 거의 보이지 않습니다.
+- 테두리: 위·왼쪽·오른쪽은 얇게(가로 폭의 약 4%), **아래는 세로 높이의 약 25%**(사진 영역은 위쪽 약 70%까지). 순백에 가까운 흰색(#FFFFFF~#FAFAF7) 무광 종이 질감 — 로고가 묻히도록 아래 여백은 무늬·그라데이션 없이 균일한 흰색.
 - 캔버스 전체가 사진 한 장(프레임 포함)입니다: 바깥 배경·책상·그림자·기울임·손에 든 모습 없이, 정면에서 반듯하게 꽉 차게.
-- 아래 여백 글자(캡션): 그 이미지의 '전하는 핵심'을 **간명하게 한 줄 12~22자**(예: "동궁과 월지, 해 진 직후 30분이 가장 선명합니다" 처럼 정보가 있는 문장). **작은 글씨**: 글자 높이는 이미지 전체 높이의 약 2.5%(아래 여백 높이의 1/5 정도) — 참고용 메모처럼 작고 가볍게. 짙은 회색(#444444) 깔끔한 한글 고딕체(또는 손글씨 느낌 펜체 중 하나로 통일), 가운데 정렬, 여백 세로 가운데. 크고 굵은 글씨 금지.
+- 아래 여백 글자(캡션): 그 이미지의 '전하는 핵심'을 **간명하게 1~2줄(줄마다 12~22자)**. 아래 여백의 **위쪽 절반** 안에 두고, 여백의 오른쪽 아래 구석(로고 자리)에는 글자를 두지 않습니다.(예: "동궁과 월지, 해 진 직후 30분이 가장 선명합니다" 처럼 정보가 있는 문장). **작은 글씨**: 글자 높이는 이미지 전체 높이의 약 2.5%(아래 여백 높이의 1/5 정도) — 참고용 메모처럼 작고 가볍게. 짙은 회색(#444444) 깔끔한 한글 고딕체(또는 손글씨 느낌 펜체 중 하나로 통일), 가운데 정렬, 여백 세로 가운데. 크고 굵은 글씨 금지.
 - 사진 속 글자(대표 이미지 헤드라인, 정보 패널)는 기존 규칙대로 사진 안에 둡니다. 캡션은 그것과 겹치지 않게 아래 여백에만.
 - 각 프롬프트 위에 `- 캡션: "…"`을 따로 적습니다(한글이 깨지면 사용자가 직접 입력할 수 있게).
-- 프롬프트에 넣을 문장(영어, 비율 줄 바로 다음): `Present the whole image as a single instant-film print (Polaroid style) filling the entire canvas edge to edge: a thin warm-white matte border (about 4% of the width) on the top, left and right, and a thicker white bottom border (about 15% of the height). No background, table, shadow, tilt or hands around the print. Inside the bottom border, centered, write exactly this Korean caption on one line in SMALL, light, clean dark-gray (#444444) lettering — the text height is only about 2.5% of the whole image height (about one-fifth of the bottom border's height), like a small handwritten note, not a headline: "캡션". No other text in the border.`
+- 프롬프트에 넣을 문장(영어, 비율 줄 바로 다음): `Present the whole image as a single instant-film print (Polaroid style) filling the entire canvas edge to edge: a thin warm-white matte border (about 4% of the width) on the top, left and right, and a much thicker, perfectly plain white bottom border (about 25% of the height, the photo occupies only the top ~70%). No background, table, shadow, tilt or hands around the print. In the upper half of the bottom border, centered (keep the lower-right corner of the border completely empty and white), write exactly this Korean caption on one or two lines in SMALL, light, clean dark-gray (#444444) lettering — the text height is only about 2.5% of the whole image height (about one-fifth of the bottom border's height), like a small handwritten note, not a headline: "캡션". No other text in the border.`
 - 프롬프트 끝의 금지 문구는 `no text` 대신 `no extra text other than the caption in the bottom border (and the headline/info panel described above)`로 씁니다.
 
 **이미지 최우선 원칙 (아래 모든 이미지 규칙보다 먼저 · 쓸데없는 이미지 금지)**
