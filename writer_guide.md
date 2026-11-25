@@ -297,6 +297,12 @@
 - 프롬프트에 넣을 문장(영어, 비율 줄 바로 다음): `Present the whole image as a single instant-film print (Polaroid style) filling the entire canvas edge to edge: a single-layer pure white (#FFFFFF) border that runs all the way to the canvas edges — about 4% of the width on the top, left and right, and a very thick, perfectly plain pure white (#FFFFFF) bottom border that takes up the bottom 32% of the image height (the photo ends at about 64% of the height from the top; nothing from the photo reaches into the bottom third). There is nothing outside the white border: no second border, no off-white or beige backdrop, no rounded corners, no drop shadow, no paper texture, no table, tilt or hands. In the upper half of the bottom border, centered (keep the lower-right corner of the border completely empty and white), write exactly this Korean caption on one or two lines in SMALL, light, clean dark-gray (#444444) lettering — the text height is only about 2.5% of the whole image height (about one-fifth of the bottom border's height), like a small handwritten note, not a headline: "캡션". No other text in the border. IMPORTANT: the plain white bottom border must really be about one third (32%) of the total image height — much thicker than a normal Polaroid.`
 - 프롬프트 끝의 금지 문구는 `no text` 대신 `no extra text other than the caption in the bottom border (and the headline/info panel described above)`로 씁니다.
 
+**정보 패널 타이포 (고급스럽게 · 사진 위 반투명 패널·표·막대를 넣을 때 반드시)**
+- 제목은 **중간 굵기(SemiBold)**, 아주 굵은 Black/Heavy 글씨 금지. 숫자·라벨은 Regular~Medium. 글자 크기 단계는 3개 이하(제목 > 핵심 숫자 > 라벨·출처).
+- 패널은 사진 폭의 70~80%, 안쪽 여백 넉넉히(글자 높이의 1.5배 이상), 구분선은 아주 가는 1px. 패널 바탕은 미색이 아닌 흰색 85~90% 불투명.
+- 강조색은 **딱 한 곳**(가장 중요한 항목의 라벨과 막대만 같은 색), 나머지는 먹색·짙은 남색. 출처 줄은 작고 연한 회색.
+- 숫자는 오른쪽 정렬로 열을 맞추고, 막대 끝과 숫자 사이 간격을 일정하게.
+
 **한 이미지 = 메시지 하나 (과밀 금지 · 반드시)**
 - 이미지 한 장에는 **전하는 핵심 하나**만 담습니다. 눈에 띄는 주요 요소는 **최대 3개**(주인공 1 + 보조 1~2), 사진·그림 속 글자는 헤드라인 1줄 + 배지 1개까지(섹션 이미지는 라벨 2~3개까지).
 - 방 여러 칸·아이콘 여러 개·상징물 나열처럼 한 장에 정보를 다 우겨넣지 않습니다. 여러 항목은 섹션 이미지로 나눕니다.
