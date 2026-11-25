@@ -1728,6 +1728,9 @@ $("#wSwitch").onclick = () => openWrite(W_MODE === "new" ? "fix" : "new");
 $("#wGo").onclick = async () => {
   if (W_MODE === "new") {
     const kw = $("#wKeyword").value.trim(), note = $("#wConcept").value.trim();
+    if (/https?:\/\/(chatgpt\.com|chat\.openai\.com|gemini\.google\.com|g\.co\/gemini|claude\.ai)\S*/.test(note) && note.replace(/https?:\/\/\S+/g, "").trim().length < 200) {
+      if (!confirm("ChatGPT·Gemini·Claude 대화 공유 링크는 AI가 열 수 없어요(로그인·화면 그리기가 필요한 페이지).\n그 페이지의 글을 복사해 '내 생각' 칸에 붙여 넣어야 내용대로 써요.\n\n그래도 링크만으로 진행할까요?")) return;
+    }
     if (!kw) { toast("키워드를 적어 주세요"); $("#wKeyword").focus(); return; }
     $("#writeDialog").close();
     const st = $("#wStyle [aria-checked=true]")?.dataset.ws || "";
@@ -1937,6 +1940,7 @@ document.addEventListener("click", e => { if (e.target.closest('[data-tab="setti
 /* ---------- 이미 쓴 글 고치기: 블로그 글 주소만 넣어도 읽어 옴 ---------- */
 if ($("#rwSource")) $("#rwSource").addEventListener("blur", async () => {
   const v = $("#rwSource").value.trim();
+  if (/^https?:\/\/\S+$/.test(v) && !/^https?:\/\/(m\.)?blog\.naver\.com\//.test(v)) { toast("네이버 블로그 주소만 자동으로 읽어요. ChatGPT 공유 링크 같은 다른 주소는 AI가 열 수 없으니, 그 페이지의 글을 복사해 붙여 넣어 주세요"); return; }
   if (!/^https?:\/\/(m\.)?blog\.naver\.com\/\S+$/.test(v)) return;
   toast("블로그 글을 읽어 오는 중…");
   try { const p = await api("/api/naver/post", { url: v }); $("#rwSource").value = `${p.title}\n\n${p.text}`; toast(`‘${p.title.slice(0, 20)}’ 글을 읽어 왔어요 (${p.stats.chars.toLocaleString()}자)`); }

@@ -728,10 +728,14 @@ def call_agy(system, user, web=True, exe="", work_dir=None, model="", note=None)
     if status != "SUCCESS" or len(text) < (200 if not note else 20):
         if "auth" in low or "login" in low or "sign in" in low or "credential" in low:
             raise WriterError("Antigravity CLI에 로그인되어 있지 않아요. 명령 창에서 agy 를 한 번 실행해 구독 계정으로 로그인해 주세요.")
-        if "quota" in low or "limit" in low or "429" in low or "exhausted" in low:
-            raise WriterError("구독 사용 한도에 걸렸어요. 한도가 풀린 뒤 다시 시도해 주세요. " + (err or out)[:160])
+        # 진짜 한도 초과만 한도로 안내 (예전엔 출력 어디에든 'limit'이 있으면 한도로 잘못 안내했음)
+        if re.search(r"quota (exceeded|exhausted)|resource[_ ]exhausted|rate[_ ]limit(ed)?\b|usage limit|limit (reached|exceeded)|too many requests|\b429\b|exceeded your", low):
+            raise WriterError("Gemini(Antigravity) 구독 사용 한도에 걸렸어요. 보통 몇 시간 뒤 풀려요. 급하면 설정 → AI 글쓰기에서 '직접 붙여넣기'로 바꿔 쓰세요. "
+                              "(구글 응답: " + (err or out)[:160] + ")")
         if "timeout" in low or "timed out" in low:
             raise WriterError("Antigravity 응답 시간이 초과됐어요. 다시 시도해 주세요.")
+        if status == "SUCCESS" and text:
+            raise WriterError("AI가 초안 대신 짧은 답만 보냈어요: \"" + text[:200] + "\" — 링크를 읽지 못했을 수 있어요. 글 내용을 직접 붙여 넣어 주세요.")
         raise WriterError("Antigravity 실행 중 문제가 생겼어요: " + (status + " " + (err or out))[:240])
     used = model or data.get("model") or "기본 모델"
     return text, sources_from_text(text), f"Antigravity ({used})"
