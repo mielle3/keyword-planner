@@ -88,7 +88,7 @@ EVERGREEN_CHECK_PATH = DATA / "evergreen_check.json"
 import writer as _writer  # AI 글쓰기 (작가 지침·블로그 기억·초안 보관·docx)
 WRITER = _writer.Store(DATA)
 KST = timezone(timedelta(hours=9))
-APP_VERSION = "2026.11.21-148"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
+APP_VERSION = "2026.11.21-149"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 DEFAULT_CONFIG = {
@@ -2384,6 +2384,25 @@ def guess_topic(kw):
 def freshen(result, today=None):
     """저장된 분석 결과를 보여 줄 때 오늘 기준으로 철 지난 글감을 빼고 발행 시기를 다시 계산."""
     td = today or datetime.now(KST).date()
+    # 행사·출시·상장·시상식 같은 글감은 오늘 기준으로 뉴스 재확인 (하루 한 번, 캐시)
+    targets = []
+    for coll in [result.get("items") or []] + [t.get("items") or [] for t in (result.get("topics") or [])]:
+        for it in coll:
+            if isinstance(it, dict) and EVENT_WORDS.search(it.get("keyword", "")) and it.get("keyword") not in {x.get("keyword") for x in targets}:
+                targets.append(it)
+    targets = targets[:60]
+    if targets:
+        try:
+            with ThreadPoolExecutor(max_workers=8) as ex:
+                for it, ev in zip(targets, ex.map(lambda it: check_event(it["keyword"], td), targets)):
+                    if ev.get("status") not in (None, "generic", "unknown"):
+                        for coll in [result.get("items") or []] + [t.get("items") or [] for t in (result.get("topics") or [])]:
+                            for x in coll:
+                                if isinstance(x, dict) and x.get("keyword") == it["keyword"]:
+                                    x["event"] = ev
+        except Exception:
+            traceback.print_exc()
+
     def ok(it):
         kw = it.get("keyword", "")
         return not past_month(kw, td) and not past_event(kw, td) and (it.get("event") or {}).get("status") != "past"
@@ -2856,7 +2875,7 @@ def check_event(kw, today):
     core, proper = event_core(kw)
     if not proper or not EVENT_WORDS.search(kw):
         return {"status": "generic"}
-    key = norm(core)
+    key = norm(core) + "|" + today.isoformat()
     if key in _event_cache:
         return _event_cache[key]
     res = {"status": "unknown", "core": core}
