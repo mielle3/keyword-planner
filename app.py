@@ -88,7 +88,7 @@ EVERGREEN_CHECK_PATH = DATA / "evergreen_check.json"
 import writer as _writer  # AI 글쓰기 (작가 지침·블로그 기억·초안 보관·docx)
 WRITER = _writer.Store(DATA)
 KST = timezone(timedelta(hours=9))
-APP_VERSION = "2026.11.21-146"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
+APP_VERSION = "2026.11.21-147"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 DEFAULT_CONFIG = {
@@ -2814,7 +2814,8 @@ EVENT_GENERIC = {"콘서트", "공연", "페스티벌", "축제", "팬미팅", "
                  "영화", "드라마", "개봉", "공개", "출시", "예정", "국내", "해외", "서울", "부산", "추천", "무료", "단독", "아이돌", "클래식", "내년", "올해"}
 PAST_RE = re.compile(r"성료|폐막|막\s?내려|막내려|성황리|마무리|열렸다|개최됐|진행됐|끝났|마쳤|폐회|대장정|피날레|막 올렸다|"
                      r"출시됐|출시했|정식 출시|발매됐|발매했|개봉했|개봉한|흥행|누적 관객|판매량|마감됐|마감했|접수 마감|조기 마감|종료됐|종료했|"
-                     r"연기됐|연기했|출시 연기|발매 연기|무기한 연기|취소됐|취소했|중단됐|폐지|돌아온|출시 첫날|출시 첫 주|첫날 매출|하루 매출|판매 돌파|만장 돌파|관객 돌파|사용 후기|실사용")
+                     r"연기됐|연기했|출시 연기|발매 연기|무기한 연기|취소됐|취소했|중단됐|폐지|돌아온|출시 첫날|출시 첫 주|첫날 매출|하루 매출|판매 돌파|만장 돌파|관객 돌파|사용 후기|실사용|"
+                     r"수상자 명단|수상했|수상…|다시 수상|영예|우뚝|트로피|품었다|휩쓸|결과 발표|당첨자 발표|합격자 발표")
 FUTURE_RE = re.compile(r"열린다|연다|개최한다|개최 예정|예정|앞두고|티켓 ?오픈|예매 ?오픈|사전 ?예약|D-\d|내달|다음 달|라인업 공개|라인업 발표|첫 공개|"
                        r"출시한다|출시 예정|발매한다|발매 예정|개봉한다|개봉 예정|접수한다|접수 시작|신청 시작|모집한다|오픈한다")
 _event_cache = {}
@@ -2886,7 +2887,12 @@ def check_event(kw, today):
         # 가장 최근 기사가 '끝났다' 쪽이면 지난 행사로 (다음 회차 소식이 그 뒤에 나왔으면 예정으로)
         latest_past = max([a["pub"] for a in past_sig] + [a["pub"] for _, a in past], default=None)
         latest_fut = max([a["pub"] for _, a in fut] + [a["pub"] for a in fut_sig], default=None)
-        if fut and (latest_past is None or latest_fut >= latest_past):
+        # 최근 2일 기사가 '이미 열렸다·수상했다'면, 오늘 날짜가 적힌 예고 기사보다 우선 (당일 끝난 행사)
+        recent_past = [a for a in arts if (today - a["pub"]).days <= 2 and PAST_RE.search(a["title"])]
+        later = [d for a in arts if (today - a["pub"]).days <= 7 for d in a["dates"] if d > today]
+        if recent_past and not later:
+            res = {"status": "past", "date": today.isoformat(), "evidence": recent_past[0]}
+        elif fut and (latest_past is None or latest_fut >= latest_past):
             d, a = min(fut, key=lambda x: x[0])
             res = {"status": "upcoming", "date": d.isoformat(), "evidence": a}
         elif fut_sig and (latest_past is None or latest_fut > latest_past):
