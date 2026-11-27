@@ -1661,3 +1661,14 @@ html { overflow-y: scroll; scrollbar-gutter: stable; }
 .crop-grid img { width: 100%; display: block; }
 .crop-grid figcaption { font-size: 12px; margin-top: 6px; word-break: break-all; }
 .crop-grid figcaption .btn { margin-top: 6px; }
+
+/* v158: 오늘 쓸 글 왼쪽 = 1~3순위 작은 카드 3장 (같은 크기, 위아래로 정렬) */
+.lead-col { display: grid !important; grid-template-rows: none; grid-auto-rows: 1fr; gap: 12px; align-content: start; }
+.lead-col .lead.lead-compact { flex: none; gap: 8px; padding: 18px 22px 16px; overflow: visible; min-height: 0; }
+.lead-col .lead-compact .lead-kw { font-size: clamp(20px, 1.7vw, 26px); margin: 0; }
+.lead-col .lead-compact .lead-deck, .lead-col .lead-compact .lead-why, .lead-col .lead-compact .lead-outline, .lead-col .lead-compact .lead-tags { display: none; }
+.lead-col .lead-compact .lead-title { font-size: 14px; padding: 8px 12px; margin: 0; }
+.lead-col .lead-compact .lead-title small { margin-bottom: 4px; }
+.lead-col .lead-compact .figures { margin-top: 4px; padding-top: 10px; gap: 6px 18px; }
+.lead-col .lead-compact .figures dd { font-size: 18px; }
+.lead-col .lead-compact .lead-actions { margin-top: 2px; }

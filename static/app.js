@@ -341,8 +341,8 @@ function renderResult() {
       : `<span>키가 들어왔어요. 이 결과는 키를 넣기 전에 만든 거라 추정치예요. <b>오늘 추천 받기</b>를 다시 누르면 실제 숫자로 바뀌어요.</span>`;
   }
   const top = R.top.map(id => ITEMS[id]).filter(Boolean);
-  $("#leadCol").innerHTML = leadHTML(top[0]);
-  $("#rankList").innerHTML = top.slice(1).map((it, i) => rankRowHTML(it, i + 2)).join("");
+  $("#leadCol").innerHTML = top.slice(0, 3).map((it, i) => leadHTML(it, i + 1)).join("");   // 1~3순위를 작은 카드 3장으로
+  $("#rankList").innerHTML = top.slice(3).map((it, i) => rankRowHTML(it, i + 4)).join("");
   $("#issueBlock").hidden = !R.hot_issues.length;
   $("#issues").innerHTML = R.hot_issues.slice(0, 8).map((h, i) => `<button class="issue-item" ${h.section && h.section !== "실시간" ? `data-issueplan="${i}" title="이 기사로 블로그 기획안 만들기"` : `data-analyze="${esc(h.keyword)}"`}><b>${h.section ? `<i class="iss-sec">${esc(h.section)}</i>` : ""}${esc(h.keyword)}</b><span>${esc(h.summary || h.source)}</span></button>`).join("");
   renderPreMini();
@@ -391,10 +391,10 @@ function figuresHTML(it, opts = {}) {
 function metaHTML(it) {
   return `<div class="top-meta"><span class="pill topic">${esc(it.topic)}</span>${urgPill(it.urgency)}<span class="grade ${it.grade}">기회 ${it.grade}</span></div>`;
 }
-function leadHTML(it) {
+function leadHTML(it, rank = 1) {
   if (!it) return "";
-  return `<button class="lead" data-open="${it.id}">
-    <div class="lead-top">${metaHTML(it)}<span class="lead-no">오늘의 1순위</span></div>
+  return `<button class="lead lead-compact" data-open="${it.id}">
+    <div class="lead-top">${metaHTML(it)}<span class="lead-no">오늘의 ${rank}순위</span></div>
     <h3 class="lead-kw">${esc(it.keyword)}${siteBadge(it)}</h3>
     <p class="lead-deck">${esc(it.brief.one_line)}</p>
     <p class="lead-title"><small>추천 제목</small>${esc(it.brief.titles[0])}</p>
