@@ -2070,9 +2070,18 @@ async function frameFile(file, opt) {
     }
     g.putImageData(d, 0, 0);
   }
-  const lw = Math.max(2, Math.round(Math.min(W, Hh) / 500));  // 큰 이미지는 선을 조금 두껍게 (블로그에서 줄어도 보이게)
-  g.strokeStyle = "#D6D6D6"; g.lineWidth = lw; g.strokeRect(lw / 2, lw / 2, W - lw, Hh - lw);
-  const blob = await new Promise(ok => c.toBlob(ok, "image/jpeg", 0.95));
+  // 폴라로이드 인화지처럼: 테두리는 순백 그대로, 오른쪽 아래로 아주 옅은 그림자만 (회색 선 없음)
+  const pad = Math.max(10, Math.round(Math.min(W, Hh) * 0.03));   // 그림자가 들어갈 오른쪽·아래 여유
+  const out = document.createElement("canvas"); out.width = W + pad; out.height = Hh + pad;
+  const o = out.getContext("2d");
+  o.fillStyle = "#FFFFFF"; o.fillRect(0, 0, out.width, out.height);   // 블로그 흰 바탕과 같은 순백
+  o.save();
+  o.shadowColor = "rgba(0,0,0,0.16)"; o.shadowBlur = Math.round(pad * 0.9);
+  o.shadowOffsetX = Math.round(pad * 0.35); o.shadowOffsetY = Math.round(pad * 0.45);
+  o.fillStyle = "#FFFFFF"; o.fillRect(0, 0, W, Hh);   // 인화지 모양(순백)에 그림자를 드리움
+  o.restore();
+  o.drawImage(c, 0, 0);   // 그 위에 이미지(테두리 순백) 그대로
+  const blob = await new Promise(ok => out.toBlob(ok, "image/jpeg", 0.95));
   return { blob, src: URL.createObjectURL(blob), w: W, h: Hh,
     name: (file.name.replace(/\.[^.]+$/, "").replace(/[^\w.-]+/g, "_").replace(/^_+|_+$/g, "") || "image") + "_frame.jpg" };
 }
@@ -2082,12 +2091,12 @@ function frameDialog() {
   if (!d) {
     d = document.createElement("dialog"); d.id = "frameDialog";
     d.innerHTML = `<form method="dialog" class="manual-form">
-      <div class="dlg-head"><div><h2>이미지 테두리 마무리</h2><p class="muted">Gemini에서 받은 이미지를 넣으면 바깥 네 변(위·아래·좌·우)에 가는 회색 선을 그리고, 미색으로 나온 테두리는 순백으로 바꿔요. 이미지는 이 PC 안에서만 처리돼요.</p></div>
+      <div class="dlg-head"><div><h2>이미지 테두리 마무리</h2><p class="muted">Gemini에서 받은 이미지를 넣으면 테두리를 순백으로 맞추고, 폴라로이드 인화지처럼 오른쪽 아래에 아주 옅은 그림자를 넣어 흰 블로그 바탕에서도 사진 경계가 보이게 해요. 이미지는 이 PC 안에서만 처리돼요.</p></div>
         <button class="x-fixed" value="cancel" aria-label="닫기">✕</button></div>
       <div class="crop-body">
         <label class="switch"><input type="checkbox" id="frameWhiten" checked><span>미색 테두리를 순백으로 바꾸기 (흰 로고도 함께 정리)</span></label>
         <label class="crop-drop" id="frameDrop"><input type="file" id="frameFiles" accept="image/*" multiple hidden>
-          <b>여기에 이미지를 끌어다 놓거나 눌러서 고르세요 (Ctrl+V 붙여넣기도 돼요)</b><span>여러 장 한 번에 · 크기·비율은 그대로</span></label>
+          <b>여기에 이미지를 끌어다 놓거나 눌러서 고르세요 (Ctrl+V 붙여넣기도 돼요)</b><span>여러 장 한 번에 · 그림자 자리만큼 오른쪽·아래가 조금 넓어져요</span></label>
         <div class="crop-grid" id="frameGrid"></div>
       </div>
       <div class="row-end" style="margin:12px 24px 20px"><button class="btn" type="button" id="frameClear">비우기</button><button class="btn primary" type="button" id="frameSave" disabled>모두 저장</button></div>
