@@ -1662,13 +1662,27 @@ html { overflow-y: scroll; scrollbar-gutter: stable; }
 .crop-grid figcaption { font-size: 12px; margin-top: 6px; word-break: break-all; }
 .crop-grid figcaption .btn { margin-top: 6px; }
 
-/* v158: 오늘 쓸 글 왼쪽 = 1~3순위 작은 카드 3장 (같은 크기, 위아래로 정렬) */
-.lead-col { display: grid !important; grid-template-rows: none; grid-auto-rows: 1fr; gap: 12px; align-content: start; }
-.lead-col .lead.lead-compact { flex: none; gap: 8px; padding: 18px 22px 16px; overflow: visible; min-height: 0; }
+/* v158~159: 오늘 쓸 글 왼쪽 = 1~3순위 작은 카드 3장 (같은 크기, 위아래로 정렬)
+   카드는 내용보다 작아지지 않음(min-height:auto) → 겹침·잘림 없음. 남는 높이는 카드끼리 똑같이 나눔 */
+.lead-col { display: grid !important; grid-template-rows: none; grid-auto-rows: 1fr; gap: 12px; align-content: start;
+  overflow-y: auto; overflow-x: hidden; padding: 0 8px 8px 0; scrollbar-width: thin; }
+.lead-col .lead.lead-compact { flex: none; gap: 8px; padding: 18px 22px 16px; overflow: visible; min-height: auto; position: relative; }
 .lead-col .lead-compact .lead-kw { font-size: clamp(20px, 1.7vw, 26px); margin: 0; }
 .lead-col .lead-compact .lead-deck, .lead-col .lead-compact .lead-why, .lead-col .lead-compact .lead-outline, .lead-col .lead-compact .lead-tags { display: none; }
 .lead-col .lead-compact .lead-title { font-size: 14px; padding: 8px 12px; margin: 0; }
 .lead-col .lead-compact .lead-title small { margin-bottom: 4px; }
-.lead-col .lead-compact .figures { margin-top: 4px; padding-top: 10px; gap: 6px 18px; }
+.lead-col .lead-compact .figures { margin-top: auto; padding-top: 10px; gap: 6px 18px; }   /* 숫자 줄은 카드 아래쪽에 맞춤 */
 .lead-col .lead-compact .figures dd { font-size: 18px; }
 .lead-col .lead-compact .lead-actions { margin-top: 2px; }
+@media (max-height: 900px) {
+  /* 세로가 낮은 화면: 'AI 초안 쓰기'를 숫자 줄 오른쪽에 붙여 한 줄 아낌 (기획안은 카드를 누르면 열림) */
+  .lead-col .lead.lead-compact { gap: 6px; padding: 14px 20px 14px; }
+  .lead-col .lead-compact .lead-title small { display: none; }
+  .lead-col .lead-compact .figures { padding-top: 8px; padding-right: 130px; }
+  .lead-col .lead-compact .lead-actions { position: absolute; right: 20px; bottom: 18px; margin: 0; }
+  .lead-col .lead-compact .lead-actions > :not(:last-child) { display: none; }
+}
+@media (max-height: 800px) {
+  /* 더 낮은 화면: 추천 제목 칸은 숨김 (카드를 누르면 기획안에서 보임) */
+  .lead-col .lead-compact .lead-title { display: none; }
+}
