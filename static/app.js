@@ -1814,6 +1814,10 @@ document.addEventListener("click", e => {
 
 
 /* ---------- 스마트에디터용 서식 복사: 본문 16 · 소제목 19 파란 굵게 · 참고 자료 13 · 표 · 박스 ---------- */
+function isTravelPost(md) {
+  const head = String(md || "").slice(0, 2500);
+  return /여행|가볼만한|가볼 곳|명소|관광|숙소|숙박|호텔|펜션|리조트|글램핑|캠핑장|축제|나들이|드라이브|당일치기|코스 추천|핫플|야경|단풍|벚꽃|해수욕장|둘레길|트레일/.test(head);
+}
 function smartHtml(md) {
   const body = bodyPart(md), refs = refsPart(md), tags = tagsPart(md);
   const inl = s => esc(s).replace(/\*\*(.+?)\*\*/g, "$1");  // 본문 복사에서는 굵게를 쓰지 않음 (소제목만 굵게)
@@ -1877,8 +1881,20 @@ function smartHtml(md) {
     i++;
   }
   // 참고한 공식 자료: 본문과 다른 칸이라 위·아래에 가는 구분선
-  const RULE = () => P("─".repeat(28), 13, "color:#c9d3df;letter-spacing:-1px");
+  var RULE = () => P("─".repeat(28), 13, "color:#c9d3df;letter-spacing:-1px");
   if (refs) out.push(P("<br>"), RULE(), ...refs.split("\n").map((l, k) => P(inl(l), FS.small, k === 0 ? "font-weight:bold" : "")), RULE());
+  // 여행·국내 나들이 글이면: 참고 자료 아래 구분선 + 내 홈페이지(떠나셈) 소개 한두 줄 + 링크 (설정 → 내 홈페이지 연계 값 사용)
+  if (isTravelPost(md)) {
+    const st = (STATE && STATE.site) || {};
+    const mine = /떠나셈|ddunasem/.test((st.name || "") + (st.url || ""));
+    const name = "떠나셈", url = "https://ddunasem.com", host = "ddunasem.com";
+    const offers = mine ? (st.offers || []).slice(0, 4) : [];
+    if (!/─{10,}/.test(out[out.length - 1] || "")) out.push(RULE());   // 참고 자료 아래 구분선이 이미 있으면 한 번만
+    out.push(P(`${esc(name)} 안내`, FS.body, "font-weight:bold;color:#1d2433"));
+    out.push(P(esc(offers.length ? `${name}(${host})은 ${offers.join("·")} 정보를 한곳에서 볼 수 있도록 직접 운영하는 홈페이지입니다. 여행 계획을 세울 때 함께 참고해 보세요.`
+                                 : `${name}(${host})은 국내 여행·나들이 정보를 정리해 두는, 직접 운영하는 홈페이지입니다. 여행 계획을 세울 때 함께 참고해 보세요.`)));
+    out.push(P(`<a href="${esc(url)}" style="color:#184f84">${esc(url)}</a>`));
+  }
   if (tags) out.push(P("<br>"), P(esc(tags), 15));
   // 연속된 문단은 스마트에디터 글 상자(se-component se-text) 하나로 묶음
   const html = []; let buf = [];
