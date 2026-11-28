@@ -2051,7 +2051,8 @@ function smartHtml(md) {
     // 소개·주소는 ddunasem 세션이 저장소 기준으로 확인해 준 내용 (2026-11-27)
     out.push(P(esc("떠나셈(ddunasem.com)은 전국 관광지·축제·전시·공연·맛집을 공공 자료로 모아 보여 주고, 장소마다 역사와 유래를 공식 자료 출처와 함께 싣는 여행 홈페이지입니다. 고른 장소로 여행 코스를 짜고 일정표를 인쇄할 수도 있습니다.")));
     const link = (u, t) => P(`<a href="${esc(u)}" style="color:#184f84">${esc(t)}</a> <span style="color:#666">${esc(u)}</span>`);
-    out.push(link(url, "떠나셈 홈"), link("https://ddunasem.com/pick/", "명소 이야기"), link("https://ddunasem.com/course/", "여행 코스 추천"));
+    out.push(link(url, "떠나셈 홈"), link("https://ddunasem.com/pick/", "명소 이야기"), link("https://ddunasem.com/course/", "여행 코스 추천"),
+             link("https://ddunasem.com/#outing=food", "맛집 찾기"));   // 홈의 '맛집·식당' 카드 주소 (2026-11-29 실제 접속해 맛집 목록이 열리는 것 확인)
   }
   if (tags) out.push(P("<br>"), P(esc(tags), 15));
   // 연속된 문단은 스마트에디터 글 상자(se-component se-text) 하나로 묶음
