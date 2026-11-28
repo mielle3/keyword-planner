@@ -1318,6 +1318,10 @@ function draftMd(md) {  // 간단한 마크다운 → 보기용 HTML
     else if (/^\*\*\d{1,2}[.)]\s*[^*]{2,40}\*\*$/.test(s)) out.push(`<h3>${inline(s.replace(/^\*\*|\*\*$/g, ""))}</h3>`);
     else if (s.startsWith("# ")) out.push(`<h2>${inline(s.slice(2))}</h2>`);
     else if (s.startsWith("[📸")) out.push(`<p class="dv-img">${esc(s)}</p>`);
+    else if (/^\[📷\s*사진\s*\d+/.test(s)) {
+      const n = +s.match(/사진\s*(\d+)/)[1], v = (DRAFT && DRAFT.visit) || null, p = v && v.photos[n - 1];
+      out.push(p ? `<figure class="dv-photo"><img src="/api/visit/${encodeURIComponent(v.vid)}/${esc(p.file)}" alt="사진 ${n}" loading="lazy"><figcaption>사진 ${n} · 폴더의 ${esc(p.file)}${p.note ? ` · ${esc(p.note)}` : ""}</figcaption></figure>` : `<p class="dv-img">${esc(s)}</p>`);
+    }
     else if (s.startsWith("[")) out.push(`<p class="dv-mark">${esc(s)}</p>`);
     else if (s.startsWith("■")) out.push(`<p class="dv-sec">${inline(s)}</p>`);
     else if (/^[-*•]\s+/.test(s)) out.push(`<p class="dv-li">• ${inline(s.replace(/^[-*•]\s+/, ""))}</p>`);
@@ -1334,7 +1338,7 @@ function bodyPart(md) {
     for (let i = 0; i < ls.length && seen < 4; i++) { const x = ls[i].trim(); if (!x) continue; seen++;
       if (/^확인 (일자|시각)\s*[:：]/.test(x) || (x.length <= 30 && /^[^.!?:：#\[\]|>]+ · [^.!?:：#\[\]|>]+$/.test(x))) ls[i] = null; }
     t = ls.filter(x => x !== null).join("\n").replace(/\n{3,}/g, "\n\n"); }
-  const e = t.search(/\n(?:-{3,}\s*\n+\s*)?■\s*(?:네이버 블로그|참고한|Gemini 이미지)/);
+  const e = t.search(/\n(?:-{3,}\s*\n+\s*)?■\s*(?:네이버 블로그|참고한|Gemini 이미지|사진 확인)/);
   let b = (e >= 0 ? t.slice(0, e) : t).trim();
   // 예전 초안에도 AI 이미지 안내 한 줄을 붙여 복사
   if (!/AI로 (만든|생성)/.test(b)) b = b.replace(/\n-{3,}\s*$/, "").trim() + "\n\n※ 본문 이미지 중 일부는 AI로 만든 이미지로, 실제 모습과 다를 수 있습니다.";
@@ -1356,6 +1360,23 @@ function imagePrompts(md) {
     return { head, what, ko, prompt: (fence ? fence[1] : line ? line[1] : "").trim() };
   }).filter(x => x.prompt);
 }
+function visitBarHTML(d) {
+  const v = d.visit, t = d.text || "", j = t.indexOf("■ 사진 확인");
+  const sec = j >= 0 ? t.slice(j, (t.indexOf("■", j + 1) + 1 || t.length + 1) - 1) : "";
+  const seen = [...sec.matchAll(/사진\s*(\d+)\s*[:：]\s*(.+)/g)].map(m => ({ n: +m[1], s: m[2].trim() }));
+  const miss = seen.filter(x => /열어 보지 못|못 봄/.test(x.s)).length;
+  const state = !seen.length ? "AI가 사진 확인 결과를 남기지 않았어요 — 사진을 직접 봤는지 알 수 없어요 (메모만 보고 썼을 수 있음)"
+    : miss ? `AI가 ${seen.length}장 중 ${miss}장을 열어 보지 못했어요 — 그 사진은 메모만 보고 배치했어요` : `AI가 사진 ${seen.length}장을 모두 직접 보고 썼어요`;
+  return `<section class="visit-bar ${!seen.length || miss ? "warn" : "ok"}">
+    <div class="vb-head"><b>내 사진 ${v.photos.length}장</b><span>글 속 '사진 N' 자리 = 사진 폴더의 N번 파일 (01.jpg, 02.jpg …) · 네이버에서 사진 버튼으로 순서대로 넣으세요</span><button class="btn sm dark" type="button" data-vopen="${esc(v.vid)}">사진 폴더 열기</button></div>
+    <details><summary>${esc(state)}</summary><ul>${seen.map(x => `<li>사진 ${x.n}: ${esc(x.s)}</li>`).join("") || "<li>확인 칸 없음</li>"}</ul></details>
+  </section>`;
+}
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-vopen]"); if (!b) return;
+  try { const r = await api("/api/visit/open", { vid: b.dataset.vopen }); if (!r.opened) { copy(r.path); toast("이 PC에서는 폴더를 바로 열 수 없어 경로를 복사했어요: " + r.path); } }
+  catch (err) { toast(err.message); }
+});
 function promptCardsHTML(md) {
   const ps = imagePrompts(md);
   if (!ps.length) return "";
@@ -1376,12 +1397,12 @@ function renderDrafts() {
       <b>${esc(d.title || d.keyword)}</b><span class="dl-kw">${esc(d.keyword)} · ${d.chars ? d.chars.toLocaleString() + "자" : ""}</span></button>`).join("")
     : `<div class="dl-empty">${DRAFTS.length ? "이 상태의 초안이 없어요." : "아직 초안이 없어요.<br>추천 글감의 기획안에서 <b>AI 초안 쓰기</b>를 누르면 프로그램이 작가 지침대로 써서 여기에 보관해요. 자동 분석 때 상위 글감은 미리 써 두기도 해요."}</div>`);
   if (!DRAFT) { $("#draftView").innerHTML = `<div class="dv-empty"><h2>초안을 고르세요</h2><p class="muted">왼쪽 목록에서 초안을 누르면 여기에서 보고 고칠 수 있어요.</p></div>`; return; }
-  const d = DRAFT, chars = d.chars || 0, okLen = chars >= 3000;
+  const d = DRAFT, chars = d.chars || 0, minLen = d.style === "visit" ? 1500 : 3000, okLen = chars >= minLen;
   $("#draftView").innerHTML = `
     <header class="dv-head">
       <div class="dv-meta"><span>${esc(d.keyword)}</span><span>${esc(fmtTime(d.created_at))}</span><span>${esc(AI_NAME[d.provider] || d.provider || "")} · ${esc(d.model || "")}</span>${d.style ? `<span>${STYLE_NAME[d.style] || ""} 지침</span>` : ""}<span>${d.web === true ? "웹 검색으로 사실 확인" : d.web === false ? "웹 검색 없이 작성" : "참고 자료 칸에서 출처 확인"}</span>${d.seconds ? `<span>작성 ${Math.floor(d.seconds / 60)}분 ${d.seconds % 60}초${d.fixed && d.first_seconds ? ` (첫 작성 ${Math.floor(d.first_seconds / 60)}분 ${d.first_seconds % 60}초 + 고쳐 쓰기)` : ""}</span>` : ""}</div>
       <h2>${esc(d.title || d.keyword)}</h2>
-      <div class="dv-stats"><b class="${okLen ? "ok" : "warn"}">본문 ${chars.toLocaleString()}자</b><span>${okLen ? "분량 기준(3,000자↑) 충족" : "분량 기준 3,000자에 못 미쳐요"} · 확인 일자~자주 묻는 질문, 공백 포함 대략값</span>${d.auto ? `<i class="dv-auto">자동으로 미리 씀</i>` : ""}</div>
+      <div class="dv-stats"><b class="${okLen ? "ok" : "warn"}">본문 ${chars.toLocaleString()}자</b><span>${okLen ? `분량 기준(${minLen.toLocaleString()}자↑) 충족` : `분량 기준 ${minLen.toLocaleString()}자에 못 미쳐요`} · 확인 일자~자주 묻는 질문, 공백 포함 대략값</span>${d.auto ? `<i class="dv-auto">자동으로 미리 씀</i>` : ""}</div>
       ${d.check ? `<details class="dv-check ${d.check.ok ? "ok" : "warn"}"><summary><b>Gems 양식 검사 ${d.check.passed}/${d.check.total}</b><span>${d.check.ok ? "작가 지침의 출력 양식을 모두 지켰어요" : d.intent ? "내 생각에 맞춰 형식을 바꾼 글이라 기본 틀과 다른 항목은 ✕로 보일 수 있어요 (자동으로 되돌리지 않음)" : "아래 ✕ 항목은 편집에서 손보거나 다시 쓰기를 눌러 주세요"}${d.fixed ? " · 첫 결과에서 빠진 곳을 자동으로 고쳐 썼어요" : ""}</span></summary>
         <ul>${d.check.items.map(x => `<li class="${x.ok ? "ok" : "no"}">${x.ok ? "✓" : "✕"} ${esc(x.name)}${x.note ? ` <small>${esc(x.note)}</small>` : ""}</li>`).join("")}</ul></details>` : ""}
       <div class="dv-actions">
@@ -1416,7 +1437,7 @@ function renderDrafts() {
       <textarea id="dvReviseText" rows="3" placeholder="예) 소제목 2를 더 짧게, 마무리 문단을 담백하게, 대표 이미지 프롬프트를 겨울 분위기로 다시"></textarea>
       <div class="row-end"><button class="btn" type="button" id="dvReviseCancel">닫기</button><button class="btn dark" type="button" id="dvReviseGo">고치기 ✍</button></div>
     </div>
-    ${promptCardsHTML(d.text)}
+    ${d.visit ? visitBarHTML(d) : promptCardsHTML(d.text)}
     ${d.sources?.length ? `<details class="dv-sources"><summary>AI가 확인한 웹 자료 ${d.sources.length}개</summary><ul>${d.sources.map(s => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a></li>`).join("")}</ul></details>` : ""}
     ${DRAFT_MODE === "edit"
       ? `<textarea id="dvText" class="dv-text" spellcheck="false">${esc(d.text)}</textarea><div class="row-end"><span class="muted" id="dvSaved"></span><button class="btn dark" id="dvSave">고친 내용 저장</button></div>`
@@ -1712,20 +1733,126 @@ function openFix(source, opts = {}) {
   setWStyle(opts.style || "");
   openWrite("fix", opts.title ? "초안 형식 바꾸기 · 이 초안을 덮어써요" : "");
 }
-function openWrite(mode, from) {
+function setWMode(mode, from) {
   W_MODE = mode;
-  $("#wNewBox").hidden = mode !== "new"; $("#wFixBox").hidden = mode === "new";
-  $("#wTitle").textContent = mode === "new" ? "글 기획" : "이미 쓴 글 고치기";
-  $("#wSub").textContent = (from ? `출발: ${from} · ` : "") + (mode === "new" ? "키워드·글 종류·내 생각을 확인하고 쓰세요. 검색 데이터와 내 사이트 도구 연결은 프로그램이 알아서 합니다." : "글을 붙여 넣으면 작가 지침 형식으로 고쳐서 초안에 보관합니다.");
-  $("#wSwitch").textContent = mode === "new" ? "이미 쓴 글 고치기 →" : "← 새 글 쓰기";
-  $("#wGo").textContent = mode === "new" ? "AI 초안 쓰기 ✍" : "고치기 시작";
-  openDialog($("#writeDialog")); setTimeout(() => (mode === "new" ? $("#wKeyword") : $("#rwSource")).focus(), 50);
+  $$("#wMode [data-wm]").forEach(b => b.setAttribute("aria-checked", String(b.dataset.wm === mode)));
+  $("#wNewBox").hidden = mode !== "new"; $("#wFixBox").hidden = mode !== "fix"; $("#wVisitBox").hidden = mode !== "visit";
+  $("#wStyleBox").hidden = mode === "visit";
+  $("#wTitle").textContent = { new: "글 기획", fix: "이미 쓴 글 고치기", visit: "방문 후기 쓰기" }[mode];
+  $("#wSub").textContent = (from ? `출발: ${from} · ` : "") + {
+    new: "키워드·글 종류·내 생각을 확인하고 쓰세요. 검색 데이터와 내 사이트 도구 연결은 프로그램이 알아서 합니다.",
+    fix: "글을 붙여 넣으면 작가 지침 형식으로 고쳐서 초안에 보관합니다.",
+    visit: "직접 쓴 글과 찍은 사진을 넣으면, 사진을 보며 네이버 후기 글로 완성하고 글 속에 사진 자리(사진 1, 2 …)를 표시합니다." }[mode];
+  $("#wGo").textContent = mode === "fix" ? "고치기 시작" : mode === "visit" ? "후기 초안 쓰기 ✍" : "AI 초안 쓰기 ✍";
+  if (mode === "visit" && !$("#vDate").value) $("#vDate").value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+}
+function openWrite(mode, from) {
+  setWMode(mode, from);
+  openDialog($("#writeDialog")); setTimeout(() => ({ new: $("#wKeyword"), fix: $("#rwSource"), visit: $("#vName") }[mode]).focus(), 50);
+}
+$$("#wMode [data-wm]").forEach(b => b.onclick = () => setWMode(b.dataset.wm));
+
+/* ---------- 방문 후기: 내 사진 (화면 안에서 최소 가공: 방향 바로잡기·크기 맞춤·위치 정보 지우기·아주 살짝 보정) ---------- */
+let V_PHOTOS = [];
+async function visitPhoto(file, tone) {
+  let bmp;
+  try { bmp = await createImageBitmap(file, { imageOrientation: "from-image" }); }  // 폰 사진 방향(EXIF) 그대로 세움
+  catch { throw new Error(/heic|heif/i.test(file.name + file.type) ? "아이폰 HEIC 사진은 열 수 없어요. 사진 앱에서 JPG로 내보내 주세요" : "사진으로 읽지 못했어요"); }
+  const k = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));   // 블로그용: 긴 변 1,600px (네이버 본문 폭보다 넉넉)
+  const W = Math.round(bmp.width * k), H = Math.round(bmp.height * k);
+  const c = document.createElement("canvas"); c.width = W; c.height = H;
+  const g = c.getContext("2d"); g.imageSmoothingQuality = "high"; g.drawImage(bmp, 0, 0, W, H);
+  if (tone) {  // 아주 살짝: 아래·위 0.5% 밝기를 기준으로 늘린 값과 원본을 3:7로 섞음 (색감·분위기는 거의 그대로)
+    const im = g.getImageData(0, 0, W, H), d = im.data, hist = new Uint32Array(256);
+    for (let i = 0; i < d.length; i += 16) hist[(d[i] * 77 + d[i + 1] * 150 + d[i + 2] * 29) >> 8]++;
+    const tot = hist.reduce((a, b) => a + b, 0); let lo = 0, hi = 255, acc = 0;
+    for (let v = 0; v < 256; v++) { acc += hist[v]; if (acc > tot * 0.005) { lo = v; break; } }
+    acc = 0; for (let v = 255; v >= 0; v--) { acc += hist[v]; if (acc > tot * 0.005) { hi = v; break; } }
+    if (hi - lo > 40 && (lo > 4 || hi < 251)) {
+      const lut = new Uint8ClampedArray(256), s = 255 / (hi - lo);
+      for (let v = 0; v < 256; v++) lut[v] = Math.round(v * 0.7 + Math.min(255, Math.max(0, (v - lo) * s)) * 0.3);
+      for (let i = 0; i < d.length; i += 4) { d[i] = lut[d[i]]; d[i + 1] = lut[d[i + 1]]; d[i + 2] = lut[d[i + 2]]; }
+      g.putImageData(im, 0, 0);
+    }
+  }
+  bmp.close?.();
+  return c.toDataURL("image/jpeg", 0.88);  // 다시 저장하면서 GPS 등 사진 정보(EXIF)는 남지 않음
+}
+async function addVisitPhotos(files) {
+  const list = [...files].filter(f => /^image\//.test(f.type) || /\.(jpe?g|png|webp|heic|heif)$/i.test(f.name)).sort((a, b) => a.lastModified - b.lastModified || a.name.localeCompare(b.name));
+  if (V_PHOTOS.length + list.length > 40) toast("사진은 한 글에 40장까지만 넣을게요");
+  for (const f of list.slice(0, Math.max(0, 40 - V_PHOTOS.length))) {
+    try { V_PHOTOS.push({ file: f, name: f.name, t: f.lastModified, url: await visitPhoto(f, $("#vTone").checked), note: "" }); }
+    catch (e) { toast(`${f.name}: ${e.message}`); }
+  }
+  renderVisitPhotos();
+}
+function renderVisitPhotos() {
+  $("#vCount").textContent = `${V_PHOTOS.length}장 · 번호 = 글 속 사진 번호`;
+  $("#vPhotos").innerHTML = V_PHOTOS.map((p, i) => `<figure class="v-ph">
+      <div class="v-img"><img src="${p.url}" alt=""><b class="v-no">${i + 1}</b></div>
+      <input data-vnote="${i}" value="${esc(p.note)}" placeholder="한 줄 메모 (예: 시그니처 메뉴)">
+      <div class="v-btns"><button type="button" data-vmove="${i}" data-d="-1" ${i ? "" : "disabled"} aria-label="앞으로">←</button><button type="button" data-vmove="${i}" data-d="1" ${i < V_PHOTOS.length - 1 ? "" : "disabled"} aria-label="뒤로">→</button><button type="button" data-vdel="${i}" aria-label="빼기">✕</button></div>
+    </figure>`).join("");
+}
+if ($("#vPhotos")) {
+  $("#vFiles").onchange = e => { addVisitPhotos(e.target.files); e.target.value = ""; };
+  $("#vFolder").onchange = e => { const n = e.target.files.length; addVisitPhotos(e.target.files).then(() => toast(`폴더에서 사진 ${V_PHOTOS.length}장을 가져왔어요 (파일 ${n}개 중 사진만)`)); e.target.value = ""; };
+  // 복사한 이미지(캡처·카톡에서 복사 등)를 방문 후기 창에서 Ctrl+V로 붙여 넣기
+  document.addEventListener("paste", e => {
+    if (W_MODE !== "visit" || !$("#writeDialog").open) return;
+    const fs = [...(e.clipboardData?.files || [])].filter(f => /^image\//.test(f.type));
+    if (!fs.length) return;
+    e.preventDefault();
+    addVisitPhotos(fs.map((f, i) => new File([f], f.name && f.name !== "image.png" ? f.name : `붙여넣기_${Date.now()}_${i}.png`, { type: f.type, lastModified: Date.now() + i })));
+  });
+  const dz = $("#vDrop");
+  dz.addEventListener("dragover", e => { e.preventDefault(); dz.classList.add("over"); });
+  dz.addEventListener("dragleave", () => dz.classList.remove("over"));
+  dz.addEventListener("drop", e => { e.preventDefault(); dz.classList.remove("over"); addVisitPhotos(e.dataTransfer.files); });
+  $("#vPhotos").addEventListener("input", e => { const x = e.target.closest("[data-vnote]"); if (x) V_PHOTOS[+x.dataset.vnote].note = x.value; });
+  $("#vPhotos").addEventListener("click", e => {
+    const m = e.target.closest("[data-vmove]"), dl = e.target.closest("[data-vdel]");
+    if (m) { const i = +m.dataset.vmove, k = i + +m.dataset.d; [V_PHOTOS[i], V_PHOTOS[k]] = [V_PHOTOS[k], V_PHOTOS[i]]; renderVisitPhotos(); }
+    if (dl) { V_PHOTOS.splice(+dl.dataset.vdel, 1); renderVisitPhotos(); }
+  });
+  $("#vTone").onchange = async () => {  // 보정을 켜고 끄면 원본에서 다시 만듦
+    for (const p of V_PHOTOS) { try { p.url = await visitPhoto(p.file, $("#vTone").checked); } catch {} }
+    renderVisitPhotos();
+  };
+}
+async function goVisit() {
+  const name = $("#vName").value.trim(), memo = $("#vMemo").value.trim();
+  if (!name) { toast("가게·장소 이름을 적어 주세요"); $("#vName").focus(); return; }
+  if (!V_PHOTOS.length && memo.length < 50) { toast("사진을 넣거나, 내가 쓴 글을 조금 더 적어 주세요"); return; }
+  const d = new Date(), pad = n => String(n).padStart(2, "0");
+  const vid = `v${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}-${Math.random().toString(36).slice(2, 6)}`;
+  const go = $("#wGo"); go.disabled = true;
+  const photos = [];
+  try {
+    for (let i = 0; i < V_PHOTOS.length; i++) {
+      go.textContent = `사진 올리는 중 ${i + 1}/${V_PHOTOS.length}`;
+      const r = await api("/api/visit/photo", { vid, idx: i + 1, data: V_PHOTOS[i].url });
+      photos.push({ file: r.file, note: V_PHOTOS[i].note.trim() });
+    }
+  } catch (e) { toast("사진 저장 실패: " + e.message); go.disabled = false; setWMode("visit"); return; }
+  go.disabled = false; setWMode("visit");
+  $("#writeDialog").close();
+  const it = { id: "visit-" + Date.now(), keyword: `${name} 방문 후기`.slice(0, 40), topic: "방문 후기", style: "visit", brief: {}, metrics: {}, src: {},
+               visit: { vid, name, place: $("#vPlace").value.trim(), date: $("#vDate").value, related: $("#vRelated").checked, memo, photos } };
+  if ((STATE.ai || {}).provider === "manual") {
+    try { await api("/api/visit/open", { vid }); } catch {}
+    toast(`붙여넣기 방식: 열린 사진 폴더의 사진 ${photos.length}장을 01번부터 순서대로 대화에 첨부해 주세요`);
+  }
+  await writeDraft(it);
+  V_PHOTOS = []; renderVisitPhotos(); $("#vMemo").value = ""; $("#vName").value = ""; $("#vPlace").value = ""; $("#vRelated").checked = false;
 }
 $("#writeNew").onclick = () => openPlan(null, {});
 $("#rewriteBtn").onclick = () => openFix("", {});
 $("#writeNew").addEventListener("click", () => { FIX_TARGET = null; });
-$("#wSwitch").onclick = () => openWrite(W_MODE === "new" ? "fix" : "new");
+$("#wSwitch").onclick = () => setWMode(W_MODE === "new" ? "fix" : "new");
 $("#wGo").onclick = async () => {
+  if (W_MODE === "visit") return goVisit();
   if (W_MODE === "new") {
     const kw = $("#wKeyword").value.trim(), note = $("#wConcept").value.trim();
     if (/https?:\/\/(chatgpt\.com|chat\.openai\.com|gemini\.google\.com|g\.co\/gemini|claude\.ai)\S*/.test(note) && note.replace(/https?:\/\/\S+/g, "").trim().length < 200) {
@@ -1765,7 +1892,7 @@ $("#wGo").onclick = async () => {
 const ESSAY_RE = /영화|드라마|넷플릭스|티빙|디즈니\+|웨이브|쿠팡플레이|OTT|애니|웹툰|책|소설|에세이|도서|시집|음악|앨범|플레이리스트|노래|공연 후기|전시 후기|관람 후기|후기|리뷰|여행기|여행 코스|가볼만한|데이트|맛집|카페|브런치|일상|감성|추천작|작품|시리즈|명작/;
 const INFO_RE = /신청|지원금|환급|세금|보험|대출|계산|기준|조건|방법|절차|서류|일정|마감|등급컷|과태료|요금|금리|연말정산|청약|발표|접수/;
 function guessStyle(kw, topic) { if (DEAL_RE.test(kw || "")) return "deal"; if (INFO_RE.test(kw || "")) return "info"; return ESSAY_RE.test(`${kw || ""} ${topic || ""}`) ? "essay" : "info"; }
-const STYLE_NAME = { info: "정보형", essay: "읽을거리형", deal: "할인·구매형" };
+const STYLE_NAME = { info: "정보형", essay: "읽을거리형", deal: "할인·구매형", visit: "방문 후기" };
 const DEAL_RE = /할인|블프|블랙프라이데이|사이버먼데이|직구|핫딜|특가|쿠폰|프로모션|캐시백|최저가|세일|타임딜|사전예약|사전 예약|얼리버드|예매 오픈|티켓 오픈|티켓팅|예매|요금제|통신사 혜택|카드 혜택|광군제|아마존|알리|테무|쿠팡 로켓|정가/;
 function wStyleHint() { const kw = $("#wKeyword").value.trim(); $("#wStyleHint").textContent = kw && ($("#wStyle [aria-checked=true]")?.dataset.ws || "") === "" ? `자동 → ${STYLE_NAME[guessStyle(kw)]}` : ""; }
 $("#wKeyword").addEventListener("input", wStyleHint);
@@ -1875,6 +2002,7 @@ function smartHtml(md) {
       out.push(P("─".repeat(28), 13, "color:#c9d3df;letter-spacing:-1px"));
     }
     else if (s.startsWith("[📸")) out.push(P(esc(s), 13, "color:#999"));
+    else if (/^\[📷\s*사진\s*\d+/.test(s)) out.push(P(`📷 사진 ${s.match(/사진\s*(\d+)/)[1]} 넣는 자리 (사진 폴더의 ${String(s.match(/사진\s*(\d+)/)[1]).padStart(2, "0")}.jpg)`, 13, "color:#999"));
     else if (/^\*\*Q[.．]/.test(s)) out.push(P(inl(s), FS.body, "font-weight:bold;color:#184f84"));  // 질문 줄은 목록과 같은 진한 파랑, 답은 본문 색
     else if (/^(?:[✔▪✅❌•①-⑩]|[-*] |\d{1,2}\. )/.test(s)) out.push(P(inl(s), FS.body, "color:#184f84"));  // 목록(✔·▪·①·✅·❌·-·1.)은 모두 같은 진한 파랑
     else out.push(P(inl(s)));

@@ -1674,3 +1674,52 @@ html { overflow-y: scroll; scrollbar-gutter: stable; }
   /* 더 낮은 화면: 추천 제목 칸은 숨김 (카드를 누르면 기획안에서 보임) */
   .lead-col .lead-compact .lead-title { display: none; }
 }
+
+/* v161: 방문 후기 (내 사진) — 칸 너비·높이를 맞춘 격자 */
+.w-mode { display: grid !important; grid-template-columns: repeat(3, 1fr); width: 100%; }
+.w-mode button { justify-content: center; text-align: center; }
+.v-fields { display: grid; grid-template-columns: 1.4fr 1.2fr 1fr; gap: 10px; }
+.v-fields label { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.v-fields label > span { font-size: 12.5px; font-weight: 700; }
+.v-fields input { width: 100%; min-width: 0; }
+.v-rel { margin-top: 10px; }
+.v-drop { display: grid; place-items: center; gap: 4px; margin: 6px 0 0; padding: 22px 16px; border: 2px dashed var(--rule-strong); cursor: pointer; text-align: center; }
+.v-drop.over { border-color: var(--ink); background: color-mix(in srgb, var(--mark) 25%, var(--paper)); }
+.v-drop span { font-size: 12.5px; color: var(--muted); }
+.v-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 10px; }
+.v-ph { margin: 0; border: 1px solid var(--rule); padding: 6px; display: grid; gap: 6px; background: var(--sheet); }
+.v-img { position: relative; aspect-ratio: 1 / 1; overflow: hidden; background: #eee; }
+.v-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.v-no { position: absolute; left: 6px; top: 6px; min-width: 26px; height: 26px; display: grid; place-items: center; background: var(--mark); color: var(--mark-ink); font-size: 13px; border: 2px solid var(--ink); }
+.v-ph input { width: 100%; min-width: 0; font-size: 12.5px; height: 32px; padding: 0 8px; }
+.v-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.v-btns button { height: 28px; border: 1px solid var(--rule-strong); background: var(--paper); cursor: pointer; }
+.v-btns button:disabled { opacity: .35; cursor: default; }
+@media (max-width: 640px) { .v-fields { grid-template-columns: 1fr; } .w-mode button { font-size: 12px; padding: 6px 4px; } }
+.visit-bar { border: 2px solid var(--ink); padding: 12px 16px; margin: 14px 0; background: var(--sheet); }
+.visit-bar.warn { border-color: #c77700; }
+.vb-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; }
+.vb-head span { font-size: 12.5px; color: var(--muted); flex: 1 1 260px; }
+.visit-bar summary { cursor: pointer; font-size: 13px; margin-top: 8px; }
+.visit-bar.warn summary { color: #9a5b00; font-weight: 700; }
+.visit-bar ul { margin: 6px 0 0 18px; font-size: 12.5px; }
+.dv-photo { margin: 12px 0; }
+.dv-photo img { max-width: min(100%, 560px); display: block; border: 1px solid var(--rule); }
+.dv-photo figcaption { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.v-import { display: flex; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+.v-import .btn { cursor: pointer; }
+.v-import span { font-size: 12.5px; flex: 1 1 240px; }
+.w-mode { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+.w-mode button { min-width: 0; white-space: normal; line-height: 1.25; }
+.v-fields input { height: 44px; box-sizing: border-box; }
+/* 새 글 창: 칸마다 따로 스크롤되며 눌리지 않게 — 창 전체가 한 번에 스크롤, 아래 버튼 줄은 항상 보임 */
+#writeDialog form { overflow-y: auto; }
+#writeDialog .mine-body { flex: none; overflow: visible; min-height: auto; }
+#writeDialog .dlg-foot { position: sticky; bottom: 0; z-index: 2; background: var(--sheet); border-top: 1px solid var(--rule); }
+#writeDialog input[type="checkbox"] { width: 18px; height: 18px; padding: 0; flex: none; }
+#vMemo { min-height: 150px; }
+#writeDialog .dlg-foot { justify-content: flex-end; }
+#writeDialog .w-style { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+#writeDialog #wStyle { flex: 1 1 auto; display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+#writeDialog #wStyle button { justify-content: center; min-width: 0; }
+#writeDialog #wStyleHint:empty { display: none; }

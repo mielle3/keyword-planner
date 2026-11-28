@@ -88,7 +88,7 @@ EVERGREEN_CHECK_PATH = DATA / "evergreen_check.json"
 import writer as _writer  # AI 글쓰기 (작가 지침·블로그 기억·초안 보관·docx)
 WRITER = _writer.Store(DATA)
 KST = timezone(timedelta(hours=9))
-APP_VERSION = "2026.11.21-160"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
+APP_VERSION = "2026.11.21-161"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 DEFAULT_CONFIG = {
@@ -3179,6 +3179,12 @@ class Handler(BaseHTTPRequestHandler):
             if not re.fullmatch(r"(fonts/)?[\w.-]+", name) or not f.exists() or f.suffix not in types:
                 return self._send(404, {"error": "not found"})
             return self._send(200, f.read_bytes(), types[f.suffix])
+        m = re.fullmatch(r"/api/visit/([\w\-]{4,60})/(\d{2}\.jpg)", path)
+        if m:
+            f = DATA / "visits" / m.group(1) / m.group(2)
+            if not f.exists():
+                return self._send(404, {"error": "not found"})
+            return self._send(200, f.read_bytes(), "image/jpeg")
         if path == "/api/state":
             return self._send(200, app_state())
         if path == "/api/status":
@@ -3279,6 +3285,35 @@ class Handler(BaseHTTPRequestHandler):
             body = json.loads(self.rfile.read(length) or b"{}") if length else {}
         except ValueError:
             return self._send(400, {"error": "잘못된 요청"})
+        if path == "/api/visit/photo":  # 방문 후기 사진 1장 (화면에서 방향·크기·살짝 보정까지 마친 JPG)
+            import base64
+            vid, idx, data = str(body.get("vid") or ""), body.get("idx"), str(body.get("data") or "")
+            if not re.fullmatch(r"[\w\-]{4,60}", vid) or not isinstance(idx, int) or not 1 <= idx <= 60:
+                return self._send(400, {"error": "사진 정보가 잘못됐어요"})
+            try:
+                raw = base64.b64decode(data.split(",", 1)[-1], validate=False)
+            except Exception:
+                return self._send(400, {"error": "사진을 읽지 못했어요"})
+            if not raw.startswith(b"\xff\xd8") or len(raw) > 8_000_000:
+                return self._send(400, {"error": "JPG 사진만, 8MB 이하로 올릴 수 있어요"})
+            d = DATA / "visits" / vid
+            d.mkdir(parents=True, exist_ok=True)
+            name = f"{idx:02d}.jpg"
+            (d / name).write_bytes(raw)
+            return self._send(200, {"file": name})
+        if path == "/api/visit/open":  # 블로그에 올릴 사진 폴더 열기 (01, 02 … 순서 = 글 속 사진 번호)
+            vid = str(body.get("vid") or "")
+            d = DATA / "visits" / vid
+            if not re.fullmatch(r"[\w\-]{4,60}", vid) or not d.exists():
+                return self._send(404, {"error": "사진 폴더가 없어요"})
+            opened = False
+            try:
+                if os.name == "nt":
+                    os.startfile(str(d))
+                    opened = True
+            except Exception:
+                pass
+            return self._send(200, {"opened": opened, "path": str(d)})
         if path == "/api/generate":
             ok = start_job()
             return self._send(200 if ok else 409, {"started": ok})

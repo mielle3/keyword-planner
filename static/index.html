@@ -525,6 +525,13 @@
       <button class="x-fixed" value="cancel" aria-label="닫기 (ESC)" title="닫기 (ESC)">✕</button>
     </div>
     <div class="mine-body" style="padding-bottom:0">
+      <div class="seg w-mode" id="wMode" role="radiogroup" aria-label="쓰는 방식">
+        <button type="button" role="radio" aria-checked="true" data-wm="new">새 글 (키워드)</button>
+        <button type="button" role="radio" aria-checked="false" data-wm="visit">방문 후기 (내 사진)</button>
+        <button type="button" role="radio" aria-checked="false" data-wm="fix">이미 쓴 글 고치기</button>
+      </div>
+    </div>
+    <div class="mine-body" id="wStyleBox" style="padding-bottom:0">
       <div class="w-style"><span>글 종류</span>
         <div class="seg" id="wStyle" role="radiogroup" aria-label="글 종류">
           <button type="button" role="radio" aria-checked="true" data-ws="">자동</button>
@@ -540,6 +547,26 @@
       <label class="inline-label" style="margin-top:10px">내 생각</label>
       <textarea id="wConcept" rows="7" placeholder="어떤 글을 쓰고 싶은지 자유롭게 적으세요.&#10;예) 배우셈 운영자 입장에서 학원법 환불 기준을 표로 정리하고 실제 계산 예시를 넣기. 사이트 소개는 맨 뒤에만."></textarea>
     </div>
+    <div class="mine-body" id="wVisitBox" hidden>
+      <div class="v-fields">
+        <label><span>가게·장소 이름</span><input id="vName" placeholder="예) 벤디스" autocomplete="off"></label>
+        <label><span>위치 (동네)</span><input id="vPlace" placeholder="예) 용인 기흥구" autocomplete="off"></label>
+        <label><span>다녀온 날</span><input id="vDate" type="date"></label>
+      </div>
+      <label class="switch v-rel"><input type="checkbox" id="vRelated"><span>가족·지인이 운영하는 곳 (글 첫머리에 한 문장으로 밝힘)</span></label>
+      <label class="inline-label" style="margin-top:10px">내가 쓴 글 <small class="muted">부분만 써도 됩니다 · 쓴 문장은 최대한 살려요</small></label>
+      <textarea id="vMemo" rows="7" placeholder="예) 동생이 문 연 지 1년 된 가게. 오늘 처음 제대로 앉아서 먹어 봤다. 시그니처 메뉴는 ... 창가 자리가 제일 좋았다."></textarea>
+      <label class="inline-label" style="margin-top:10px">사진 <small class="muted" id="vCount">0장</small></label>
+      <label class="v-drop" id="vDrop"><input type="file" id="vFiles" accept="image/*" multiple hidden>
+        <b>사진을 끌어다 놓거나 눌러서 고르기</b>
+        <span>여러 장 한 번에 · 찍은 시간 순으로 정렬 · 순서는 ← →로 바꾸고, 사진마다 한 줄 메모를 적으면 더 정확해요</span></label>
+      <div class="v-import">
+        <label class="btn sm"><input type="file" id="vFolder" webkitdirectory multiple hidden>📁 폴더째 가져오기</label>
+        <span class="muted">폰에서 옮긴 사진 폴더를 통째로 · 사진만 골라 가져와요 · 복사한 사진은 이 창에서 Ctrl+V로 붙여 넣어도 돼요</span>
+      </div>
+      <label class="switch v-rel"><input type="checkbox" id="vTone" checked><span>밝기·색 아주 살짝만 보정 (원본 파일은 그대로 · 방향·크기 맞춤과 위치 정보 지우기는 항상)</span></label>
+      <div class="v-photos" id="vPhotos"></div>
+    </div>
     <div class="mine-body" id="wFixBox" hidden>
       <label class="inline-label">고칠 글 (블로그 글 주소 또는 본문)</label>
       <textarea id="rwSource" rows="11" placeholder="블로그 글 주소(https://blog.naver.com/아이디/글번호)를 넣거나, 글을 Ctrl+A → Ctrl+C로 복사해 붙여 넣으세요"></textarea>
@@ -547,7 +574,7 @@
       <textarea id="rwNote" rows="2" placeholder="예) 홍보 느낌 줄이기"></textarea>
     </div>
     <div class="dlg-foot">
-      <button class="link-btn" type="button" id="wSwitch">이미 쓴 글 고치기 →</button>
+      <button class="link-btn" type="button" id="wSwitch" hidden>이미 쓴 글 고치기 →</button>
       <button class="btn primary" type="button" id="wGo">AI 초안 쓰기 ✍</button>
     </div>
   </form>

@@ -53,7 +53,7 @@ def fetch_repo_file(name):
 
 OLD_ESSAY_GUIDES = {"ebfd1e7a9af2d6a243d5ce2283c1b076f4eb70630659404a37b73d311b56cd4a", "8bc026365ccdfb7f9cf51f92d4c9c165b565994959bf76a345412a5ad9a97d37", "2a26ae1ae781f1c6ba097f2e4f50eb60d0a8e45f6d901d49c1e3dc060acd8dfe", "07b51ff25bf104abebaf3cc5931266829252f52ecf8cdb519fdd241d3bae6daf", "17313cfa4af570028ee9997441919e234da24d7fbc8f127c459264416cb5eb5c", "ebcb44fcd2f07aec9071014dad851ded47327c843d8a54aa1a79f691313894cf", "150976731b0e55c1a599aac7b387744f64aca95729373995667024fef055e158", "774a893bdc46d4b6d2ce0937e37d66be33495bc5bdf86f9aa66fcfc5cebd0c13", "4c97cdf4ea4063af9619472e3a680cc165a2c906dce66bbf54945290f589a9d5", "6f412173b4437e89ac3ffbadfa80e77e99e6ba00ad5557b95d5fc5e617952094", "fb348a38b9fb6a11a31314fc1a51d843df2c1fe00a2d38d274c09aa063ef2797", "422939a2fbe8b85ed00fcc3d5c90c54a95185793f69735c27b0760bb78620af0", "2df0de3da0c17c70a70483f5400d091b4f2e00e6a1b403b073524cc0c863cd06", "cc63f0e59c01e9200020071dfe2b8d1ff4b57a93cd1c7b3a1f1200df50480a58", "f260257c940003593829cfab415698ffd258107acee5514114bdeb47eae9849a", "8a760e8a10480f4790e3b98fd60e147dd80b96ebcba9537d2607ff776807fdbf", "e4a5e2c065f405d6d0039a31bc685226e15ca09df1b3d6239af934dedfd4776c", "10ee5e3feecfaf04250be40cc611efbd6cc606b0be5756dd5116473863a1f87d", "c55c6e1eccf3f0c7699ffc1ec50a8387ff1431c23199fcce5a84b679e37d5beb", "eb10b428f5c2376bb96b5dc3b531a9b698d3f25c218d798859c27609cb0054f9", "45c2e3dd597e5d4c3e96ec23d55a7ba9a04f1d2bff3ee76a028df3d657b8faeb", "db64537c3ca5dcd4d5d4da14bdb5b3bdcb33ead226152433ed30f4d8e1e738de", "81ec1b6d13a4f662295b631d823bef96b6760fe9d92d95fddf6f7220d41482d5", "d1135efb94d61aef886b86395aeeceaedf5fcbf53566db305cc3363c9cf6f482", "b958cc3dc2dba6cbd24392ad05cbd11e04be736a4746f69b15efa1d1aad8cadc", "79593cbf46c7380256b5c7f124ce684fb4976fc14d7709bffc942f0bf0b149c9", "19884d801b473ad4f995418beba2ddb35d9f6dac5360a31b510c713fe18b3402", "96b65eff47e4ec4ba812c4ca4b74ba4052397f84094b128f0f92968302c76a4e", "ea28eea311b851a60e5774ae1b66ec0d446c7f31fd603973f78aea6ada0e6f63", "ed1b71a6215fbd82305e1cea5165e40d0f7bef63321648b4c02495f976cd4816", "45cd7fcfeb57cb08bd66ff87fb7b328a78035e580592aeb545ee4a8003d49987", "8902f714050f13c941454680dea97257484de367d3a10fa6f64d403cd0df4ff5", "d4ab69ab3c7c45557d336d05a2171330b004b3c54aa6ced436f4be26879c312f", "18eac005a699b2a7cfa1ddd23e90f5ff9f9f2f70f07388daa608dda49c558a7f", "4daefb41ecf10b68cab44a5e092bf4756970d4e730128849c7af6229216fdd33"}  # 읽을거리형 기본 지침의 예전 판 (고치지 않았으면 자동 교체)
 
-GUIDE_FILES = {"info": "writer_guide.md", "essay": "writer_guide_essay.md", "deal": "writer_guide_deal.md"}
+GUIDE_FILES = {"info": "writer_guide.md", "essay": "writer_guide_essay.md", "deal": "writer_guide_deal.md", "visit": "writer_guide_essay.md"}
 OLD_DEAL_GUIDES = {"46c2ae2c206e2f7255063b571cc3f517636f043abf610df16939717975b6bc0b", "1acbf01d65ddbf7e7ea10ab223de91e74f128f218c4f0e5d701bc34a97988f82", "bc3503d55866c75ad3642e874efae2daaee2f5b758851b7c601fc215104417cd", "9891cd51110bc0dc138f2859cbc9c1715770914b33b3d68fc9a69c3996ee9299", "bc6b418112dad30b071f38f0a6e08fe99c424a8e7df3b5e2b3a1691968a1dffa", "7d328ebf89ac500706d0f9c25963432d4242565e3da2f1e9529b4eb0f6a632c3", "816b271946dcea6d9ef61b2d55ab039e218261cb16d7fad873d57143ad882787", "0fa3a123a4ded1fa1142a19c7207a99e194ecebb707207c1717de7c19119cd55", "f1d6dab62aabc207a17be9c76e5215e1cbcb9e14dd6d6777721dc71b8e76e9c9", "ac3c31740a3c17c65fe568a84d82d6e35569aa49199e04e0a2fad45058130c68", "35a24192ba720db6bf1eaa1d47cf755e74d8772bd1d9158a86518472b80632c7", "4c33849351747cd08422b3780842e2c4cc3c463e5aa83973d2248d92c23017a4", "4a2b8821b0efbb5c5ea1498ac66c071e16a10df94c0e8804b756b3349403b5cc", "6428ac856d5eddc9cf61b2f1db72634efd3b2ee0bb60a27807c41c2e5e3cb078", "57d553116455c8d571882f156b87b699c1ffca3affc52bdd89fdafe28395b346", "5125be05039330d329adf0248a5f737aec6bdfbcd78ea8c3d55cfd6305bb7898", "a996b39232c6d3301ef2ed618c2429c0dcda5129b0087f3d70b8bb8cb5c07ec9", "7758d0aa1840332f1aa7c308ac3bfee931071444718c1ed37253de8c4e5ba856", "8fe2b2221d8409f51fded5316ecb1ee2ae158119bb56e7f3480d4e406492f6f5", "a78d39a4eca802c85321a5e58b8c9bf6aa682f3bc965aa7bd830271f62cd6c02", "1ea3bc54df202452108d94303693d97d2d03af217df979c6492bd50fff4abe89", "e3fcefc11d16df24aee487b5f9d0f91f1f812b0c661800cc80c3035373990114", "ee6dd3684b17c94ee03962a69eb5276a45d4c2481829f31bea9e1fb9cbe36f90", "6b55a9c9027df6edb6edb0e4e7a6a373a7dbc331ed5f7b4c7a18bda8a5093c76", "8d3a5790537d218a41286a849dfae061c8be637b331be44f416915ab33f13fa0", "2e89ca129de16b8d17b3cc2b6e9ff1f0ee1eced8cab0fb7933c7ba50eb90f607", "de03160a2180a98424ce1b83490cac780822805ef5ef4d7b8524b5d9dd1b92bc", "630d625ce119fda6136d2b61fc362fd1ca864200af7c5506f24481ea0e3f1b42", "1236c80d084fa0ec1dbd9d1cc93e651f14c63ea8634875fe0f93b88004a83a1e", "b6f576099c0177811aaba58d82a0c054bbdcd661d8d73d92b7da92088360abf3", "ef714a4751cb6e8f163634329da698bc9733fb280c538a7c8056a624c0bb41c9", "e90e6b081db348c81e8a6db390e6dfc77f4fe2b2441d653cd72a29ca15b056f5", "eb6cf6538685a58580f804568b1244da811c1755c0ae7a3bcdb2182965a8a39d", "6bb7940776d446bcd5f7ecd7d6c4c0f76d8a391f7c009bb270b07f9ae8796a6a"}
 DEAL_RE = re.compile(r"할인|블프|블랙프라이데이|사이버먼데이|직구|핫딜|특가|쿠폰|프로모션|캐시백|최저가|세일|타임딜|사전예약|사전 예약|"
                      r"얼리버드|예매 오픈|티켓 오픈|티켓팅|예매|요금제|통신사 혜택|카드 혜택|광군제|아마존|알리|테무|쿠팡 로켓|정가")
@@ -65,8 +65,10 @@ INFO_RE = re.compile(r"신청|지원금|환급|세금|보험|대출|계산|기�
 def pick_style(item):
     """글 종류 자동 선택: 사용자가 고른 게 있으면 그대로, 아니면 키워드·분야로 판단 (정보형이 기본)."""
     s = (item or {}).get("style")
-    if s in ("info", "essay", "deal"):
+    if s in ("info", "essay", "deal", "visit"):
         return s
+    if (item or {}).get("visit"):
+        return "visit"
     text = f"{item.get('keyword', '')} {item.get('topic', '')}"
     if item.get("rewrite_source"):
         text += " " + item["rewrite_source"][:400]
@@ -143,7 +145,8 @@ class Store:
 
     # 작가 지침: info(정보형) · essay(읽을거리형: 영화·책·리뷰·여행기 등)
     def guide_file(self, style="info"):
-        return {"essay": self.mem_dir / "작가_지침_읽을거리.md", "deal": self.mem_dir / "작가_지침_할인구매.md"}.get(style, self.guide_path)
+        return {"essay": self.mem_dir / "작가_지침_읽을거리.md", "visit": self.mem_dir / "작가_지침_읽을거리.md",
+                "deal": self.mem_dir / "작가_지침_할인구매.md"}.get(style, self.guide_path)
 
     def default_guide(self, style="info"):
         name = GUIDE_FILES.get(style, "writer_guide.md")
@@ -162,7 +165,7 @@ class Store:
         text = path.read_text(encoding="utf-8")
         # 사용자가 고치지 않은 예전 기본 지침이면 새 기본 지침으로 자동 교체 (고친 지침은 그대로 둠)
         import hashlib
-        if hashlib.sha256(text.strip().encode("utf-8")).hexdigest() in {"essay": OLD_ESSAY_GUIDES, "deal": OLD_DEAL_GUIDES}.get(style, OLD_DEFAULT_GUIDES):
+        if hashlib.sha256(text.strip().encode("utf-8")).hexdigest() in {"essay": OLD_ESSAY_GUIDES, "visit": OLD_ESSAY_GUIDES, "deal": OLD_DEAL_GUIDES}.get(style, OLD_DEFAULT_GUIDES):
             text = self.default_guide(style)
             path.write_text(text, encoding="utf-8")
         return text
@@ -357,6 +360,8 @@ def draft_request(item, cfg, today):
                            "- 설명이나 변경 목록을 덧붙이지 않습니다.", "",
                            "## 수정 요청 (최우선)", item["revise_instruction"][:2000], "",
                            "## 지금 초안", item["revise_source"][:30000]])
+    if item.get("visit"):
+        return visit_request(item, cfg, today)
     if item.get("rewrite_source"):  # 내 글 다듬기: 이미 올린 글을 지침 형식으로 고쳐 쓰기
         out = [f"오늘 날짜: {today.isoformat()} (한국 시간).", "",
                "아래는 사용자가 이미 네이버 블로그에 올린 글입니다. 작가 지침의 출력 양식과 편집 형식에 맞춰 **수정본**을 써 주세요.", "",
@@ -441,6 +446,75 @@ def draft_request(item, cfg, today):
     return "\n".join(out)
 
 
+def visit_request(item, cfg, today):
+    """방문 후기: 사용자가 쓴 글 + 직접 찍은 사진(번호·메모)으로 네이버 후기 글을 쓰게 하는 요청문."""
+    v = item.get("visit") or {}
+    photos = v.get("photos") or []
+    n = len(photos)
+    manual = cfg.get("ai_provider") == "manual"
+    out = [f"오늘 날짜: {today.isoformat()} (한국 시간).", "",
+           f"## 이번 글: 사용자가 직접 다녀온 곳의 방문 후기 (직접 찍은 사진 {n}장 + 사용자가 쓴 글)",
+           f"- 장소·가게: {v.get('name', '')}"]
+    if v.get("place"):
+        out.append(f"- 위치: {v['place']}")
+    if v.get("date"):
+        out.append(f"- 다녀온 날: {v['date']}")
+    if v.get("related"):
+        out.append("- 이곳은 사용자의 가족·지인이 운영하는 곳입니다. 본문 첫 문단 안에 이 관계를 자연스럽게 한 문장으로 밝힙니다(숨기거나 광고처럼 쓰지 않음).")
+    out += ["", "## 쓰는 원칙 (최우선)",
+            "- 아래 '사용자가 쓴 글'이 이 후기의 뼈대입니다. 사용자의 경험·느낌·표현을 최대한 살려 문장을 다듬고 순서를 정리해 네이버 블로그 글로 완성합니다. 사용자가 쓴 좋은 문장은 그대로 써도 됩니다.",
+            "- 사용자가 쓰지 않은 경험(맛 평가·서비스·대화·재방문 의사 등)은 지어내지 않습니다. 빈 곳은 사진에 보이는 것(메뉴 모양·색·인테리어·분위기)을 묘사해서 채웁니다.",
+            "- 가격·메뉴 이름·영업시간·주소·주차·전화번호는 사용자 글이나 사진(메뉴판·간판 등)에 있는 것만 씁니다. 웹 검색으로 공식 정보(네이버 지도·플레이스, 가게 공식 채널)가 확인되면 써도 되고 출처를 '■ 참고한 공식 자료'에 적습니다. 확인되지 않으면 쓰지 않습니다.",
+            f"- 사진 배치: 본문에 '[📷 사진 N]'을 한 줄씩 넣어 사진 {n}장을 모두 한 번씩 배치합니다(1~{n}, 번호마다 정확히 한 번). 사진은 그 내용을 말하는 문단 바로 아래에 두고, 흐름에 맞게 순서를 바꿔도 됩니다. 비슷한 사진은 연달아 둬도 됩니다. 자리 표시 줄에는 다른 글자를 붙이지 않고, 바로 아래에 그 사진을 이어 설명하는 짧은 문장(1~2문장)을 씁니다.",
+            "- 번호 소제목 3~6개와 마무리. 분량은 사용자 글의 양과 사진 수에 맞춰 1,500~3,500자. 작가 지침의 문체(서술형 어미, AI 티 빼기)를 따릅니다.",
+            "- 이번 글은 Gemini 이미지 프롬프트를 쓰지 않습니다. '■ Gemini 이미지 프롬프트' 칸과 [📸 …] 자리 표시를 만들지 않습니다.",
+            "", "## 사진 보기"]
+    if manual:
+        out += [f"- 사진 {n}장을 이 대화에 01번부터 순서대로 첨부했습니다. 첨부한 순서가 사진 번호입니다. 각 사진을 직접 보고 내용을 확인하세요."]
+    else:
+        out += [f"- 작업 폴더의 photos 폴더에 사진 {n}장이 있습니다: " + ", ".join(f"photos/{p.get('file')}" for p in photos) + ". 파일 번호가 사진 번호입니다. 각 파일을 직접 열어 보고 내용을 확인하세요."]
+    out += ["- 사진을 열어 볼 수 없으면 사진 내용을 지어내지 말고, 아래 '사진 메모'만 보고 배치하세요.",
+            "- 본문 다음, '■ 참고한 공식 자료' 앞에 '■ 사진 확인' 칸을 만들고 사진마다 한 줄씩 '사진 N: (실제로 본 내용 15자 안팎)' 또는 '사진 N: 열어 보지 못함'을 적습니다. 이 칸은 블로그에 올리지 않는 확인용입니다.",
+            "", "## 사진 메모 (사용자가 적은 것)"]
+    for i, p in enumerate(photos, 1):
+        out.append(f"- 사진 {i} ({p.get('file')}): {(p.get('note') or '').strip()[:200] or '(메모 없음)'}")
+    out += ["", "## 사용자가 쓴 글 (이 후기의 뼈대)", (v.get("memo") or "").strip()[:12000] or "(사용자가 쓴 글 없음 · 사진과 메모로 씁니다)"]
+    return "\n".join(out)
+
+
+VISIT_WORKS = ("keywordplanner_agy", "keywordplanner_claude", "keywordplanner_gemini")
+
+
+def stage_visit_photos(store, item):
+    """방문 후기 사진을 AI 작업 폴더(photos/)에 복사. 방문 후기가 아니면 지난 사진을 지움."""
+    import shutil
+    for name in VISIT_WORKS:
+        d = Path(store.data) / name / "photos"
+        if d.exists():
+            shutil.rmtree(d, ignore_errors=True)
+    v = (item or {}).get("visit") or {}
+    vid = str(v.get("vid") or "")
+    if not re.fullmatch(r"[\w\-]{4,60}", vid):
+        return 0
+    src = Path(store.data) / "visits" / vid
+    files = [p.get("file") for p in (v.get("photos") or []) if re.fullmatch(r"\d{2}\.jpg", str(p.get("file") or ""))]
+    n = 0
+    for name in VISIT_WORKS:
+        d = Path(store.data) / name / "photos"
+        d.mkdir(parents=True, exist_ok=True)
+        for f in files:
+            if (src / f).exists():
+                shutil.copyfile(src / f, d / f)
+                n += 1
+    return n
+
+
+def clear_visit_photos(store):
+    import shutil
+    for name in VISIT_WORKS:
+        shutil.rmtree(Path(store.data) / name / "photos", ignore_errors=True)
+
+
 def system_prompt(guide, memory, web, style="info"):
     tail = ["", "---", "", "# 실행 환경 안내 (키워드 플래너)",
             "- 결과물은 위 지침의 출력 양식 그대로, 마크다운 텍스트로만 답합니다. 앞뒤 인사나 설명을 붙이지 않습니다.",
@@ -460,6 +534,11 @@ def system_prompt(guide, memory, web, style="info"):
         tail.append("- 웹 검색 도구로 정부·기관·기업 공식 사이트를 우선 확인하고, 확인한 자료만 ■ 참고한 공식 자료 칸에 적습니다.")
     else:
         tail.append("- 이번에는 웹 검색을 쓸 수 없습니다. 바뀔 수 있는 수치·날짜·조건은 단정하지 말고 '공식 공지 확인'을 안내하며, 참고 자료 칸에는 '이번 초안은 웹 검색 없이 작성됨 · 게시 전 공식 자료 확인 필요'라고 적습니다.")
+    if style == "visit":
+        tail += ["", "---", "", "# 이번 글 = 직접 다녀온 곳의 방문 후기 (위 이미지 규칙보다 우선)",
+                 "- 사용자가 직접 찍은 실사 사진을 씁니다. '■ Gemini 이미지 프롬프트' 칸과 [📸 …] 자리 표시는 만들지 않고, 위의 이미지 프롬프트·폴라로이드 프레임 규칙은 모두 적용하지 않습니다.",
+                 "- 사진 자리는 본문에 '[📷 사진 N]' 한 줄로 표시합니다(N = 사진 번호). 이미 있는 [📷 사진 N] 줄은 지우거나 번호를 바꾸지 않습니다.",
+                 "- 사용자가 겪지 않은 경험·맛·대화·가격·영업 정보는 지어내지 않습니다. 사진에 보이는 것과 사용자가 쓴 것, 웹에서 공식으로 확인한 것만 씁니다."]
     voice = (VOICE.get("text") or "").strip()
     if voice:
         tail += ["", "---", "", "# 내 문체 프로필 (사용자 본인의 글에서 학습한 문체)",
@@ -568,8 +647,9 @@ def call_claude_code(system, user, web=True, exe="", work_dir=None, model="opus"
            "--output-format", "json", "--system-prompt-file", str(sys_file), "--permission-mode", "dontAsk", "--max-turns", "30"]
     if model:
         cmd += ["--model", model]
-    if web:
-        cmd += ["--tools", "WebSearch,WebFetch", "--allowedTools", "WebSearch,WebFetch"]
+    tools = (["WebSearch", "WebFetch"] if web else []) + (["Read"] if any((work / "photos").glob("*.jpg")) else [])
+    if tools:
+        cmd += ["--tools", ",".join(tools), "--allowedTools", ",".join(tools)]
     else:
         cmd += ["--tools", ""]
     flags = 0x08000000 if os.name == "nt" else 0  # 창 띄우지 않기
@@ -906,12 +986,12 @@ def body_part(text):
     t = text or ""
     s = t.find("[본문 시작]")
     t = t[s + len("[본문 시작]"):] if s >= 0 else t
-    e = re.search(r"\n(?:-{3,}\s*\n+\s*)?■\s*(?:네이버 블로그|참고한|Gemini 이미지)", t)
+    e = re.search(r"\n(?:-{3,}\s*\n+\s*)?■\s*(?:네이버 블로그|참고한|Gemini 이미지|사진 확인)", t)
     return t[:e.start()].strip() if e else t.strip()
 
 
 def body_chars(text):
-    b = re.sub(r"\[📸[^\]]*\]", "", body_part(text))
+    b = re.sub(r"\[📸[^\]]*\]|\[📷[^\]]*\]", "", body_part(text))
     b = re.sub(r"[*#|>]", "", b)
     return len(b.strip())
 
@@ -948,6 +1028,9 @@ def save_draft(store, cfg, item, saved, text, provider, model, web, sources=None
            "web": web, "sources": (sources or sources_from_text(text))[:12], "chars": body_chars(text),
            "seconds": seconds, "item_id": item.get("id"), "style": style or pick_style(item),
            "check": check_draft(text, style or pick_style(item))}
+    v = item.get("visit") or {}
+    if v.get("vid"):
+        rec["visit"] = {"vid": v["vid"], "name": v.get("name", ""), "photos": [{"file": p.get("file"), "note": p.get("note", "")} for p in v.get("photos") or []]}
     store.add(rec, text)
     build_memory(store, cfg, saved)  # 방금 쓴 초안까지 기억에 반영
     return {**rec, "text": text}
@@ -957,6 +1040,8 @@ def check_draft(text, style="info"):
     """작가 지침(출력 양식)대로 썼는지 프로그램이 직접 검사. 크게 빠진 항목은 AI에게 고쳐 쓰게 함."""
     if style == "essay":
         return check_essay(text)
+    if style == "visit":
+        return check_visit(text)
     if style == "deal":
         return check_deal(text)
     t = text or ""
@@ -1056,6 +1141,40 @@ def check_deal(text):
     out.append({"name": "AI 말투 없음 (해요체·상투 표현)", "ok": _left == 0 and not _phr,
                 "note": ", ".join(([f"해요체 {_left}곳"] if _left else []) + _phr[:4])})
     return {"ok": all(x["ok"] for x in out), "passed": sum(x["ok"] for x in out), "total": len(out), "items": out, "chars": chars}
+
+
+def check_visit(text):
+    """방문 후기 검사: 사진 자리·사진 확인 칸·기본 형식."""
+    t = text or ""
+    body = body_part(t)
+    i = t.rfind("■ 네이버 블로그")
+    tags_sec = t[i:] if i >= 0 else ""
+    n_tags = len(re.findall(r"#[^\s#]+", tags_sec))
+    nums = [int(n) for n in re.findall(r"(?m)^##\s*(\d+)\.", body)]
+    ph = [int(n) for n in re.findall(r"\[📷\s*사진\s*(\d+)", body)]
+    j = t.find("■ 사진 확인")
+    seen_sec = t[j:t.find("■", j + 1)] if j >= 0 else ""
+    seen = re.findall(r"사진\s*(\d+)\s*[:：]\s*(.+)", seen_sec)
+    unseen = [a for a, b2 in seen if "열어 보지 못" in b2 or "못 봄" in b2]
+    total = max(ph + [int(a) for a, _ in seen] + [0])
+    chars = body_chars(t)
+    q = len(re.findall(r"[가-힣](?:나요|까요|을까|ㄹ까|니까요)\?", body))
+    items = [
+        ("기획: 메인 키워드·추천 제목 3개", bool(re.search(r"메인 키워드", t) and re.search(r"추천 제목[^\n]*\n+\s*1\..+\n+\s*2\..+\n+\s*3\.", t)), ""),
+        ("소제목 3~6개 (번호 순서대로)", 3 <= len(nums) <= 6 and nums == list(range(1, len(nums) + 1)), f"{len(nums)}개"),
+        ("마무리", bool(re.search(r"(?m)^##\s*마무리", body)), ""),
+        ("내 사진 모두 배치 (번호마다 한 번)", bool(ph) and sorted(ph) == list(range(1, total + 1)), f"{len(set(ph))}/{total}장"),
+        ("AI가 사진을 직접 확인", bool(seen) and not unseen, f"못 본 사진 {len(unseen)}장" if unseen else ("확인 칸 없음" if not seen else "")),
+        ("분량 1,500자 이상", chars >= 1500, f"{chars:,}자"),
+        ("의문형 문장 없음", q == 0, f"{q}개" if q else ""),
+        ("본문에 URL 없음", not re.search(r"https?://", body), ""),
+        ("Gemini 이미지 프롬프트 없음 (내 사진 사용)", "■ Gemini 이미지" not in t and "[📸" not in t, ""),
+        ("네이버 태그 10~15개", 10 <= n_tags <= 15, f"{n_tags}개"),
+        ("태그는 글 맨 마지막", bool(tags_sec) and t.rfind("■") == i, ""),
+    ]
+    out = [{"name": n, "ok": bool(ok), "note": note} for n, ok, note in items]
+    passed = sum(x["ok"] for x in out)
+    return {"ok": passed == len(out), "passed": passed, "total": len(out), "items": out, "chars": chars}
 
 
 def check_essay(text):
@@ -1284,15 +1403,20 @@ def make_draft(store, cfg, item, saved, today, progress=None):
     VOICE["text"] = store.voice()
     system, user = system_prompt(guide, memory, web, style), draft_request(item, cfg, today)
     t0 = time.time()
+    stage_visit_photos(store, item)
     call = _caller(provider, cfg, store, system, web)
-    say({"essay": "읽을거리형 지침으로 쓰는 중", "deal": "할인·구매형 지침으로 쓰는 중"}.get(style, "작가 지침(정보형)으로 쓰는 중"))
+    say({"essay": "읽을거리형 지침으로 쓰는 중", "deal": "할인·구매형 지침으로 쓰는 중",
+         "visit": "사진을 보며 방문 후기 쓰는 중"}.get(style, "작가 지침(정보형)으로 쓰는 중"))
     # 유료 API로 몰래 넘어가지 않음: 구독(CLI)이 실패하면 멈추고 이유를 보여 줌
-    text, sources, model = call(user)
+    try:
+        text, sources, model = call(user)
+    finally:
+        clear_visit_photos(store)
     t_first = round(time.time() - t0)
     text = local_fix(text)
     chk = check_draft(text, style)
     fixed = 0
-    intent = bool((item.get("user_note") or "").strip() or item.get("revise_instruction"))  # 사용자 의도로 형식을 바꾼 글은 기본 틀로 되돌려 고쳐 쓰지 않음
+    intent = bool((item.get("user_note") or "").strip() or item.get("revise_instruction") or item.get("visit"))  # 사용자 의도로 형식을 바꾼 글은 기본 틀로 되돌려 고쳐 쓰지 않음
     if not chk["ok"] and _needs_rewrite(chk) and not intent:
         say(f"양식 검사 {chk['passed']}/{chk['total']} · 빠진 항목을 고쳐 쓰는 중")
         try:
