@@ -1743,3 +1743,6 @@ html { overflow-y: scroll; scrollbar-gutter: stable; }
 .dv-menu .menu-head:first-child { border-top: 0; }
 /* 더보기 메뉴: 화면이 낮아도 아래로 잘리지 않게 (메뉴 안에서 스크롤) */
 .dv-more .dv-menu { max-height: calc(100vh - 220px); overflow-y: auto; }
+/* v172: 화면 제목 아래 설명은 한 줄로 (넓은 화면에서 2줄로 공간을 잡아먹지 않게) */
+.page-head p.muted { max-width: none !important; }
+@media (min-width: 900px) { .page-head p.muted { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
