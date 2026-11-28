@@ -19,7 +19,7 @@ KST = timezone(timedelta(hours=9))
 CLAUDE_MODEL = "claude-opus-5-5"
 APP_DIR = Path(__file__).parent
 # 예전 버전의 기본 작가 지침(sha256). 사용자가 손대지 않았으면 새 지침으로 올려 줌
-OLD_DEFAULT_GUIDES = {"58c24fb0375d79f00736a517c071a5390448757441c5e33bfd000bc6cf562e6e", "1fb301a4469324907f4a3b6164436da5cfb7e60f007f96bc6800abc3b40f96f5", "971fcbb2957b16f3894c721c38fc7c8967584c8489101bc04f897182122e542e", "94f068563e57139391511c99762561fb874618e70ebe59b372827ee8735f2b00", "0568b17fee4e65da9eb6943248b603826e52ac9a5966017b9756c4199ba27213", "7f6fb122f6fc840770a8e1a87cabbd3b4b136dc28bee2977f11cdac46e032c68", "47d92de823cb00d01aac4f3f331da23e3c0531c3f309cb4c3cbe81080c8280e3", "174f7de5d597f42d8a6dbfbbb040b256e4d0da61ecb83dbb3d3476ae75d09fac", "dfb728c50da6480349177a2796f1c651d7ddccc7a220c796439c93c76545df73", "fc24bd51318e976fef2733415519c3ac6c9ae6cad62247155af89d50c7bcb71b", "06e97242a022635dddd8a68fd992d4ee998aa6d9897388d4c6789db9a511e1ef", "62f7f76e35fffb33879aef4320709dbf4ede000fc9262eed1bae010fbfac64d9", "fe2998e48ac68085f9a92913ffae5161351ae306a8d2b235fd44829c5241e08b", "c7b28e96c3abd18577189d745d18e129e7214b954f038230884bda88b4061352", "71fc138eda2ece889de2e2da50a95ccf81922cb2a462f606fd914ffc7da7e295", "bdf920ecd43701d2292c7f338aa657e48df16f38e28e020c3c8afe1d86aef6c8", "858fcc0b82421ece383552bef10d9bd4490cd29a45df0ed44983667fad9e35bf", "2cfcba5baded7e680f93d58e6f43eb20664af5778cdc0097352692e793f492d8", "9f69643c9b909c59c708675855d211c4dbaa19555b082282090021633011818a", "3527815c2cd4c785b55e069e81daac9a57cc531c3f8014b682221d27694dcc1c", "03573768b4428b8e01474bc547ce5cfcb86ce337d26f764850aba4405a23ca47", "e6c38ddee9c507a8971fedbfd3424c1f65683bfdb70867a86f0b091a54acf550", "ea8f79250e7225f1016f0a83eee1a017572f994577dda0dc5406d2995b59eafb", "f3ef8e3c463157786d318833e45976e5c00f1f736eb825f25d47d4961cd9f0b4", "7abafe3ba865daf70f5c87b5b19595dc21367b393547bb78d4d22b06993a4543", "51c825fa976ee556209596749dd7646504d980b1119f3ffd873c07ceac0a8a95", "201e6c46be11f3c6f03a4a7ebeca2b8087171be4fb4d68999fb15b37cce266bc", "d7968cfbd083a6600eb3401689c1f9fd44ad9108112322f54770fc22f4d00d35", "3519e01e9dac935f01e4b18077546724be432c950e4f249936862faa348b8447", "f3cf4b8202540efe74128bd754e2e3ab40dc351799341b3f18a98d92c40f69f2", "289967fe17a69d557c55a39cdb15a4b784965003f49ae5682e961125aa806a4e", "5897740aa8f6dca0c354460c6362be80863616e86e4dd7f7cc1b6588df4d4560", "b894956ecb9089c3354c665cdf684da4e198659d502ce0f79c1f83437b579539", "4ae5dbab9cc26888f6b56281624ace2319763bd1248671eb0cd7cc1c78ead867", "2228d665832e96c6568394f82940539a100aae17576214723e59f3dfb5323c71", "0c961d7c537c2be1a0e7613886ae38f6dbe302a68f6cfb3d1784cdacade57787", "a6f083674fa6e12b47a94a308965a6162027a2bd6c5ab0eec813bb798a992e60", "0cd20f813afa36be043b94d94405eef301eddfbfe9765425ffc35de3592f490b", "f6bb50a3a4463a3fabab14ccb79c75b5bb4e123b0e34f863719e64c001a9dc42",
+OLD_DEFAULT_GUIDES = {"c6a917c4ab397a2bbfb43bca5b46d1faa31ec94df19acdb1cac0e9b931172736", "58c24fb0375d79f00736a517c071a5390448757441c5e33bfd000bc6cf562e6e", "1fb301a4469324907f4a3b6164436da5cfb7e60f007f96bc6800abc3b40f96f5", "971fcbb2957b16f3894c721c38fc7c8967584c8489101bc04f897182122e542e", "94f068563e57139391511c99762561fb874618e70ebe59b372827ee8735f2b00", "0568b17fee4e65da9eb6943248b603826e52ac9a5966017b9756c4199ba27213", "7f6fb122f6fc840770a8e1a87cabbd3b4b136dc28bee2977f11cdac46e032c68", "47d92de823cb00d01aac4f3f331da23e3c0531c3f309cb4c3cbe81080c8280e3", "174f7de5d597f42d8a6dbfbbb040b256e4d0da61ecb83dbb3d3476ae75d09fac", "dfb728c50da6480349177a2796f1c651d7ddccc7a220c796439c93c76545df73", "fc24bd51318e976fef2733415519c3ac6c9ae6cad62247155af89d50c7bcb71b", "06e97242a022635dddd8a68fd992d4ee998aa6d9897388d4c6789db9a511e1ef", "62f7f76e35fffb33879aef4320709dbf4ede000fc9262eed1bae010fbfac64d9", "fe2998e48ac68085f9a92913ffae5161351ae306a8d2b235fd44829c5241e08b", "c7b28e96c3abd18577189d745d18e129e7214b954f038230884bda88b4061352", "71fc138eda2ece889de2e2da50a95ccf81922cb2a462f606fd914ffc7da7e295", "bdf920ecd43701d2292c7f338aa657e48df16f38e28e020c3c8afe1d86aef6c8", "858fcc0b82421ece383552bef10d9bd4490cd29a45df0ed44983667fad9e35bf", "2cfcba5baded7e680f93d58e6f43eb20664af5778cdc0097352692e793f492d8", "9f69643c9b909c59c708675855d211c4dbaa19555b082282090021633011818a", "3527815c2cd4c785b55e069e81daac9a57cc531c3f8014b682221d27694dcc1c", "03573768b4428b8e01474bc547ce5cfcb86ce337d26f764850aba4405a23ca47", "e6c38ddee9c507a8971fedbfd3424c1f65683bfdb70867a86f0b091a54acf550", "ea8f79250e7225f1016f0a83eee1a017572f994577dda0dc5406d2995b59eafb", "f3ef8e3c463157786d318833e45976e5c00f1f736eb825f25d47d4961cd9f0b4", "7abafe3ba865daf70f5c87b5b19595dc21367b393547bb78d4d22b06993a4543", "51c825fa976ee556209596749dd7646504d980b1119f3ffd873c07ceac0a8a95", "201e6c46be11f3c6f03a4a7ebeca2b8087171be4fb4d68999fb15b37cce266bc", "d7968cfbd083a6600eb3401689c1f9fd44ad9108112322f54770fc22f4d00d35", "3519e01e9dac935f01e4b18077546724be432c950e4f249936862faa348b8447", "f3cf4b8202540efe74128bd754e2e3ab40dc351799341b3f18a98d92c40f69f2", "289967fe17a69d557c55a39cdb15a4b784965003f49ae5682e961125aa806a4e", "5897740aa8f6dca0c354460c6362be80863616e86e4dd7f7cc1b6588df4d4560", "b894956ecb9089c3354c665cdf684da4e198659d502ce0f79c1f83437b579539", "4ae5dbab9cc26888f6b56281624ace2319763bd1248671eb0cd7cc1c78ead867", "2228d665832e96c6568394f82940539a100aae17576214723e59f3dfb5323c71", "0c961d7c537c2be1a0e7613886ae38f6dbe302a68f6cfb3d1784cdacade57787", "a6f083674fa6e12b47a94a308965a6162027a2bd6c5ab0eec813bb798a992e60", "0cd20f813afa36be043b94d94405eef301eddfbfe9765425ffc35de3592f490b", "f6bb50a3a4463a3fabab14ccb79c75b5bb4e123b0e34f863719e64c001a9dc42",
                       "50ddd38bb2615fdda855534a003fe9f226bfb05e6d06d7f5b8072cdb3b332a68",
                       "737470eff321f4bf999e3a33d06e476814f40e558765752e63f81d31bd119726",
                       "88607b921186d719388360cffe4419d31c3bb103b8bee917379ceb3327609ba2",
@@ -51,10 +51,10 @@ def fetch_repo_file(name):
     return False
 
 
-OLD_ESSAY_GUIDES = {"ebfd1e7a9af2d6a243d5ce2283c1b076f4eb70630659404a37b73d311b56cd4a", "8bc026365ccdfb7f9cf51f92d4c9c165b565994959bf76a345412a5ad9a97d37", "2a26ae1ae781f1c6ba097f2e4f50eb60d0a8e45f6d901d49c1e3dc060acd8dfe", "07b51ff25bf104abebaf3cc5931266829252f52ecf8cdb519fdd241d3bae6daf", "17313cfa4af570028ee9997441919e234da24d7fbc8f127c459264416cb5eb5c", "ebcb44fcd2f07aec9071014dad851ded47327c843d8a54aa1a79f691313894cf", "150976731b0e55c1a599aac7b387744f64aca95729373995667024fef055e158", "774a893bdc46d4b6d2ce0937e37d66be33495bc5bdf86f9aa66fcfc5cebd0c13", "4c97cdf4ea4063af9619472e3a680cc165a2c906dce66bbf54945290f589a9d5", "6f412173b4437e89ac3ffbadfa80e77e99e6ba00ad5557b95d5fc5e617952094", "fb348a38b9fb6a11a31314fc1a51d843df2c1fe00a2d38d274c09aa063ef2797", "422939a2fbe8b85ed00fcc3d5c90c54a95185793f69735c27b0760bb78620af0", "2df0de3da0c17c70a70483f5400d091b4f2e00e6a1b403b073524cc0c863cd06", "cc63f0e59c01e9200020071dfe2b8d1ff4b57a93cd1c7b3a1f1200df50480a58", "f260257c940003593829cfab415698ffd258107acee5514114bdeb47eae9849a", "8a760e8a10480f4790e3b98fd60e147dd80b96ebcba9537d2607ff776807fdbf", "e4a5e2c065f405d6d0039a31bc685226e15ca09df1b3d6239af934dedfd4776c", "10ee5e3feecfaf04250be40cc611efbd6cc606b0be5756dd5116473863a1f87d", "c55c6e1eccf3f0c7699ffc1ec50a8387ff1431c23199fcce5a84b679e37d5beb", "eb10b428f5c2376bb96b5dc3b531a9b698d3f25c218d798859c27609cb0054f9", "45c2e3dd597e5d4c3e96ec23d55a7ba9a04f1d2bff3ee76a028df3d657b8faeb", "db64537c3ca5dcd4d5d4da14bdb5b3bdcb33ead226152433ed30f4d8e1e738de", "81ec1b6d13a4f662295b631d823bef96b6760fe9d92d95fddf6f7220d41482d5", "d1135efb94d61aef886b86395aeeceaedf5fcbf53566db305cc3363c9cf6f482", "b958cc3dc2dba6cbd24392ad05cbd11e04be736a4746f69b15efa1d1aad8cadc", "79593cbf46c7380256b5c7f124ce684fb4976fc14d7709bffc942f0bf0b149c9", "19884d801b473ad4f995418beba2ddb35d9f6dac5360a31b510c713fe18b3402", "96b65eff47e4ec4ba812c4ca4b74ba4052397f84094b128f0f92968302c76a4e", "ea28eea311b851a60e5774ae1b66ec0d446c7f31fd603973f78aea6ada0e6f63", "ed1b71a6215fbd82305e1cea5165e40d0f7bef63321648b4c02495f976cd4816", "45cd7fcfeb57cb08bd66ff87fb7b328a78035e580592aeb545ee4a8003d49987", "8902f714050f13c941454680dea97257484de367d3a10fa6f64d403cd0df4ff5", "d4ab69ab3c7c45557d336d05a2171330b004b3c54aa6ced436f4be26879c312f", "18eac005a699b2a7cfa1ddd23e90f5ff9f9f2f70f07388daa608dda49c558a7f", "4daefb41ecf10b68cab44a5e092bf4756970d4e730128849c7af6229216fdd33"}  # 읽을거리형 기본 지침의 예전 판 (고치지 않았으면 자동 교체)
+OLD_ESSAY_GUIDES = {"9dc1437a0d991a8618983951e02f62db466d6e940a7bb6bf4afa003f428acb8a", "ebfd1e7a9af2d6a243d5ce2283c1b076f4eb70630659404a37b73d311b56cd4a", "8bc026365ccdfb7f9cf51f92d4c9c165b565994959bf76a345412a5ad9a97d37", "2a26ae1ae781f1c6ba097f2e4f50eb60d0a8e45f6d901d49c1e3dc060acd8dfe", "07b51ff25bf104abebaf3cc5931266829252f52ecf8cdb519fdd241d3bae6daf", "17313cfa4af570028ee9997441919e234da24d7fbc8f127c459264416cb5eb5c", "ebcb44fcd2f07aec9071014dad851ded47327c843d8a54aa1a79f691313894cf", "150976731b0e55c1a599aac7b387744f64aca95729373995667024fef055e158", "774a893bdc46d4b6d2ce0937e37d66be33495bc5bdf86f9aa66fcfc5cebd0c13", "4c97cdf4ea4063af9619472e3a680cc165a2c906dce66bbf54945290f589a9d5", "6f412173b4437e89ac3ffbadfa80e77e99e6ba00ad5557b95d5fc5e617952094", "fb348a38b9fb6a11a31314fc1a51d843df2c1fe00a2d38d274c09aa063ef2797", "422939a2fbe8b85ed00fcc3d5c90c54a95185793f69735c27b0760bb78620af0", "2df0de3da0c17c70a70483f5400d091b4f2e00e6a1b403b073524cc0c863cd06", "cc63f0e59c01e9200020071dfe2b8d1ff4b57a93cd1c7b3a1f1200df50480a58", "f260257c940003593829cfab415698ffd258107acee5514114bdeb47eae9849a", "8a760e8a10480f4790e3b98fd60e147dd80b96ebcba9537d2607ff776807fdbf", "e4a5e2c065f405d6d0039a31bc685226e15ca09df1b3d6239af934dedfd4776c", "10ee5e3feecfaf04250be40cc611efbd6cc606b0be5756dd5116473863a1f87d", "c55c6e1eccf3f0c7699ffc1ec50a8387ff1431c23199fcce5a84b679e37d5beb", "eb10b428f5c2376bb96b5dc3b531a9b698d3f25c218d798859c27609cb0054f9", "45c2e3dd597e5d4c3e96ec23d55a7ba9a04f1d2bff3ee76a028df3d657b8faeb", "db64537c3ca5dcd4d5d4da14bdb5b3bdcb33ead226152433ed30f4d8e1e738de", "81ec1b6d13a4f662295b631d823bef96b6760fe9d92d95fddf6f7220d41482d5", "d1135efb94d61aef886b86395aeeceaedf5fcbf53566db305cc3363c9cf6f482", "b958cc3dc2dba6cbd24392ad05cbd11e04be736a4746f69b15efa1d1aad8cadc", "79593cbf46c7380256b5c7f124ce684fb4976fc14d7709bffc942f0bf0b149c9", "19884d801b473ad4f995418beba2ddb35d9f6dac5360a31b510c713fe18b3402", "96b65eff47e4ec4ba812c4ca4b74ba4052397f84094b128f0f92968302c76a4e", "ea28eea311b851a60e5774ae1b66ec0d446c7f31fd603973f78aea6ada0e6f63", "ed1b71a6215fbd82305e1cea5165e40d0f7bef63321648b4c02495f976cd4816", "45cd7fcfeb57cb08bd66ff87fb7b328a78035e580592aeb545ee4a8003d49987", "8902f714050f13c941454680dea97257484de367d3a10fa6f64d403cd0df4ff5", "d4ab69ab3c7c45557d336d05a2171330b004b3c54aa6ced436f4be26879c312f", "18eac005a699b2a7cfa1ddd23e90f5ff9f9f2f70f07388daa608dda49c558a7f", "4daefb41ecf10b68cab44a5e092bf4756970d4e730128849c7af6229216fdd33"}  # 읽을거리형 기본 지침의 예전 판 (고치지 않았으면 자동 교체)
 
 GUIDE_FILES = {"info": "writer_guide.md", "essay": "writer_guide_essay.md", "deal": "writer_guide_deal.md", "visit": "writer_guide_essay.md"}
-OLD_DEAL_GUIDES = {"46c2ae2c206e2f7255063b571cc3f517636f043abf610df16939717975b6bc0b", "1acbf01d65ddbf7e7ea10ab223de91e74f128f218c4f0e5d701bc34a97988f82", "bc3503d55866c75ad3642e874efae2daaee2f5b758851b7c601fc215104417cd", "9891cd51110bc0dc138f2859cbc9c1715770914b33b3d68fc9a69c3996ee9299", "bc6b418112dad30b071f38f0a6e08fe99c424a8e7df3b5e2b3a1691968a1dffa", "7d328ebf89ac500706d0f9c25963432d4242565e3da2f1e9529b4eb0f6a632c3", "816b271946dcea6d9ef61b2d55ab039e218261cb16d7fad873d57143ad882787", "0fa3a123a4ded1fa1142a19c7207a99e194ecebb707207c1717de7c19119cd55", "f1d6dab62aabc207a17be9c76e5215e1cbcb9e14dd6d6777721dc71b8e76e9c9", "ac3c31740a3c17c65fe568a84d82d6e35569aa49199e04e0a2fad45058130c68", "35a24192ba720db6bf1eaa1d47cf755e74d8772bd1d9158a86518472b80632c7", "4c33849351747cd08422b3780842e2c4cc3c463e5aa83973d2248d92c23017a4", "4a2b8821b0efbb5c5ea1498ac66c071e16a10df94c0e8804b756b3349403b5cc", "6428ac856d5eddc9cf61b2f1db72634efd3b2ee0bb60a27807c41c2e5e3cb078", "57d553116455c8d571882f156b87b699c1ffca3affc52bdd89fdafe28395b346", "5125be05039330d329adf0248a5f737aec6bdfbcd78ea8c3d55cfd6305bb7898", "a996b39232c6d3301ef2ed618c2429c0dcda5129b0087f3d70b8bb8cb5c07ec9", "7758d0aa1840332f1aa7c308ac3bfee931071444718c1ed37253de8c4e5ba856", "8fe2b2221d8409f51fded5316ecb1ee2ae158119bb56e7f3480d4e406492f6f5", "a78d39a4eca802c85321a5e58b8c9bf6aa682f3bc965aa7bd830271f62cd6c02", "1ea3bc54df202452108d94303693d97d2d03af217df979c6492bd50fff4abe89", "e3fcefc11d16df24aee487b5f9d0f91f1f812b0c661800cc80c3035373990114", "ee6dd3684b17c94ee03962a69eb5276a45d4c2481829f31bea9e1fb9cbe36f90", "6b55a9c9027df6edb6edb0e4e7a6a373a7dbc331ed5f7b4c7a18bda8a5093c76", "8d3a5790537d218a41286a849dfae061c8be637b331be44f416915ab33f13fa0", "2e89ca129de16b8d17b3cc2b6e9ff1f0ee1eced8cab0fb7933c7ba50eb90f607", "de03160a2180a98424ce1b83490cac780822805ef5ef4d7b8524b5d9dd1b92bc", "630d625ce119fda6136d2b61fc362fd1ca864200af7c5506f24481ea0e3f1b42", "1236c80d084fa0ec1dbd9d1cc93e651f14c63ea8634875fe0f93b88004a83a1e", "b6f576099c0177811aaba58d82a0c054bbdcd661d8d73d92b7da92088360abf3", "ef714a4751cb6e8f163634329da698bc9733fb280c538a7c8056a624c0bb41c9", "e90e6b081db348c81e8a6db390e6dfc77f4fe2b2441d653cd72a29ca15b056f5", "eb6cf6538685a58580f804568b1244da811c1755c0ae7a3bcdb2182965a8a39d", "6bb7940776d446bcd5f7ecd7d6c4c0f76d8a391f7c009bb270b07f9ae8796a6a"}
+OLD_DEAL_GUIDES = {"99cea8311c1ed65893a4aca0d4aaba3d213aecf0df61eb7e0ce4ffd57645217d", "46c2ae2c206e2f7255063b571cc3f517636f043abf610df16939717975b6bc0b", "1acbf01d65ddbf7e7ea10ab223de91e74f128f218c4f0e5d701bc34a97988f82", "bc3503d55866c75ad3642e874efae2daaee2f5b758851b7c601fc215104417cd", "9891cd51110bc0dc138f2859cbc9c1715770914b33b3d68fc9a69c3996ee9299", "bc6b418112dad30b071f38f0a6e08fe99c424a8e7df3b5e2b3a1691968a1dffa", "7d328ebf89ac500706d0f9c25963432d4242565e3da2f1e9529b4eb0f6a632c3", "816b271946dcea6d9ef61b2d55ab039e218261cb16d7fad873d57143ad882787", "0fa3a123a4ded1fa1142a19c7207a99e194ecebb707207c1717de7c19119cd55", "f1d6dab62aabc207a17be9c76e5215e1cbcb9e14dd6d6777721dc71b8e76e9c9", "ac3c31740a3c17c65fe568a84d82d6e35569aa49199e04e0a2fad45058130c68", "35a24192ba720db6bf1eaa1d47cf755e74d8772bd1d9158a86518472b80632c7", "4c33849351747cd08422b3780842e2c4cc3c463e5aa83973d2248d92c23017a4", "4a2b8821b0efbb5c5ea1498ac66c071e16a10df94c0e8804b756b3349403b5cc", "6428ac856d5eddc9cf61b2f1db72634efd3b2ee0bb60a27807c41c2e5e3cb078", "57d553116455c8d571882f156b87b699c1ffca3affc52bdd89fdafe28395b346", "5125be05039330d329adf0248a5f737aec6bdfbcd78ea8c3d55cfd6305bb7898", "a996b39232c6d3301ef2ed618c2429c0dcda5129b0087f3d70b8bb8cb5c07ec9", "7758d0aa1840332f1aa7c308ac3bfee931071444718c1ed37253de8c4e5ba856", "8fe2b2221d8409f51fded5316ecb1ee2ae158119bb56e7f3480d4e406492f6f5", "a78d39a4eca802c85321a5e58b8c9bf6aa682f3bc965aa7bd830271f62cd6c02", "1ea3bc54df202452108d94303693d97d2d03af217df979c6492bd50fff4abe89", "e3fcefc11d16df24aee487b5f9d0f91f1f812b0c661800cc80c3035373990114", "ee6dd3684b17c94ee03962a69eb5276a45d4c2481829f31bea9e1fb9cbe36f90", "6b55a9c9027df6edb6edb0e4e7a6a373a7dbc331ed5f7b4c7a18bda8a5093c76", "8d3a5790537d218a41286a849dfae061c8be637b331be44f416915ab33f13fa0", "2e89ca129de16b8d17b3cc2b6e9ff1f0ee1eced8cab0fb7933c7ba50eb90f607", "de03160a2180a98424ce1b83490cac780822805ef5ef4d7b8524b5d9dd1b92bc", "630d625ce119fda6136d2b61fc362fd1ca864200af7c5506f24481ea0e3f1b42", "1236c80d084fa0ec1dbd9d1cc93e651f14c63ea8634875fe0f93b88004a83a1e", "b6f576099c0177811aaba58d82a0c054bbdcd661d8d73d92b7da92088360abf3", "ef714a4751cb6e8f163634329da698bc9733fb280c538a7c8056a624c0bb41c9", "e90e6b081db348c81e8a6db390e6dfc77f4fe2b2441d653cd72a29ca15b056f5", "eb6cf6538685a58580f804568b1244da811c1755c0ae7a3bcdb2182965a8a39d", "6bb7940776d446bcd5f7ecd7d6c4c0f76d8a391f7c009bb270b07f9ae8796a6a"}
 DEAL_RE = re.compile(r"할인|블프|블랙프라이데이|사이버먼데이|직구|핫딜|특가|쿠폰|프로모션|캐시백|최저가|세일|타임딜|사전예약|사전 예약|"
                      r"얼리버드|예매 오픈|티켓 오픈|티켓팅|예매|요금제|통신사 혜택|카드 혜택|광군제|아마존|알리|테무|쿠팡 로켓|정가")
 ESSAY_RE = re.compile(r"영화|드라마|넷플릭스|티빙|디즈니\+|웨이브|쿠팡플레이|OTT|애니|웹툰|책|소설|에세이|도서|시집|음악|앨범|플레이리스트|노래|"
@@ -527,6 +527,7 @@ def system_prompt(guide, memory, web, style="info"):
             "- 대표 이미지(#1)는 한 장면·한 주인공이 기본입니다. 가운데 세로선·가로선으로 반반 딱 자른 구도, 두 사진을 나란히 붙인 구도, VS 비교, 크기가 제각각인 성의 없는 콜라주는 금지입니다. 두 핵심어는 앞뒤 깊이로 한 장면에 담고, 여러 장면이면 경계가 부드럽게 녹는 대각선 구도·작은 인셋 하나·이중 노출·정돈된 4장 모자이크(2×2 같은 크기, 얇은 흰 줄, 색감 통일, 가운데 헤드라인)처럼 미학적으로 배치합니다.",
             "- 지침의 '사람이 쓴 글로 읽히게'(첫 문장은 구체적 장면·숫자, 섹션마다 모양 다르게, 문장 길이 섞기, 같은 말 시작 연속 금지, 어미 다양화, 섹션 끝 요약 금지, 근거 있는 판단 한 줄)와 '사진 연출 레시피'(장마다 구도·빛·시점을 다르게, 주제와 무관한 노트북·커피·화분 소품 금지, 색 보정은 글 하나에 하나로)를 반드시 적용합니다.",
             "- 글 전체는 지침의 'AI 티 빼기'를 최우선으로 지킵니다: 해요체(~해요·~예요·~거든요·~죠) 금지, '알아보겠습니다·살펴보겠습니다·결론적으로·요약하자면·여러분·다양한·효과적인' 같은 AI 상투 표현 금지, 느낌표·이모지·말줄임표 금지, 결론부터 짧고 구체적으로.",
+            "- 제목·소제목·목차·본문 어디에도 '~습니까?/~입니까?/~됩니까?' 같은 하십시오체 질문을 쓰지 않습니다(공문서·시험지 말투). 해요체를 피하려고 하십시오체 질문으로 바꾸는 것도 금지입니다. 제목은 명사구나 숫자로 끝내고(예: '기저귀 바우처 잔액조회 3가지 경로, 월 9만 원 소멸 전 확인법'), 소제목은 짧은 명사구(예: '2026년 지원 대상과 금액')로 씁니다. 지침의 '사람이 쓴 문장' 규칙을 지킵니다.",
             "- '함께 읽으면 좋은 글'에는 아래 블로그 기억의 '내 네이버 블로그에 이미 올린 글' 목록에 있는 제목만 씁니다. 목록이 없거나 관련 글이 없으면 그 섹션을 뺍니다."]
     if web is None:
         tail.append("- 웹 검색을 쓸 수 있으면 정부·기관·기업 공식 사이트를 우선 확인하고 확인한 자료만 ■ 참고한 공식 자료 칸에 적습니다. 쓸 수 없으면 바뀔 수 있는 수치·날짜·조건을 단정하지 말고, 참고 자료 칸에 '웹 검색 없이 작성됨 · 게시 전 공식 자료 확인 필요'라고 적습니다.")
@@ -1037,6 +1038,15 @@ def save_draft(store, cfg, item, saved, text, provider, model, web, sources=None
 
 
 def check_draft(text, style="info"):
+    """작가 지침(출력 양식)대로 썼는지 프로그램이 직접 검사 + 모든 글 종류 공통 말투 검사."""
+    r = _check_draft_style(text, style)
+    n = headline_q_left(text)
+    r["items"].append({"name": "'~습니까?·~입니까?' 같은 딱딱한 질문 없음", "ok": n == 0, "note": f"{n}곳" if n else ""})
+    r["total"] = len(r["items"]); r["passed"] = sum(1 for x in r["items"] if x["ok"]); r["ok"] = r["passed"] == r["total"]
+    return r
+
+
+def _check_draft_style(text, style="info"):
     """작가 지침(출력 양식)대로 썼는지 프로그램이 직접 검사. 크게 빠진 항목은 AI에게 고쳐 쓰게 함."""
     if style == "essay":
         return check_essay(text)
@@ -1158,7 +1168,7 @@ def check_visit(text):
     unseen = [a for a, b2 in seen if "열어 보지 못" in b2 or "못 봄" in b2]
     total = max(ph + [int(a) for a, _ in seen] + [0])
     chars = body_chars(t)
-    q = len(re.findall(r"[가-힣](?:나요|까요|을까|ㄹ까|니까요)\?", body))
+    q = len(re.findall(r"[가-힣](?:나요|까요|을까|ㄹ까|니까요|니까)\s*\?", body))
     items = [
         ("기획: 메인 키워드·추천 제목 3개", bool(re.search(r"메인 키워드", t) and re.search(r"추천 제목[^\n]*\n+\s*1\..+\n+\s*2\..+\n+\s*3\.", t)), ""),
         ("소제목 3~6개 (번호 순서대로)", 3 <= len(nums) <= 6 and nums == list(range(1, len(nums) + 1)), f"{len(nums)}개"),
@@ -1192,7 +1202,7 @@ def check_essay(text):
     travel = bool(re.search(r"추천|여행|숙소|숙박|호텔|펜션|리조트|가볼만한|가볼 곳|명소|관광|코스|BEST|TOP|베스트", t[:3000]))
     nsec = len(re.findall(r"(?m)^##\s*\d{1,2}[.)]", body))  # 추천 항목(번호 소제목) 수
     need = max(3, nsec + 1) if travel else 3
-    q = len(re.findall(r"[가-힣](?:나요|까요|을까|ㄹ까|니까요)\?", body))
+    q = len(re.findall(r"[가-힣](?:나요|까요|을까|ㄹ까|니까요|니까)\s*\?", body))
     chars = body_chars(t)
     items = [
         ("기획: 메인 키워드·추천 제목 3개", bool(re.search(r"메인 키워드", t) and re.search(r"추천 제목[^\n]*\n+\s*1\..+\n+\s*2\..+\n+\s*3\.", t)), ""),
@@ -1305,9 +1315,58 @@ def ai_tone_issues(body):
     return left, phr
 
 
+def _drop_final_b(ch):
+    """'됩' → '되', '합' → '하' (받침 ㅂ 빼기). ㅂ 받침이 아니면 None."""
+    code = ord(ch) - 0xAC00
+    if 0 <= code < 11172 and code % 28 == 17:
+        return chr(ord(ch) - 17)
+    return None
+
+
+def headline_q(line):
+    """제목·소제목·목차 줄의 '~습니까?/~입니까?' 같은 공문서·시험지 말투 질문을 신문 표제식으로.
+    예) '누가 얼마나 받습니까?' → '누가 얼마나 받나' · '확인법은 무엇입니까?' → '확인법' · '어떻게 신청합니까?' → '어떻게 신청하나'"""
+    s = line.rstrip()
+    if not re.search(r"니까\s*\?\s*$", s):
+        return line
+    s = re.sub(r"\s*\?\s*$", "", s)
+    m = re.search(r"^(.*?\S)\s*[은는이가]\s+(?:무엇|뭐)(?:입|이옵)니까$", s)
+    if m:  # 'X은 무엇입니까' → 'X'
+        return m.group(1)
+    if s.endswith("입니까"):  # '기준은 언제입니까' → '기준은 언제일까'
+        return s[:-3] + "일까"
+    if s.endswith("습니까"):  # '받습니까' → '받나'
+        return s[:-3] + "나"
+    if s.endswith("니까") and len(s) >= 3:
+        b = _drop_final_b(s[-3])  # '됩니까' → '되나', '합니까' → '하나'
+        if b:
+            return s[:-3] + b + "나"
+    return line
+
+
+def fix_headline_questions(text):
+    """기획의 추천 제목, 글 제목(#), 소제목(##), 목차 번호 줄에만 적용 (본문 문장은 그대로 두고 검사에서 표시)."""
+    out = []
+    in_titles = False
+    for line in (text or "").split("\n"):
+        s = line.strip()
+        if s.startswith("■"):
+            in_titles = "추천 제목" in s
+        is_head = bool(re.match(r"^#{1,4}\s", s)) or (bool(re.match(r"^\d{1,2}[.)]\s", s)) and len(s) <= 70)
+        if (is_head or in_titles) and re.search(r"니까\s*\?\s*$", s):
+            line = headline_q(line)
+        out.append(line)
+    return "\n".join(out)
+
+
+def headline_q_left(text):
+    """아직 남은 하십시오체 질문 수 (제목·소제목·목차·본문 전체)."""
+    return len(re.findall(r"[가-힣]니까\s*\?", text or ""))
+
+
 def local_fix(text):
     """AI를 다시 부르지 않고 프로그램이 바로 고치는 것: 태그를 맨 끝으로, 태그 15개 이내, 본문 속 URL 제거, 질문·답 묶음 사이 빈 줄."""
-    t = (text or "").rstrip()
+    t = fix_headline_questions((text or "").rstrip())
     m = re.search(r"\n(?:-{3,}\s*\n+\s*)?(■\s*네이버 블로그[^\n]*\n+[^\n■]*)", t)
     if m:
         block = m.group(1).strip()

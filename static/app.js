@@ -2004,7 +2004,11 @@ function smartHtml(md) {
     else if (s.startsWith("[📸")) out.push(P(esc(s), 13, "color:#999"));
     else if (/^\[📷\s*사진\s*\d+/.test(s)) out.push(P(`📷 사진 ${s.match(/사진\s*(\d+)/)[1]} 넣는 자리 (사진 폴더의 ${String(s.match(/사진\s*(\d+)/)[1]).padStart(2, "0")}.jpg)`, 13, "color:#999"));
     else if (/^\*\*Q[.．]/.test(s)) out.push(P(inl(s), FS.body, "font-weight:bold;color:#184f84"));  // 질문 줄은 목록과 같은 진한 파랑, 답은 본문 색
-    else if (/^(?:[✔▪✅❌•①-⑩]|[-*] |\d{1,2}\. )/.test(s)) out.push(P(inl(s), FS.body, "color:#184f84"));  // 목록(✔·▪·①·✅·❌·-·1.)은 모두 같은 진한 파랑
+    else if (/^\d{1,2}\.\s/.test(s)) {  // "1. …" 줄(목차 등): 네이버가 붙여 넣을 때 자동 번호 목록으로 바꾸며 바로 다음 소제목(01) 크기를 잃는 것을 막으려고 "01  …" 모양으로
+      const m = s.match(/^(\d{1,2})\.\s+(.*)$/);
+      out.push(P(`${String(m[1]).padStart(2, "0")}&nbsp;&nbsp;${inl(m[2])}`, FS.body, "color:#184f84"));
+    }
+    else if (/^(?:[✔▪✅❌•①-⑩]|[-*] )/.test(s)) out.push(P(inl(s), FS.body, "color:#184f84"));  // 목록(✔·▪·①·✅·❌·-)은 모두 같은 진한 파랑
     else out.push(P(inl(s)));
     i++;
   }
