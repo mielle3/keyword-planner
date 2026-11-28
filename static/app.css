@@ -1720,6 +1720,13 @@ html { overflow-y: scroll; scrollbar-gutter: stable; }
 #vMemo { min-height: 150px; }
 #writeDialog .dlg-foot { justify-content: flex-end; }
 #writeDialog .w-style { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-#writeDialog #wStyle { flex: 1 1 auto; display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+#writeDialog #wStyle { flex: 1 1 auto; display: grid !important; grid-template-columns: repeat(5, minmax(0, 1fr)); }
 #writeDialog #wStyle button { justify-content: center; min-width: 0; }
 #writeDialog #wStyleHint:empty { display: none; }
+.dv-body .dv-li a { color: #184f84; word-break: break-all; }
+#writeDialog #wStyleHint { flex: 1 0 100%; padding-left: 64px; font-weight: 600; }   /* 자동 판단 안내는 다음 줄로 → 글 종류 칸 오른쪽 끝이 다른 칸과 같게 */
+@media (max-width: 640px) {
+  #writeDialog #wStyle { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; flex-basis: 100%; }
+  #writeDialog #wStyle button:first-child { grid-column: 1 / -1; }   /* 자동 = 한 줄 전체, 나머지 4개 = 2×2 */
+  #writeDialog #wStyleHint { padding-left: 0; text-align: left; }
+}

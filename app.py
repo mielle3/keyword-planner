@@ -88,7 +88,7 @@ EVERGREEN_CHECK_PATH = DATA / "evergreen_check.json"
 import writer as _writer  # AI 글쓰기 (작가 지침·블로그 기억·초안 보관·docx)
 WRITER = _writer.Store(DATA)
 KST = timezone(timedelta(hours=9))
-APP_VERSION = "2026.11.21-163"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
+APP_VERSION = "2026.11.21-164"  # 화면 파일을 바꿀 때마다 올림 (예전 창·브라우저 캐시와 구분)
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 DEFAULT_CONFIG = {
@@ -3918,7 +3918,7 @@ def run_morning(force=False):
             m = re.search(r"메인 키워드\s*[:：]\s*([^\n/]+)", plan) or re.search(r"주제\s*[:：]\s*([^\n]+)", plan)
             today_kw = re.sub(r"[*()（）\[\]]", "", m.group(1)).strip()[:40] if m else None
             f = re.search(r"포맷\s*[:：]\s*\[?\s*(\d)", plan)
-            style = {"1": "info", "2": "essay", "3": "deal"}.get(f.group(1) if f else "", "")
+            style = {"1": "info", "2": "essay", "3": "deal", "4": "culture"}.get(f.group(1) if f else "", "")
         except Exception as e:
             out["errors"].append(f"오늘의 글 계획 실패: {e}")
         if not today_kw:

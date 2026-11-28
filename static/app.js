@@ -1317,7 +1317,8 @@ function draftMd(md) {  // 간단한 마크다운 → 보기용 HTML
     else if (/^#{2,4}\s/.test(s)) out.push(`<h3>${inline(s.replace(/^#{2,4}\s+/, ""))}</h3>`);
     else if (/^\*\*\d{1,2}[.)]\s*[^*]{2,40}\*\*$/.test(s)) out.push(`<h3>${inline(s.replace(/^\*\*|\*\*$/g, ""))}</h3>`);
     else if (s.startsWith("# ")) out.push(`<h2>${inline(s.slice(2))}</h2>`);
-    else if (s.startsWith("[📸")) out.push(`<p class="dv-img">${esc(s)}</p>`);
+    else if (s.startsWith("[📸") || s.startsWith("[🎬")) out.push(`<p class="dv-img">${esc(s)}</p>`);
+    else if (/^[-*]?\s*스틸\s*\d+\s*[|｜]/.test(s)) out.push(`<p class="dv-li">${esc(s).replace(/(https?:\/\/[^\s|<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>')}</p>`);
     else if (/^\[📷\s*사진\s*\d+/.test(s)) {
       const n = +s.match(/사진\s*(\d+)/)[1], v = (DRAFT && DRAFT.visit) || null, p = v && v.photos[n - 1];
       out.push(p ? `<figure class="dv-photo"><img src="/api/visit/${encodeURIComponent(v.vid)}/${esc(p.file)}" alt="사진 ${n}" loading="lazy"><figcaption>사진 ${n} · 폴더의 ${esc(p.file)}${p.note ? ` · ${esc(p.note)}` : ""}</figcaption></figure>` : `<p class="dv-img">${esc(s)}</p>`);
@@ -1338,10 +1339,10 @@ function bodyPart(md) {
     for (let i = 0; i < ls.length && seen < 4; i++) { const x = ls[i].trim(); if (!x) continue; seen++;
       if (/^확인 (일자|시각)\s*[:：]/.test(x) || (x.length <= 30 && /^[^.!?:：#\[\]|>]+ · [^.!?:：#\[\]|>]+$/.test(x))) ls[i] = null; }
     t = ls.filter(x => x !== null).join("\n").replace(/\n{3,}/g, "\n\n"); }
-  const e = t.search(/\n(?:-{3,}\s*\n+\s*)?■\s*(?:네이버 블로그|참고한|Gemini 이미지|사진 확인)/);
+  const e = t.search(/\n(?:-{3,}\s*\n+\s*)?■\s*(?:네이버 블로그|참고한|Gemini 이미지|사진 확인|스틸컷 목록)/);
   let b = (e >= 0 ? t.slice(0, e) : t).trim();
   // 예전 초안에도 AI 이미지 안내 한 줄을 붙여 복사
-  if (!/AI로 (만든|생성)/.test(b)) b = b.replace(/\n-{3,}\s*$/, "").trim() + "\n\n※ 본문 이미지 중 일부는 AI로 만든 이미지로, 실제 모습과 다를 수 있습니다.";
+  if (!/AI로 (만든|생성)/.test(b) && /\[📸|Gemini 이미지 프롬프트/.test(md || "")) b = b.replace(/\n-{3,}\s*$/, "").trim() + "\n\n※ 본문 이미지 중 일부는 AI로 만든 이미지로, 실제 모습과 다를 수 있습니다.";
   return b;
 }
 /* 하단의 Gemini 이미지 프롬프트 3개를 뽑아 복사 카드로 */
@@ -1891,8 +1892,9 @@ $("#wGo").onclick = async () => {
 /* ---------- 글 종류: 정보형 / 읽을거리형 (자동 판단은 서버와 같은 규칙) ---------- */
 const ESSAY_RE = /영화|드라마|넷플릭스|티빙|디즈니\+|웨이브|쿠팡플레이|OTT|애니|웹툰|책|소설|에세이|도서|시집|음악|앨범|플레이리스트|노래|공연 후기|전시 후기|관람 후기|후기|리뷰|여행기|여행 코스|가볼만한|데이트|맛집|카페|브런치|일상|감성|추천작|작품|시리즈|명작/;
 const INFO_RE = /신청|지원금|환급|세금|보험|대출|계산|기준|조건|방법|절차|서류|일정|마감|등급컷|과태료|요금|금리|연말정산|청약|발표|접수/;
-function guessStyle(kw, topic) { if (DEAL_RE.test(kw || "")) return "deal"; if (INFO_RE.test(kw || "")) return "info"; return ESSAY_RE.test(`${kw || ""} ${topic || ""}`) ? "essay" : "info"; }
-const STYLE_NAME = { info: "정보형", essay: "읽을거리형", deal: "할인·구매형", visit: "방문 후기" };
+function guessStyle(kw, topic) { if (DEAL_RE.test(kw || "")) return "deal"; if (INFO_RE.test(kw || "")) return "info"; if (CULTURE_RE.test(kw || "") || ["영화", "드라마", "방송", "공연·전시", "음악", "책", "문학·책", "만화·애니"].includes(topic || "")) return "culture"; return ESSAY_RE.test(`${kw || ""} ${topic || ""}`) ? "essay" : "info"; }
+const STYLE_NAME = { info: "정보형", essay: "읽을거리형", deal: "할인·구매형", visit: "방문 후기", culture: "문화" };
+const CULTURE_RE = /영화|드라마|넷플릭스|티빙|디즈니\+|웨이브|쿠팡플레이|OTT|애니메이션|웹툰|책|소설|에세이|도서|시집|음악|앨범|플레이리스트|노래|전시|공연|뮤지컬|연극|오페라|발레|콘서트|축제|문화유산|박물관|미술관|개봉|시사회|박스오피스|관객|흥행|시즌\s?\d|원작|작가|감독|배우/;
 const DEAL_RE = /할인|블프|블랙프라이데이|사이버먼데이|직구|핫딜|특가|쿠폰|프로모션|캐시백|최저가|세일|타임딜|사전예약|사전 예약|얼리버드|예매 오픈|티켓 오픈|티켓팅|예매|요금제|통신사 혜택|카드 혜택|광군제|아마존|알리|테무|쿠팡 로켓|정가/;
 function wStyleHint() { const kw = $("#wKeyword").value.trim(); $("#wStyleHint").textContent = kw && ($("#wStyle [aria-checked=true]")?.dataset.ws || "") === "" ? `자동 → ${STYLE_NAME[guessStyle(kw)]}` : ""; }
 $("#wKeyword").addEventListener("input", wStyleHint);
@@ -2002,6 +2004,7 @@ function smartHtml(md) {
       out.push(P("─".repeat(28), 13, "color:#c9d3df;letter-spacing:-1px"));
     }
     else if (s.startsWith("[📸")) out.push(P(esc(s), 13, "color:#999"));
+    else if (/^\[🎬\s*스틸\s*\d+/.test(s)) out.push(P(`🎬 스틸 ${s.match(/스틸\s*(\d+)/)[1]} 넣는 자리 (목록 ${s.match(/스틸\s*(\d+)/)[1]}번)`, 13, "color:#999"));
     else if (/^\[📷\s*사진\s*\d+/.test(s)) out.push(P(`📷 사진 ${s.match(/사진\s*(\d+)/)[1]} 넣는 자리 (사진 폴더의 ${String(s.match(/사진\s*(\d+)/)[1]).padStart(2, "0")}.jpg)`, 13, "color:#999"));
     else if (/^\*\*Q[.．]/.test(s)) out.push(P(inl(s), FS.body, "font-weight:bold;color:#184f84"));  // 질문 줄은 목록과 같은 진한 파랑, 답은 본문 색
     else if (/^\d{1,2}\.\s/.test(s)) {  // "1. …" 줄(목차 등): 네이버가 붙여 넣을 때 자동 번호 목록으로 바꾸며 바로 다음 소제목(01) 크기를 잃는 것을 막으려고 "01  …" 모양으로

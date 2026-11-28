@@ -53,7 +53,11 @@ def fetch_repo_file(name):
 
 OLD_ESSAY_GUIDES = {"cab9a8e3764e7bb74f7574605bf8eb5ea2cfaa6b25190322ffb8436bb42241eb", "b24726dbb58f3b82f00eb688acf77eee9314682250fa3485a2befbe153b0b9e5", "9dc1437a0d991a8618983951e02f62db466d6e940a7bb6bf4afa003f428acb8a", "ebfd1e7a9af2d6a243d5ce2283c1b076f4eb70630659404a37b73d311b56cd4a", "8bc026365ccdfb7f9cf51f92d4c9c165b565994959bf76a345412a5ad9a97d37", "2a26ae1ae781f1c6ba097f2e4f50eb60d0a8e45f6d901d49c1e3dc060acd8dfe", "07b51ff25bf104abebaf3cc5931266829252f52ecf8cdb519fdd241d3bae6daf", "17313cfa4af570028ee9997441919e234da24d7fbc8f127c459264416cb5eb5c", "ebcb44fcd2f07aec9071014dad851ded47327c843d8a54aa1a79f691313894cf", "150976731b0e55c1a599aac7b387744f64aca95729373995667024fef055e158", "774a893bdc46d4b6d2ce0937e37d66be33495bc5bdf86f9aa66fcfc5cebd0c13", "4c97cdf4ea4063af9619472e3a680cc165a2c906dce66bbf54945290f589a9d5", "6f412173b4437e89ac3ffbadfa80e77e99e6ba00ad5557b95d5fc5e617952094", "fb348a38b9fb6a11a31314fc1a51d843df2c1fe00a2d38d274c09aa063ef2797", "422939a2fbe8b85ed00fcc3d5c90c54a95185793f69735c27b0760bb78620af0", "2df0de3da0c17c70a70483f5400d091b4f2e00e6a1b403b073524cc0c863cd06", "cc63f0e59c01e9200020071dfe2b8d1ff4b57a93cd1c7b3a1f1200df50480a58", "f260257c940003593829cfab415698ffd258107acee5514114bdeb47eae9849a", "8a760e8a10480f4790e3b98fd60e147dd80b96ebcba9537d2607ff776807fdbf", "e4a5e2c065f405d6d0039a31bc685226e15ca09df1b3d6239af934dedfd4776c", "10ee5e3feecfaf04250be40cc611efbd6cc606b0be5756dd5116473863a1f87d", "c55c6e1eccf3f0c7699ffc1ec50a8387ff1431c23199fcce5a84b679e37d5beb", "eb10b428f5c2376bb96b5dc3b531a9b698d3f25c218d798859c27609cb0054f9", "45c2e3dd597e5d4c3e96ec23d55a7ba9a04f1d2bff3ee76a028df3d657b8faeb", "db64537c3ca5dcd4d5d4da14bdb5b3bdcb33ead226152433ed30f4d8e1e738de", "81ec1b6d13a4f662295b631d823bef96b6760fe9d92d95fddf6f7220d41482d5", "d1135efb94d61aef886b86395aeeceaedf5fcbf53566db305cc3363c9cf6f482", "b958cc3dc2dba6cbd24392ad05cbd11e04be736a4746f69b15efa1d1aad8cadc", "79593cbf46c7380256b5c7f124ce684fb4976fc14d7709bffc942f0bf0b149c9", "19884d801b473ad4f995418beba2ddb35d9f6dac5360a31b510c713fe18b3402", "96b65eff47e4ec4ba812c4ca4b74ba4052397f84094b128f0f92968302c76a4e", "ea28eea311b851a60e5774ae1b66ec0d446c7f31fd603973f78aea6ada0e6f63", "ed1b71a6215fbd82305e1cea5165e40d0f7bef63321648b4c02495f976cd4816", "45cd7fcfeb57cb08bd66ff87fb7b328a78035e580592aeb545ee4a8003d49987", "8902f714050f13c941454680dea97257484de367d3a10fa6f64d403cd0df4ff5", "d4ab69ab3c7c45557d336d05a2171330b004b3c54aa6ced436f4be26879c312f", "18eac005a699b2a7cfa1ddd23e90f5ff9f9f2f70f07388daa608dda49c558a7f", "4daefb41ecf10b68cab44a5e092bf4756970d4e730128849c7af6229216fdd33"}  # 읽을거리형 기본 지침의 예전 판 (고치지 않았으면 자동 교체)
 
-GUIDE_FILES = {"info": "writer_guide.md", "essay": "writer_guide_essay.md", "deal": "writer_guide_deal.md", "visit": "writer_guide_essay.md"}
+GUIDE_FILES = {"info": "writer_guide.md", "essay": "writer_guide_essay.md", "deal": "writer_guide_deal.md", "visit": "writer_guide_essay.md",
+               "culture": "writer_guide_essay.md"}
+# 문화 섹션(영화·드라마·OTT·책·전시·공연·음악·축제·문화유산): 글은 읽을거리형과 같고 이미지 규칙만 다름
+CULTURE_RE = re.compile(r"영화|드라마|넷플릭스|티빙|디즈니\+|웨이브|쿠팡플레이|OTT|애니메이션|웹툰|책|소설|에세이|도서|시집|음악|앨범|플레이리스트|노래|"
+                        r"전시|공연|뮤지컬|연극|오페라|발레|콘서트|축제|문화유산|박물관|미술관|개봉|시사회|박스오피스|관객|흥행|시즌\s?\d|원작|작가|감독|배우")
 OLD_DEAL_GUIDES = {"e03c8f6aa455ce32bf792c589385819d4aab372157baf7e21f840cee2f7566b5", "1018ac17aebb9a0d16e57cc5faa95e3270eb0e9d21de0cae19aabbe0bf19352f", "99cea8311c1ed65893a4aca0d4aaba3d213aecf0df61eb7e0ce4ffd57645217d", "46c2ae2c206e2f7255063b571cc3f517636f043abf610df16939717975b6bc0b", "1acbf01d65ddbf7e7ea10ab223de91e74f128f218c4f0e5d701bc34a97988f82", "bc3503d55866c75ad3642e874efae2daaee2f5b758851b7c601fc215104417cd", "9891cd51110bc0dc138f2859cbc9c1715770914b33b3d68fc9a69c3996ee9299", "bc6b418112dad30b071f38f0a6e08fe99c424a8e7df3b5e2b3a1691968a1dffa", "7d328ebf89ac500706d0f9c25963432d4242565e3da2f1e9529b4eb0f6a632c3", "816b271946dcea6d9ef61b2d55ab039e218261cb16d7fad873d57143ad882787", "0fa3a123a4ded1fa1142a19c7207a99e194ecebb707207c1717de7c19119cd55", "f1d6dab62aabc207a17be9c76e5215e1cbcb9e14dd6d6777721dc71b8e76e9c9", "ac3c31740a3c17c65fe568a84d82d6e35569aa49199e04e0a2fad45058130c68", "35a24192ba720db6bf1eaa1d47cf755e74d8772bd1d9158a86518472b80632c7", "4c33849351747cd08422b3780842e2c4cc3c463e5aa83973d2248d92c23017a4", "4a2b8821b0efbb5c5ea1498ac66c071e16a10df94c0e8804b756b3349403b5cc", "6428ac856d5eddc9cf61b2f1db72634efd3b2ee0bb60a27807c41c2e5e3cb078", "57d553116455c8d571882f156b87b699c1ffca3affc52bdd89fdafe28395b346", "5125be05039330d329adf0248a5f737aec6bdfbcd78ea8c3d55cfd6305bb7898", "a996b39232c6d3301ef2ed618c2429c0dcda5129b0087f3d70b8bb8cb5c07ec9", "7758d0aa1840332f1aa7c308ac3bfee931071444718c1ed37253de8c4e5ba856", "8fe2b2221d8409f51fded5316ecb1ee2ae158119bb56e7f3480d4e406492f6f5", "a78d39a4eca802c85321a5e58b8c9bf6aa682f3bc965aa7bd830271f62cd6c02", "1ea3bc54df202452108d94303693d97d2d03af217df979c6492bd50fff4abe89", "e3fcefc11d16df24aee487b5f9d0f91f1f812b0c661800cc80c3035373990114", "ee6dd3684b17c94ee03962a69eb5276a45d4c2481829f31bea9e1fb9cbe36f90", "6b55a9c9027df6edb6edb0e4e7a6a373a7dbc331ed5f7b4c7a18bda8a5093c76", "8d3a5790537d218a41286a849dfae061c8be637b331be44f416915ab33f13fa0", "2e89ca129de16b8d17b3cc2b6e9ff1f0ee1eced8cab0fb7933c7ba50eb90f607", "de03160a2180a98424ce1b83490cac780822805ef5ef4d7b8524b5d9dd1b92bc", "630d625ce119fda6136d2b61fc362fd1ca864200af7c5506f24481ea0e3f1b42", "1236c80d084fa0ec1dbd9d1cc93e651f14c63ea8634875fe0f93b88004a83a1e", "b6f576099c0177811aaba58d82a0c054bbdcd661d8d73d92b7da92088360abf3", "ef714a4751cb6e8f163634329da698bc9733fb280c538a7c8056a624c0bb41c9", "e90e6b081db348c81e8a6db390e6dfc77f4fe2b2441d653cd72a29ca15b056f5", "eb6cf6538685a58580f804568b1244da811c1755c0ae7a3bcdb2182965a8a39d", "6bb7940776d446bcd5f7ecd7d6c4c0f76d8a391f7c009bb270b07f9ae8796a6a"}
 DEAL_RE = re.compile(r"할인|블프|블랙프라이데이|사이버먼데이|직구|핫딜|특가|쿠폰|프로모션|캐시백|최저가|세일|타임딜|사전예약|사전 예약|"
                      r"얼리버드|예매 오픈|티켓 오픈|티켓팅|예매|요금제|통신사 혜택|카드 혜택|광군제|아마존|알리|테무|쿠팡 로켓|정가")
@@ -65,7 +69,7 @@ INFO_RE = re.compile(r"신청|지원금|환급|세금|보험|대출|계산|기�
 def pick_style(item):
     """글 종류 자동 선택: 사용자가 고른 게 있으면 그대로, 아니면 키워드·분야로 판단 (정보형이 기본)."""
     s = (item or {}).get("style")
-    if s in ("info", "essay", "deal", "visit"):
+    if s in ("info", "essay", "deal", "visit", "culture"):
         return s
     if (item or {}).get("visit"):
         return "visit"
@@ -76,6 +80,8 @@ def pick_style(item):
         return "deal"
     if INFO_RE.search(item.get("keyword", "")):
         return "info"
+    if CULTURE_RE.search(item.get("keyword", "")) or (item.get("topic") or "") in ("영화", "드라마", "방송", "공연·전시", "음악", "책", "문학·책", "만화·애니"):
+        return "culture"
     return "essay" if ESSAY_RE.search(text) else "info"
 
 
@@ -145,7 +151,7 @@ class Store:
 
     # 작가 지침: info(정보형) · essay(읽을거리형: 영화·책·리뷰·여행기 등)
     def guide_file(self, style="info"):
-        return {"essay": self.mem_dir / "작가_지침_읽을거리.md", "visit": self.mem_dir / "작가_지침_읽을거리.md",
+        return {"essay": self.mem_dir / "작가_지침_읽을거리.md", "visit": self.mem_dir / "작가_지침_읽을거리.md", "culture": self.mem_dir / "작가_지침_읽을거리.md",
                 "deal": self.mem_dir / "작가_지침_할인구매.md"}.get(style, self.guide_path)
 
     def default_guide(self, style="info"):
@@ -165,7 +171,7 @@ class Store:
         text = path.read_text(encoding="utf-8")
         # 사용자가 고치지 않은 예전 기본 지침이면 새 기본 지침으로 자동 교체 (고친 지침은 그대로 둠)
         import hashlib
-        if hashlib.sha256(text.strip().encode("utf-8")).hexdigest() in {"essay": OLD_ESSAY_GUIDES, "visit": OLD_ESSAY_GUIDES, "deal": OLD_DEAL_GUIDES}.get(style, OLD_DEFAULT_GUIDES):
+        if hashlib.sha256(text.strip().encode("utf-8")).hexdigest() in {"essay": OLD_ESSAY_GUIDES, "visit": OLD_ESSAY_GUIDES, "culture": OLD_ESSAY_GUIDES, "deal": OLD_DEAL_GUIDES}.get(style, OLD_DEFAULT_GUIDES):
             text = self.default_guide(style)
             path.write_text(text, encoding="utf-8")
         return text
@@ -519,7 +525,7 @@ def clear_visit_photos(store):
 def system_prompt(guide, memory, web, style="info"):
     tail = ["", "---", "", "# 실행 환경 안내 (키워드 플래너)",
             "- 결과물은 위 지침의 출력 양식 그대로, 마크다운 텍스트로만 답합니다. 앞뒤 인사나 설명을 붙이지 않습니다.",
-            ("- 이미지는 사용자가 Gemini로 직접 만듭니다. 당신은 이미지를 만들지 않고, 참고 자료 아래·태그 바로 위의 '■ Gemini 이미지 프롬프트'에 #1 대표 이미지(글 전체 요약이 보이는 표지)와 섹션 핵심 이미지(기본 #2·#3, 여러 개를 추천하는 글은 추천 항목마다 1장씩 — 추천 6개면 #2~#7, 여행·숙박·장소 추천은 최소 5곳)(본문의 고유 대상이 주인공, 내용과 무관한 분위기 이미지 금지, 필요 없으면 생략) 프롬프트를 ~~~ 블록 하나씩 씁니다. 실제 포스터·배우 얼굴·책 표지는 재현하지 않습니다." if style == "essay" else
+            ("- 이미지는 사용자가 Gemini로 직접 만듭니다. 당신은 이미지를 만들지 않고, 참고 자료 아래·태그 바로 위의 '■ Gemini 이미지 프롬프트'에 #1 대표 이미지(글 전체 요약이 보이는 표지)와 섹션 핵심 이미지(기본 #2·#3, 여러 개를 추천하는 글은 추천 항목마다 1장씩 — 추천 6개면 #2~#7, 여행·숙박·장소 추천은 최소 5곳)(본문의 고유 대상이 주인공, 내용과 무관한 분위기 이미지 금지, 필요 없으면 생략) 프롬프트를 ~~~ 블록 하나씩 씁니다. 실제 포스터·배우 얼굴·책 표지는 재현하지 않습니다." if style in ("essay", "culture") else
              "- 이미지는 사용자가 Gemini로 직접 만듭니다. 당신은 이미지를 만들지 않고, 참고 자료 아래·태그 바로 위의 '■ Gemini 이미지 프롬프트'에 4장(#1 표지 포스터, #2 할인 구조·마감 타임라인, #3 실가격 비교, #4 구매 체크리스트) 프롬프트를 ~~~ 블록 하나씩 씁니다. 실제 제품 사진·브랜드 로고·판매처 화면은 재현하지 않습니다." if style == "deal" else
              "- 이미지는 사용자가 Gemini로 직접 만듭니다. 당신은 이미지를 만들지 않고, 참고 자료 아래·태그 바로 위의 '■ Gemini 이미지 프롬프트'에 이미지 6장 프롬프트를 각각 ~~~ 블록 하나씩 단독 실행되는 완성형으로 씁니다. #1은 글 주제를 함축한 강렬한 표지 포스터(정보 카드 틀을 쓰지 않음), #2~#6은 섹션마다 그 내용과 직접 관련된 실사 사진(진짜 사진 촬영 지시) 위에 핵심 숫자·라벨을 반투명 패널로 얹은 '실사 사진 + 가공' 이미지입니다(그래프만 있는 카드 단독 금지). 파스텔·둥근 카드·부드러운 그림자의 평범한 인포그래픽은 쓰지 않습니다. 이미지마다 실제 장면이 도움이 되면 지침의 '실사 사진형'(진짜 사진 촬영 지시로 시작하고 끝에 not an illustration/not a 3D render/not CGI를 붙인 사진, 주인공 클로즈업 + 손만 보이는 생활 장면, 글자 없음), 숫자·비교가 핵심이면 카드형을 스스로 골라 씁니다."),
             "- 실제 장소를 그리는 이미지 프롬프트는 웹 검색으로 그 장소의 실제 사진을 확인한 뒤, 정확한 장소명(한글+영문+도시)·대표 건물 개수와 배치·지붕/재료/색·주변 지형·실제 조명·대표 촬영 위치와 방향을 그대로 묘사해 실제 사진과 거의 구분되지 않게 씁니다. 없는 구조물을 더하거나 있는 것을 빼지 않습니다.",
@@ -536,6 +542,14 @@ def system_prompt(guide, memory, web, style="info"):
         tail.append("- 웹 검색 도구로 정부·기관·기업 공식 사이트를 우선 확인하고, 확인한 자료만 ■ 참고한 공식 자료 칸에 적습니다.")
     else:
         tail.append("- 이번에는 웹 검색을 쓸 수 없습니다. 바뀔 수 있는 수치·날짜·조건은 단정하지 말고 '공식 공지 확인'을 안내하며, 참고 자료 칸에는 '이번 초안은 웹 검색 없이 작성됨 · 게시 전 공식 자료 확인 필요'라고 적습니다.")
+    if style == "culture":
+        tail += ["", "---", "", "# 이번 글 = 문화 섹션 (글은 읽을거리형 그대로 · 이미지만 아래 규칙이 위 이미지 규칙보다 우선)",
+                 "- **영화·드라마·OTT 시리즈**: Gemini 이미지 프롬프트를 쓰지 않습니다. 대신 참고 자료 아래·태그 위에 '■ 스틸컷 목록'을 쓰고, 공식 보도 스틸(배급사·제작사 보도자료, KMDb, 포털 영화 정보의 공식 스틸)만 3~5장 고릅니다. 장마다 한 줄씩: '스틸 N | 넣을 위치(소제목) | 장면 설명 | 출처 이름 | 출처 URL'. 확인하지 못한 URL은 지어내지 말고 '출처 URL 확인 필요'라고 적습니다.",
+                 "- 본문에는 스틸 자리를 '[🎬 스틸 N]' 한 줄로 표시합니다(N = 스틸컷 목록 번호). 스틸은 글을 돕는 만큼만 쓰고(최대 5장), 글이 주인공입니다.",
+                 "- 스틸에는 폴라로이드 테두리·캡션·부연 설명을 넣지 않고, 워터마크·크레딧을 지우지 않습니다. 가공은 자르기·크기 조정·밝기 미세 보정까지만입니다.",
+                 "- 본문 마지막(마무리 아래)에 출처 한 줄만 씁니다: '스틸컷: 《작품명》 ○○(배급사·제작사) 제공 보도 스틸'. 이미지마다 출처를 달지 않습니다.",
+                 "- 출처가 불분명한 이미지(팬 캡처, 블로그·커뮤니티 사진, 출처 없는 검색 이미지)는 넣지 않습니다.",
+                 "- **스틸이 없는 분야(책·전시·공연·음악·축제·문화유산)**: '■ Gemini 이미지 프롬프트'를 쓰되 폴라로이드(즉석사진) 프레임·흰 테두리·아래 여백·캡션 없이 사진 한 장 그대로로 씁니다(위의 폴라로이드 규칙 적용 안 함). 실제 포스터·책 표지·작품·인물 얼굴은 재현하지 않습니다. 공공누리 제1유형 이미지를 쓸 수 있으면 그 이미지와 출처를 '■ 스틸컷 목록'에 같은 형식으로 적어도 됩니다."]
     if style == "visit":
         tail += ["", "---", "", "# 이번 글 = 직접 다녀온 곳의 방문 후기 (위 이미지 규칙보다 우선)",
                  "- 사용자가 직접 찍은 실사 사진을 씁니다. '■ Gemini 이미지 프롬프트' 칸과 [📸 …] 자리 표시는 만들지 않고, 위의 이미지 프롬프트·폴라로이드 프레임 규칙은 모두 적용하지 않습니다.",
@@ -988,12 +1002,12 @@ def body_part(text):
     t = text or ""
     s = t.find("[본문 시작]")
     t = t[s + len("[본문 시작]"):] if s >= 0 else t
-    e = re.search(r"\n(?:-{3,}\s*\n+\s*)?■\s*(?:네이버 블로그|참고한|Gemini 이미지|사진 확인)", t)
+    e = re.search(r"\n(?:-{3,}\s*\n+\s*)?■\s*(?:네이버 블로그|참고한|Gemini 이미지|사진 확인|스틸컷 목록)", t)
     return t[:e.start()].strip() if e else t.strip()
 
 
 def body_chars(text):
-    b = re.sub(r"\[📸[^\]]*\]|\[📷[^\]]*\]", "", body_part(text))
+    b = re.sub(r"\[📸[^\]]*\]|\[📷[^\]]*\]|\[🎬[^\]]*\]", "", body_part(text))
     b = re.sub(r"[*#|>]", "", b)
     return len(b.strip())
 
@@ -1053,6 +1067,8 @@ def _check_draft_style(text, style="info"):
         return check_essay(text)
     if style == "visit":
         return check_visit(text)
+    if style == "culture":
+        return check_culture(text)
     if style == "deal":
         return check_deal(text)
     t = text or ""
@@ -1186,6 +1202,30 @@ def check_visit(text):
     out = [{"name": n, "ok": bool(ok), "note": note} for n, ok, note in items]
     passed = sum(x["ok"] for x in out)
     return {"ok": passed == len(out), "passed": passed, "total": len(out), "items": out, "chars": chars}
+
+
+def check_culture(text):
+    """문화 섹션 검사: 읽을거리형 검사 + 이미지 항목만 문화 규칙(스틸 또는 테두리 없는 이미지)으로."""
+    r = check_essay(text)
+    t = text or ""
+    body = body_part(t)
+    stills = len(set(re.findall(r"\[🎬\s*스틸\s*(\d+)", body)))
+    imgs = len(set(re.findall(r"이미지\s*#(\d+)", body)))
+    j = t.find("■ 스틸컷 목록")
+    lst = t[j:t.find("■", j + 1)] if j >= 0 else ""
+    rows = len(re.findall(r"(?m)^\s*[-*]?\s*스틸\s*\d+\s*[|｜]", lst))
+    prompts = len(re.findall(r"(?m)^(?:~~~|```)[^\n]*\n\s*Aspect ratio", t))
+    frame = bool(re.search(r"polaroid|instant[- ]photo|즉석사진|white border|bottom border", t, re.I))
+    items = [x for x in r["items"] if not x["name"].startswith(("이미지 삽입 위치", "Gemini 이미지 프롬프트"))]
+    items += [
+        {"name": "이미지 자리 3곳 이상 (스틸 또는 이미지)", "ok": stills + imgs >= 3, "note": f"스틸 {stills} · 이미지 {imgs}"},
+        {"name": "스틸컷 목록(출처) 또는 이미지 프롬프트", "ok": (stills == 0 or rows >= stills) and (imgs == 0 or prompts >= imgs) and (rows + prompts) > 0, "note": f"스틸 목록 {rows}줄 · 프롬프트 {prompts}개"},
+        {"name": "스틸 5장 이하", "ok": stills <= 5, "note": f"{stills}장" if stills > 5 else ""},
+        {"name": "스틸 출처 한 줄 (본문 끝)", "ok": stills == 0 or bool(re.search(r"스틸컷\s*[:：].*제공", body)), "note": ""},
+        {"name": "폴라로이드 테두리·캡션 없음", "ok": not frame, "note": ""},
+    ]
+    passed = sum(1 for x in items if x["ok"])
+    return {"ok": passed == len(items), "passed": passed, "total": len(items), "items": items, "chars": r.get("chars", 0)}
 
 
 def check_essay(text):
@@ -1390,7 +1430,7 @@ def local_fix(text):
         body = re.sub(r"(?m)^#{3,4}[ \t]+", "## ", body)
         body = re.sub(r"(?m)^\*\*(\d{1,2}[.)][ \t]*[^*\n]{2,40})\*\*[ \t]*$", r"## \1", body)
         # AI 이미지 안내 한 줄 (빠졌으면 본문 끝에 추가)
-        if "AI로 만든 이미지" not in body and "AI로 생성" not in body:
+        if "AI로 만든 이미지" not in body and "AI로 생성" not in body and ("[📸" in body or "Gemini 이미지 프롬프트" in t):
             body = body.rstrip() + "\n\n※ 본문 이미지 중 일부는 AI로 만든 이미지로, 실제 모습과 다를 수 있습니다.\n\n"
         # 자주 묻는 질문: 질문·답 묶음 사이에 빈 줄 1개 (질문 줄 앞이 붙어 있으면 띄움)
         body = re.sub(r"(?m)^([^\n]*\S[^\n]*)\n(\*\*Q[.．])", r"\1\n\n\2", body)
@@ -1466,7 +1506,7 @@ def make_draft(store, cfg, item, saved, today, progress=None):
     stage_visit_photos(store, item)
     call = _caller(provider, cfg, store, system, web)
     say({"essay": "읽을거리형 지침으로 쓰는 중", "deal": "할인·구매형 지침으로 쓰는 중",
-         "visit": "사진을 보며 방문 후기 쓰는 중"}.get(style, "작가 지침(정보형)으로 쓰는 중"))
+         "visit": "사진을 보며 방문 후기 쓰는 중", "culture": "문화 섹션(읽을거리형 + 스틸 규칙)으로 쓰는 중"}.get(style, "작가 지침(정보형)으로 쓰는 중"))
     # 유료 API로 몰래 넘어가지 않음: 구독(CLI)이 실패하면 멈추고 이유를 보여 줌
     try:
         text, sources, model = call(user)
