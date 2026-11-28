@@ -1956,9 +1956,20 @@ document.addEventListener("click", e => {
 
 
 /* ---------- 스마트에디터용 서식 복사: 본문 16 · 소제목 19 파란 굵게 · 참고 자료 13 · 표 · 박스 ---------- */
+// 떠나셈 안내를 붙일 글인지: 본문 아무 곳이 아니라 '글이 무엇에 관한 것인지'(메인 키워드·제목·추천 제목·글감·분야)로만 판단
+// (예전엔 본문 앞부분에 '여행'이 한 번만 나와도 붙어서, 명품 브랜드 글(여행 가방 이야기)에도 들어갔음)
+const DDU_RE = /국내\s?여행|여행지|여행 코스|여행코스|가볼만한|가볼 곳|명소|관광지|맛집|추천\s?코스|데이트\s?코스|나들이|드라이브|당일치기|1박\s?2일|숙소|펜션|글램핑|캠핑장|축제|핫플|야경|단풍|벚꽃|해수욕장|둘레길|트레킹|산책길|여행/;
+const DDU_ABROAD_RE = /해외|세계\s?여행|일본|도쿄|오사카|후쿠오카|교토|대만|타이베이|중국|홍콩|마카오|베트남|다낭|나트랑|태국|방콕|푸켓|필리핀|세부|괌|사이판|하와이|미국|뉴욕|유럽|파리|런던|로마|스페인|호주|싱가포르|발리|몽골/;
 function isTravelPost(md) {
-  const head = String(md || "").slice(0, 2500);
-  return /여행|가볼만한|가볼 곳|명소|관광|숙소|숙박|호텔|펜션|리조트|글램핑|캠핑장|축제|나들이|드라이브|당일치기|코스 추천|핫플|야경|단풍|벚꽃|해수욕장|둘레길|트레일/.test(head);
+  const t = String(md || "");
+  const kw = (t.match(/메인 키워드\s*[:：]\s*([^\n]+)/) || [])[1] || "";
+  const title = (t.match(/^#\s+(.+)$/m) || [])[1] || "";
+  const titles = ((t.match(/추천 제목[^\n]*\n((?:\s*\d\.[^\n]*\n?){1,3})/) || [])[1] || "");
+  const cur = (typeof DRAFT !== "undefined" && DRAFT && DRAFT.text === md) ? `${DRAFT.keyword || ""} ${DRAFT.topic || ""}` : "";
+  const about = `${kw} ${title} ${titles} ${cur}`;
+  if (!DDU_RE.test(about)) return false;
+  if (DDU_ABROAD_RE.test(`${kw} ${title} ${cur}`)) return false;   // 해외여행 글은 국내 여행 사이트 안내를 붙이지 않음
+  return true;
 }
 function smartHtml(md) {
   const body = bodyPart(md), refs = refsPart(md), tags = tagsPart(md);
