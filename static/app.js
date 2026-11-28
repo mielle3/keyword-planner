@@ -1416,14 +1416,17 @@ function renderDrafts() {
           <a class="btn" href="/api/drafts/${encodeURIComponent(d.id)}/docx" download="${esc((d.created_at || "").slice(0, 10) + "_" + (d.keyword || "초안").replace(/[\\/:*?"<>|]+/g, " ").slice(0, 40) + ".docx")}">docx 저장</a>
         </div>
         <div class="dv-group dv-right">
-          <button class="btn dark" id="dvRevise" title="고칠 내용을 적으면 이 초안을 그 자리에서 고쳐요">AI로 고치기</button>
+          <button class="btn dark" id="dvRevise" title="고칠 곳을 적으면 그 부분만 고쳐요">부분 수정</button>
           <details class="dv-more">
-            <summary class="btn">더보기${d.versions ? ` <small>되돌리기 ${d.versions}</small>` : ""} ▾</summary>
+            <summary class="btn" title="글 전체를 한 번에 고치기 · 복사·되돌리기·삭제">전체 수정${d.versions ? ` <small>되돌리기 ${d.versions}</small>` : ""} ▾</summary>
             <div class="dv-menu">
+              <small class="menu-head">글 전체를 한 번에 고치기</small>
+              <button id="dvTone" title="구성·내용·숫자는 그대로 두고 글 전체의 말투만 지금 지침에 맞게">말투 전체를 새 지침대로</button>
+              ${d.visit ? "" : `<button id="dvImgRedo" title="본문은 그대로 두고 이미지 프롬프트 전체를 지금 이미지 규칙으로">이미지 프롬프트 전체 새로 쓰기</button>`}
+              <button id="dvRestyle" title="내용은 살리고 다른 글 종류의 형식으로">글 종류 바꾸기</button>
+              <button id="dvRedo" title="같은 글감으로 처음부터 새로 써요 (글 기획 창이 열려요)">처음부터 다시 쓰기</button>
+              <small class="menu-head">기타 (복사·되돌리기·삭제)</small>
               <button id="dvCopyBody2" class="menu-copy">📋 블로그에 붙일 본문 복사</button>
-              <button id="dvImgRedo" title="본문은 그대로 두고 Gemini 이미지 프롬프트만 새 이미지 원칙으로 다시 써요">이미지 프롬프트만 새로 쓰기</button>
-              <button id="dvRedo" title="같은 글감으로 처음부터 다시 써서 이 초안을 덮어써요">다시 쓰기</button>
-              <button id="dvRestyle" title="내용은 살리고 형식만 바꿔 이 초안을 덮어써요">형식 바꾸기</button>
               <button id="dvCopyPlain">본문 글자만 복사 (서식 없이)</button>
               <button id="dvCopyAll">전체 복사 (기획·프롬프트 포함)</button>
               ${d.versions ? `<button id="dvUndo">되돌리기 (이전 버전 ${d.versions}개)</button>` : ""}
@@ -1434,9 +1437,9 @@ function renderDrafts() {
       </div>
     </header>
     <div class="dv-revise" id="dvReviseBox" hidden>
-      <b>어떻게 고칠까요?</b> <small class="muted">요청한 부분만 고치고 나머지는 그대로 둬요 · 이 초안을 덮어쓰고, 이전 내용은 되돌리기로 복구할 수 있어요</small>
+      <b>부분 수정 — 어디를 어떻게 고칠까요?</b> <small class="muted">적어 주신 부분만 고치고 나머지는 그대로 둬요 · 글 전체를 한 번에 고치려면 옆의 '전체 수정'  · 이전 내용은 되돌리기로 복구</small>
       <textarea id="dvReviseText" rows="3" placeholder="예) 소제목 2를 더 짧게, 마무리 문단을 담백하게, 대표 이미지 프롬프트를 겨울 분위기로 다시"></textarea>
-      <div class="row-end"><button class="btn" type="button" id="dvReviseCancel">닫기</button><button class="btn dark" type="button" id="dvReviseGo">고치기 ✍</button></div>
+      <div class="row-end"><button class="btn" type="button" id="dvReviseCancel">닫기</button><button class="btn dark" type="button" id="dvReviseGo">고치기 시작 ✍</button></div>
     </div>
     ${d.visit ? visitBarHTML(d) : promptCardsHTML(d.text)}
     ${d.sources?.length ? `<details class="dv-sources"><summary>AI가 확인한 웹 자료 ${d.sources.length}개</summary><ul>${d.sources.map(s => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a></li>`).join("")}</ul></details>` : ""}
@@ -1451,9 +1454,8 @@ function renderDrafts() {
   $("#dvDelete").onclick = async () => { if (!confirm("이 초안을 삭제할까요?")) return; DRAFTS = await api("/api/drafts/" + d.id, { action: "delete" }); DRAFT = null; await loadDrafts(); toast("삭제했어요"); };
   $("#dvRevise").onclick = () => { $("#dvReviseBox").hidden = false; $("#dvReviseText").focus(); };
   $("#dvReviseCancel").onclick = () => { $("#dvReviseBox").hidden = true; };
-  $("#dvImgRedo").onclick = async () => {
-    $(".dv-more").open = false;
-    if (!confirm("본문은 그대로 두고 이미지 프롬프트만 새로 쓸까요? (이 초안을 덮어쓰고, 되돌리기 가능)")) return;
+  const imgRedo = async () => {
+    if (!confirm("전체 수정: 본문은 그대로 두고 이미지 프롬프트 전체를 새로 쓸까요? (이 초안을 덮어쓰고, 되돌리기 가능)")) return;
     await writeDraft({ id: "rv-" + Date.now(), keyword: d.keyword, topic: d.topic || "", style: d.style || "info", brief: {}, metrics: {}, src: {}, target_id: d.id,
       revise_instruction: "본문·참고한 공식 자료·태그는 한 글자도 바꾸지 말고 그대로 두세요. '■ Gemini 이미지 프롬프트' 부분만 작가 지침의 '이미지 최우선 원칙'과 대표 이미지 규칙에 따라 전면 다시 쓰세요: 이미지마다 '전하는 핵심'(본문 문장)을 먼저 정하고, 본문의 고유 대상이 주인공인 이미지로, 장마다 다른 표현 방식(일러스트·플랫레이·디오라마·분할 비교·콜라주 등)으로, 대표 이미지는 글 전체 요약의 두 핵심어가 보이는 잡지 표지급으로. 내용과 상관없는 분위기 이미지는 빼고, 보여 줄 핵심이 없으면 그 이미지는 생략하세요. 본문 속 [📸 이미지 #N …] 자리 표시도 새 프롬프트와 맞게 고치세요." });
   };
@@ -1464,20 +1466,31 @@ function renderDrafts() {
     await writeDraft({ id: "rv-" + Date.now(), keyword: d.keyword, topic: d.topic || "", style: d.style || "info", brief: {}, metrics: {}, src: {},
                        target_id: d.id, revise_instruction: ins });
   };
+  const toneFix = async () => {
+    const ins = "구성·소제목·내용·숫자·날짜·출처·이미지 프롬프트는 그대로 두고, 문장의 말투만 작가 지침의 '읽는 사람'·'사람이 쓴 문장' 규칙에 맞게 고쳐 주세요: '도움이 됩니다' 같은 자기 평가와 장담하는 말, '~하세요' 명령형(→ '~해 보시길 권합니다'), 줄임말·신조어, 번역투, 하십시오체 질문.";
+    if (!confirm("전체 수정: 구성·내용은 그대로 두고 글 전체의 말투를 지금 지침대로 고칠까요? (이 초안을 덮어쓰고, 되돌리기 가능)")) return;
+    await writeDraft({ id: "rv-" + Date.now(), keyword: d.keyword, topic: d.topic || "", style: d.style || "info", brief: {}, metrics: {}, src: {},
+                       target_id: d.id, revise_instruction: ins });
+  };
   if ($("#dvUndo")) $("#dvUndo").onclick = async () => {
     if (!confirm("덮어쓰기 전 내용으로 되돌릴까요?")) return;
     try { DRAFT = await api("/api/drafts/" + d.id, { action: "undo" }); DRAFTS = await api("/api/drafts"); renderDrafts(); toast("이전 버전으로 되돌렸어요"); } catch (err) { toast(err.message); }
   };
-  $("#dvRestyle").onclick = async () => {
+  const restyle = async () => {
     const to = d.style === "info" || !d.style ? "essay" : "info";
     openFix(d.text || "", { style: to, title: d.title || d.keyword, target: d.id,
       note: "다른 형식으로 바꿔 쓰는 초안입니다. 내용과 사실은 살리고, 위에서 고른 글 종류의 지침(구성·편집 형식·이미지 규칙)대로 다시 써 주세요." });
     toast("글 종류를 고르고 '고치기 시작'을 누르세요 · 이 초안을 덮어써요");
   };
-  $("#dvRedo").onclick = async () => {
+  const redo = async () => {
     const it = findItem(d.item_id) || { keyword: d.keyword, topic: d.topic, brief: {}, metrics: {}, src: {} };
     openPlan({ ...it, target_id: d.id }, { from: "초안 다시 쓰기 · 이 초안을 덮어써요" });
   };
+  const menuAct = f => () => { $(".dv-more").open = false; f(); };
+  $("#dvTone").onclick = menuAct(toneFix);
+  if ($("#dvImgRedo")) $("#dvImgRedo").onclick = menuAct(imgRedo);
+  $("#dvRestyle").onclick = menuAct(restyle);
+  $("#dvRedo").onclick = menuAct(redo);
   if (DRAFT_MODE === "edit") {
     const ta = $("#dvText");
     $("#dvSave").onclick = async () => { DRAFT = await api("/api/drafts/" + d.id, { action: "save", text: ta.value }); DRAFTS = await api("/api/drafts"); $("#dvSaved").textContent = "저장했어요 " + new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }); renderDrafts(); };
@@ -1739,10 +1752,10 @@ function setWMode(mode, from) {
   $$("#wMode [data-wm]").forEach(b => b.setAttribute("aria-checked", String(b.dataset.wm === mode)));
   $("#wNewBox").hidden = mode !== "new"; $("#wFixBox").hidden = mode !== "fix"; $("#wVisitBox").hidden = mode !== "visit";
   $("#wStyleBox").hidden = mode === "visit";
-  $("#wTitle").textContent = { new: "글 기획", fix: "이미 쓴 글 고치기", visit: "방문 후기 쓰기" }[mode];
+  $("#wTitle").textContent = { new: "글 기획", fix: "네이버에 올린 글 고치기", visit: "방문 후기 쓰기" }[mode];
   $("#wSub").textContent = (from ? `출발: ${from} · ` : "") + {
     new: "키워드·글 종류·내 생각을 확인하고 쓰세요. 검색 데이터와 내 사이트 도구 연결은 프로그램이 알아서 합니다.",
-    fix: "글을 붙여 넣으면 작가 지침 형식으로 고쳐서 초안에 보관합니다.",
+    fix: "네이버에 이미 올린 글의 주소나 본문을 넣으면 지금 지침으로 고쳐서 초안에 보관합니다. 말투만 고치려면 고칠 방향에 '구성은 그대로, 말투만'이라고 적어 주세요. (프로그램 초안함의 글은 초안 화면의 '고치기'를 쓰세요)",
     visit: "직접 쓴 글과 찍은 사진을 넣으면, 사진을 보며 네이버 후기 글로 완성하고 글 속에 사진 자리(사진 1, 2 …)를 표시합니다." }[mode];
   $("#wGo").textContent = mode === "fix" ? "고치기 시작" : mode === "visit" ? "후기 초안 쓰기 ✍" : "AI 초안 쓰기 ✍";
   if (mode === "visit" && !$("#vDate").value) $("#vDate").value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
@@ -2189,3 +2202,11 @@ if ($("#morningOn")) {
 /* 진행 알림 띠 위치: 위 메뉴 높이만큼 아래에 */
 function setAppbarH() { const h = $(".appbar")?.getBoundingClientRect().height || 64; document.documentElement.style.setProperty("--appbar-h", Math.round(h) + "px"); }
 setAppbarH(); addEventListener("resize", setAppbarH);
+
+// 더보기 메뉴: 열 때 화면에 남은 높이만큼만 (낮은 화면에서 아래로 잘리지 않게, 넘치면 메뉴 안에서 스크롤)
+document.addEventListener("toggle", e => {
+  const d = e.target; if (!d.classList || !d.classList.contains("dv-more") || !d.open) return;
+  const m = d.querySelector(".dv-menu"); if (!m) return;
+  m.style.maxHeight = ""; const top = m.getBoundingClientRect().top;
+  m.style.maxHeight = Math.max(160, Math.floor(innerHeight - top - 12)) + "px";
+}, true);
