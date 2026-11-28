@@ -1359,7 +1359,7 @@ function imagePrompts(md) {
 function promptCardsHTML(md) {
   const ps = imagePrompts(md);
   if (!ps.length) return "";
-  return `<section class="img-prompts"><div class="ip-head"><b>Gemini 이미지 프롬프트</b><span>복사해서 Gemini에 붙여 넣으면 이미지가 만들어져요</span><a class="btn sm" href="https://gemini.google.com/app" target="_blank" rel="noopener">Gemini 열기 ↗</a><button class="btn sm dark" type="button" data-frame-open>받은 이미지 테두리 마무리</button></div>
+  return `<section class="img-prompts"><div class="ip-head"><b>Gemini 이미지 프롬프트</b><span>복사해서 Gemini에 붙여 넣으면 이미지가 만들어져요</span><a class="btn sm" href="https://gemini.google.com/app" target="_blank" rel="noopener">Gemini 열기 ↗</a></div>
     <div class="ip-grid">${ps.map((x, i) => `<article class="ip-card"><div class="ip-no">#${i + 1}</div><h4>${esc(x.head)}</h4>${x.what ? `<p class="ip-what">${esc(x.what)}</p>` : ""}${x.ko ? `<p class="ip-ko">${esc(x.ko)}</p>` : ""}
       <pre class="ip-pre">${esc(x.prompt)}</pre><button class="btn dark sm" data-copy="${esc(x.prompt)}">프롬프트 복사</button></article>`).join("")}</div></section>`;
 }
@@ -2054,88 +2054,3 @@ if ($("#morningOn")) {
 /* 진행 알림 띠 위치: 위 메뉴 높이만큼 아래에 */
 function setAppbarH() { const h = $(".appbar")?.getBoundingClientRect().height || 64; document.documentElement.style.setProperty("--appbar-h", Math.round(h) + "px"); }
 setAppbarH(); addEventListener("resize", setAppbarH);
-
-
-/* ---------- 이미지 테두리 마무리 (내 PC 안에서만 처리): 바깥 네 변에 가는 회색 선 + 미색 테두리를 순백으로 ---------- */
-async function frameFile(file, opt) {
-  const url = URL.createObjectURL(file);
-  const img = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = url; });
-  const W = img.naturalWidth, Hh = img.naturalHeight;
-  const c = document.createElement("canvas"); c.width = W; c.height = Hh;
-  const g = c.getContext("2d"); g.drawImage(img, 0, 0); URL.revokeObjectURL(url);
-  if (opt.whiten) {
-    // 사진 사각형을 찾음: 가운데 높이(20~60%)에서 '흰색이 아닌 픽셀'이 절반 넘는 열 = 사진 열, 그 열 범위에서 절반 넘는 행 = 사진 행
-    // (캡션 줄은 글자가 듬성듬성해 사진 행으로 잡히지 않음) → 사진 바깥이 모두 테두리
-    const d = g.getImageData(0, 0, W, Hh), px = d.data;
-    const near = i => { const r = px[i], gg = px[i + 1], b = px[i + 2]; const mx = Math.max(r, gg, b), mn = Math.min(r, gg, b); return mn >= 222 && mx - mn <= 20; };
-    const y0 = Math.floor(Hh * 0.2), y1 = Math.floor(Hh * 0.6);
-    const colPhoto = x => { let n = 0; for (let y = y0; y < y1; y++) if (!near((y * W + x) * 4)) n++; return n / (y1 - y0) > 0.5; };
-    const m = Math.max(3, Math.round(W * 0.012));  // 가장자리 그림자선(Gemini가 좌우에만 긋는 회색 줄)은 건너뛰고 찾음
-    let left = m; while (left < W * 0.3 && !colPhoto(left)) left++;
-    let right = W - 1 - m; while (right > W * 0.7 && !colPhoto(right)) right--;
-    const rowPhoto = y => { let n = 0; for (let x = left; x <= right; x++) if (!near((y * W + x) * 4)) n++; return n / Math.max(1, right - left + 1) > 0.5; };
-    let top = 0; while (top < Hh * 0.3 && !rowPhoto(top)) top++;
-    let bot = Hh - 1; while (bot > Hh * 0.4 && !rowPhoto(bot)) bot--;
-    const inBand = (x, y) => y < top || y > bot || x < left || x > right;
-    const shadow = i => { const r = px[i], gg = px[i + 1], b = px[i + 2]; return Math.min(r, gg, b) >= 190 && Math.max(r, gg, b) - Math.min(r, gg, b) <= 20; };
-    for (let y = 0; y < Hh; y++) for (let x = 0; x < W; x++) {
-      if (!inBand(x, y)) continue;
-      const i = (y * W + x) * 4;
-      if (near(i) || ((x < m || x >= W - m || y < m || y >= Hh - m) && shadow(i))) { px[i] = px[i + 1] = px[i + 2] = 255; }   // 글자(진한 색)는 그대로, 미색·흰 로고만 순백으로
-    }
-    g.putImageData(d, 0, 0);
-  }
-  // 마지막 단계: 사진·문구가 합성된 최종 캔버스 위에 회색 사각형 테두리를 네 면 한 번에
-  // 기준(폭 1,080px): 가장자리에서 8px 안쪽, 선 두께 3px, #B8B8B8 → 폭에 비례해 맞춤
-  // (Gemini가 그린 좌우 그림자선은 위 단계에서 순백으로 지운 뒤라 원본처럼 깨끗한 상태에서 그림)
-  const k = W / 1080;
-  const inset = Math.max(2, Math.round(8 * k)), lw = Math.max(1, Math.round(3 * k));
-  const out = c, o = g;
-  o.save();
-  o.strokeStyle = "#B8B8B8"; o.lineWidth = lw; o.lineJoin = "miter";
-  o.beginPath(); o.rect(inset + lw / 2, inset + lw / 2, W - 2 * inset - lw, Hh - 2 * inset - lw); o.closePath(); o.stroke();
-  o.restore();
-  const blob = await new Promise(ok => out.toBlob(ok, "image/png"));
-  return { blob, src: URL.createObjectURL(blob), w: W, h: Hh,
-    name: (file.name.replace(/\.[^.]+$/, "").replace(/[^\w.-]+/g, "_").replace(/^_+|_+$/g, "") || "image") + "_frame.png" };
-}
-let FRAMED = [];
-function frameDialog() {
-  let d = $("#frameDialog");
-  if (!d) {
-    d = document.createElement("dialog"); d.id = "frameDialog";
-    d.innerHTML = `<form method="dialog" class="manual-form">
-      <div class="dlg-head"><div><h2>이미지 테두리 마무리</h2><p class="muted">Gemini에서 받은 이미지를 넣으면 테두리를 순백으로 맞추고, 마지막에 네 가장자리 안쪽(폭 1,080px 기준 8px)에 3px 회색(#B8B8B8) 사각형 테두리를 한 번에 그려 PNG로 저장해요. 이미지는 이 PC 안에서만 처리돼요.</p></div>
-        <button class="x-fixed" value="cancel" aria-label="닫기">✕</button></div>
-      <div class="crop-body">
-        <label class="switch"><input type="checkbox" id="frameWhiten" checked><span>미색 테두리를 순백으로 바꾸기 (흰 로고도 함께 정리)</span></label>
-        <label class="crop-drop" id="frameDrop"><input type="file" id="frameFiles" accept="image/*" multiple hidden>
-          <b>여기에 이미지를 끌어다 놓거나 눌러서 고르세요 (Ctrl+V 붙여넣기도 돼요)</b><span>여러 장 한 번에 · 크기·비율 그대로 · PNG로 저장</span></label>
-        <div class="crop-grid" id="frameGrid"></div>
-      </div>
-      <div class="row-end" style="margin:12px 24px 20px"><button class="btn" type="button" id="frameClear">비우기</button><button class="btn primary" type="button" id="frameSave" disabled>모두 저장</button></div>
-    </form>`;
-    document.body.appendChild(d);
-    const files = [];
-    const run = async () => {
-      FRAMED.forEach(x => URL.revokeObjectURL(x.src)); FRAMED = [];
-      for (const f of files) { try { FRAMED.push(await frameFile(f, { whiten: $("#frameWhiten").checked })); } catch { toast(f.name + " 은(는) 이미지로 읽지 못했어요"); } }
-      $("#frameGrid").innerHTML = FRAMED.map((x, i) => `<figure><img src="${x.src}" alt="" style="background:#fff"><figcaption>${esc(x.name)}<br><small>${x.w}×${x.h}</small><br><button class="btn sm" type="button" data-frame-save="${i}">저장</button></figcaption></figure>`).join("");
-      $("#frameSave").disabled = !FRAMED.length;
-    };
-    const add = list => { for (const f of list) if (/^image\//.test(f.type)) files.push(f); run(); };
-    const save = x => { const a = document.createElement("a"); a.href = x.src; a.download = x.name; document.body.appendChild(a); a.click(); document.body.removeChild(a); };
-    d.addEventListener("click", e => { const s = e.target.closest("[data-frame-save]"); if (s) save(FRAMED[+s.dataset.frameSave]); });
-    $("#frameWhiten").onchange = run;
-    $("#frameFiles").onchange = e => add(e.target.files);
-    const drop = $("#frameDrop");
-    drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("over"); });
-    drop.addEventListener("dragleave", () => drop.classList.remove("over"));
-    drop.addEventListener("drop", e => { e.preventDefault(); drop.classList.remove("over"); add(e.dataTransfer.files); });
-    d.addEventListener("paste", e => add([...e.clipboardData.files]));
-    $("#frameClear").onclick = () => { files.length = 0; run(); };
-    $("#frameSave").onclick = async () => { for (const x of FRAMED) { save(x); await new Promise(r => setTimeout(r, 250)); } toast(`${FRAMED.length}장 저장했어요 (다운로드 폴더)`); };
-  }
-  openDialog(d);
-}
-document.addEventListener("click", e => { if (e.target.closest("[data-frame-open]")) frameDialog(); });

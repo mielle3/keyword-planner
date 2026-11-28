@@ -1650,18 +1650,6 @@ html { overflow-y: scroll; scrollbar-gutter: stable; }
 .dv-actions { grid-template-columns: repeat(auto-fill, minmax(max(196px, calc((100% - 16px) / 3)), 1fr)) !important; }  /* 3칸×2줄, 좁으면 2칸×3줄 */
 .dv-actions select { max-width: none !important; width: 100% !important; }
 
-/* 이미지 테두리 마무리 창 */
-#frameDialog { width: min(980px, 96vw); }
-.crop-body { padding: 0 24px; }
-.crop-drop { display: grid; place-items: center; gap: 4px; margin: 12px 0; padding: 28px 16px; border: 2px dashed var(--rule-strong); cursor: pointer; text-align: center; }
-.crop-drop.over { border-color: var(--ink); background: color-mix(in srgb, var(--mark) 25%, var(--paper)); }
-.crop-drop span { font-size: 12.5px; color: var(--muted); }
-.crop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; max-height: 46vh; overflow: auto; }
-.crop-grid figure { margin: 0; border: 1px solid var(--rule); padding: 8px; }
-.crop-grid img { width: 100%; display: block; }
-.crop-grid figcaption { font-size: 12px; margin-top: 6px; word-break: break-all; }
-.crop-grid figcaption .btn { margin-top: 6px; }
-
 /* v158~159: 오늘 쓸 글 왼쪽 = 1~3순위 작은 카드 3장 (같은 크기, 위아래로 정렬)
    카드는 내용보다 작아지지 않음(min-height:auto) → 겹침·잘림 없음. 남는 높이는 카드끼리 똑같이 나눔 */
 .lead-col { display: grid !important; grid-template-rows: none; grid-auto-rows: 1fr; gap: 12px; align-content: start;
